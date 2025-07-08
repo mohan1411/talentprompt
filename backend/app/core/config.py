@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, Field, PostgresDsn, validator
+from pydantic import AnyHttpUrl, Field, validator
 from pydantic_settings import BaseSettings
 
 
@@ -34,21 +34,23 @@ class Settings(BaseSettings):
     
     # Database
     POSTGRES_SERVER: str
+    POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
-    DATABASE_URL: Optional[PostgresDsn] = None
+    DATABASE_URL: Optional[str] = None
 
     @validator("DATABASE_URL", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         if isinstance(v, str):
+            # Ensure we use asyncpg driver
+            if v.startswith("postgresql://"):
+                return v.replace("postgresql://", "postgresql+asyncpg://")
             return v
-        return PostgresDsn.build(
-            scheme="postgresql",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"{values.get('POSTGRES_DB') or ''}",
+        return (
+            f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:"
+            f"{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:"
+            f"{values.get('POSTGRES_PORT', 5432)}/{values.get('POSTGRES_DB')}"
         )
     
     # Redis
