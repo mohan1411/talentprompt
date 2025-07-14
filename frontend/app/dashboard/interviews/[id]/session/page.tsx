@@ -488,7 +488,7 @@ export default function InterviewSessionPage() {
               <div>
                 <h4 className="text-sm font-medium mb-2 text-green-600">Strengths</h4>
                 <ul className="space-y-1">
-                  {candidateInfo.strengths.map((strength, idx) => (
+                  {candidateInfo.strengths.map((strength: string, idx: number) => (
                     <li key={idx} className="text-sm flex items-start gap-2">
                       <CheckCircleIcon className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
                       {strength}
@@ -502,7 +502,7 @@ export default function InterviewSessionPage() {
               <div>
                 <h4 className="text-sm font-medium mb-2 text-amber-600">Areas to Explore</h4>
                 <ul className="space-y-1">
-                  {candidateInfo.concerns.map((concern, idx) => (
+                  {candidateInfo.concerns.map((concern: string, idx: number) => (
                     <li key={idx} className="text-sm flex items-start gap-2">
                       <AlertCircleIcon className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
                       {concern}
@@ -516,7 +516,7 @@ export default function InterviewSessionPage() {
               <div>
                 <h4 className="text-sm font-medium mb-2">Key Talking Points</h4>
                 <ul className="space-y-1">
-                  {candidateInfo.talkingPoints.map((point, idx) => (
+                  {candidateInfo.talkingPoints.map((point: string, idx: number) => (
                     <li key={idx} className="text-sm flex items-start gap-2">
                       <MessageSquareIcon className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                       {point}
