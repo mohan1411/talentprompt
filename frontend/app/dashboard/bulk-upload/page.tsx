@@ -108,8 +108,10 @@ export default function BulkUploadCenterPage() {
       const fileEntry = entry as FileSystemFileEntry;
       const file = await new Promise<FileWithPath>((resolve, reject) => {
         fileEntry.file((file) => {
-          const fileWithPath = file as FileWithPath;
-          fileWithPath.path = path + file.name;
+          // Create a new object with the path property
+          const fileWithPath = Object.assign(file, {
+            path: path + file.name
+          }) as FileWithPath;
           resolve(fileWithPath);
         }, reject);
       });
