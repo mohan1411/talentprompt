@@ -47,7 +47,7 @@ export default function InterviewsPage() {
       setInterviews(sessionsData || [])
       
       // Load resume data for each interview to get candidate names
-      const resumeIds = [...new Set(sessionsData.map(s => s.resume_id))]
+      const resumeIds = Array.from(new Set(sessionsData.map(s => s.resume_id)))
       const resumeData: Record<string, any> = {}
       
       for (const resumeId of resumeIds) {
