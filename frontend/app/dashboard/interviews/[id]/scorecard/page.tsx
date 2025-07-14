@@ -455,13 +455,13 @@ Technical Skills: ${scorecard?.ratings?.technical?.score || 0}/5
 Behavioral Skills: ${scorecard?.ratings?.behavioral?.score || 0}/5
 
 Key Strengths:
-${scorecard?.strengths?.map(s => `• ${s}`).join('\n') || 'None listed'}
+${scorecard?.strengths?.map((s: string) => `• ${s}`).join('\n') || 'None listed'}
 
 Areas of Concern:
-${scorecard?.concerns?.map(c => `• ${c}`).join('\n') || 'None listed'}
+${scorecard?.concerns?.map((c: string) => `• ${c}`).join('\n') || 'None listed'}
 
 Next Steps:
-${scorecard?.nextSteps?.map(s => `• ${s}`).join('\n') || 'None listed'}
+${scorecard?.nextSteps?.map((s: string) => `• ${s}`).join('\n') || 'None listed'}
 
 Note: This is a summary. Full scorecard requires system access.
                   `.trim()
