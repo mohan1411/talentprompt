@@ -70,7 +70,8 @@ async def health_check():
         "service": "promtitude-api",
         "version": settings.VERSION,
         "docs": "/docs",
-        "database": "unknown"
+        "database": "unknown",
+        "vector_search": "unknown"
     }
     
     # Test database connection
@@ -83,6 +84,17 @@ async def health_check():
     except Exception as e:
         health_status["database"] = f"error: {str(e)}"
         health_status["status"] = "unhealthy"
+    
+    # Test Qdrant connection
+    try:
+        from app.services.vector_search import vector_search
+        collection_info = await vector_search.get_collection_info()
+        if collection_info.get("status") == "connected":
+            health_status["vector_search"] = f"connected ({collection_info.get('points_count', 0)} vectors)"
+        else:
+            health_status["vector_search"] = f"error: {collection_info.get('error', 'Unknown error')}"
+    except Exception as e:
+        health_status["vector_search"] = f"error: {str(e)}"
     
     return health_status
 

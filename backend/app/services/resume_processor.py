@@ -9,6 +9,7 @@ from app import crud
 from app.models.resume import Resume
 from app.services.embeddings import embedding_service
 from app.services.resume_parser import resume_parser
+from app.services.vector_search import vector_search
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
@@ -90,8 +91,31 @@ class ResumeProcessor:
                     # Update resume with parsed data and mark as completed
                     await crud.resume.update(db, db_obj=resume, obj_in=update_data)
                     
-                    # Store embedding separately to avoid ORM issues with pgvector
+                    # Store embedding in database as JSON
                     await self._update_embedding(db, resume_id, embedding)
+                    
+                    # Index in Qdrant for vector search
+                    metadata = {
+                        "first_name": update_data.get("first_name", ""),
+                        "last_name": update_data.get("last_name", ""),
+                        "email": update_data.get("email", ""),
+                        "location": update_data.get("location", ""),
+                        "current_title": update_data.get("current_title", ""),
+                        "years_experience": update_data.get("years_experience", 0),
+                        "skills": update_data.get("skills", []),
+                        "keywords": update_data.get("keywords", [])
+                    }
+                    
+                    try:
+                        await vector_search.index_resume(
+                            resume_id=resume_id,
+                            text=resume_text,
+                            metadata=metadata
+                        )
+                        logger.info(f"Indexed resume {resume_id} in Qdrant")
+                    except Exception as e:
+                        logger.error(f"Failed to index resume {resume_id} in Qdrant: {e}")
+                        # Don't fail the whole process if Qdrant indexing fails
                     
                     # Update parse status
                     await crud.resume.update_parse_status(
