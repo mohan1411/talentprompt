@@ -85,18 +85,19 @@ export function SelectValue({ placeholder = "" }: { placeholder?: string }) {
 
 export function SelectContent({ children }: any) {
   const context = React.useContext(SelectContext)
-  if (!context || !context.open) return null
   
   // Set initial selected label based on value
   React.useEffect(() => {
-    if (context.value) {
+    if (context && context.value) {
       React.Children.forEach(children, (child) => {
         if (React.isValidElement(child) && child.props.value === context.value) {
           context.setSelectedLabel(child.props.children)
         }
       })
     }
-  }, [context.value, children, context])
+  }, [context?.value, children, context])
+  
+  if (!context || !context.open) return null
   
   return (
     <>
