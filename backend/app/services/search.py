@@ -203,6 +203,153 @@ class SearchService:
         
         # Filter out the original resume
         return [(r, s) for r, s in results if r["id"] != str(resume_id)][:limit]
+    
+    async def get_search_suggestions(
+        self,
+        db: AsyncSession,
+        query: str
+    ) -> List[Dict[str, Any]]:
+        """Get search suggestions based on partial query."""
+        suggestions = []
+        
+        if len(query) < 2:
+            return suggestions
+        
+        query_lower = query.lower()
+        
+        # Common technology suggestions
+        tech_keywords = {
+            "python": {"category": "language", "full": "Python Developer"},
+            "java": {"category": "language", "full": "Java Developer"},
+            "javascript": {"category": "language", "full": "JavaScript Developer"},
+            "react": {"category": "framework", "full": "React Developer"},
+            "angular": {"category": "framework", "full": "Angular Developer"},
+            "vue": {"category": "framework", "full": "Vue.js Developer"},
+            "node": {"category": "runtime", "full": "Node.js Developer"},
+            "aws": {"category": "cloud", "full": "AWS Cloud Engineer"},
+            "azure": {"category": "cloud", "full": "Azure Cloud Engineer"},
+            "docker": {"category": "tool", "full": "Docker/DevOps Engineer"},
+            "kubernetes": {"category": "tool", "full": "Kubernetes Engineer"},
+            "machine learning": {"category": "field", "full": "Machine Learning Engineer"},
+            "data science": {"category": "field", "full": "Data Scientist"},
+            "frontend": {"category": "role", "full": "Frontend Developer"},
+            "backend": {"category": "role", "full": "Backend Developer"},
+            "fullstack": {"category": "role", "full": "Full Stack Developer"},
+            "devops": {"category": "role", "full": "DevOps Engineer"},
+            "senior": {"category": "level", "full": "Senior Developer"},
+            "junior": {"category": "level", "full": "Junior Developer"},
+            "lead": {"category": "level", "full": "Tech Lead"},
+        }
+        
+        # Find matching suggestions
+        for keyword, info in tech_keywords.items():
+            if keyword.startswith(query_lower) or query_lower in keyword:
+                # Count resumes with this keyword
+                stmt = select(Resume).where(
+                    or_(
+                        Resume.summary.ilike(f"%{keyword}%"),
+                        Resume.current_title.ilike(f"%{keyword}%"),
+                        Resume.raw_text.ilike(f"%{keyword}%")
+                    )
+                ).limit(1)
+                
+                result = await db.execute(stmt)
+                if result.scalar():
+                    suggestions.append({
+                        "suggestion": info["full"],
+                        "match": keyword,
+                        "category": info["category"],
+                        "candidate_count": 1  # Simplified for now
+                    })
+        
+        # Get job titles from existing resumes
+        if len(suggestions) < 5:
+            stmt = select(Resume.current_title).where(
+                Resume.current_title.ilike(f"%{query}%")
+            ).distinct().limit(5)
+            
+            result = await db.execute(stmt)
+            titles = result.scalars().all()
+            
+            for title in titles:
+                if title and title not in [s["suggestion"] for s in suggestions]:
+                    suggestions.append({
+                        "suggestion": title,
+                        "match": query,
+                        "category": "title",
+                        "candidate_count": 1
+                    })
+        
+        return suggestions[:10]  # Limit to 10 suggestions
+    
+    async def get_popular_tags(
+        self,
+        db: AsyncSession,
+        limit: int = 30
+    ) -> List[Dict[str, Any]]:
+        """Get popular skills and technologies from resumes."""
+        # Get all resumes with skills
+        stmt = select(Resume.skills).where(
+            Resume.skills.isnot(None),
+            Resume.status == 'active'
+        )
+        
+        result = await db.execute(stmt)
+        all_skills = result.scalars().all()
+        
+        # Count skill occurrences
+        skill_counts = {}
+        for skills_list in all_skills:
+            if skills_list:
+                for skill in skills_list:
+                    skill_lower = skill.lower()
+                    if skill_lower in skill_counts:
+                        skill_counts[skill_lower]["count"] += 1
+                    else:
+                        skill_counts[skill_lower] = {
+                            "name": skill,
+                            "count": 1,
+                            "category": self._categorize_skill(skill_lower)
+                        }
+        
+        # Sort by count and return top skills
+        sorted_skills = sorted(
+            skill_counts.values(),
+            key=lambda x: x["count"],
+            reverse=True
+        )
+        
+        return sorted_skills[:limit]
+    
+    def _categorize_skill(self, skill: str) -> str:
+        """Categorize a skill based on common patterns."""
+        skill_lower = skill.lower()
+        
+        # Programming languages
+        languages = ["python", "java", "javascript", "typescript", "c++", "c#", 
+                    "ruby", "go", "rust", "swift", "kotlin", "php", "r", "scala"]
+        if any(lang in skill_lower for lang in languages):
+            return "language"
+        
+        # Frameworks
+        frameworks = ["react", "angular", "vue", "django", "flask", "spring", 
+                     "express", "rails", "laravel", ".net", "tensorflow", "pytorch"]
+        if any(fw in skill_lower for fw in frameworks):
+            return "framework"
+        
+        # Tools & Technologies
+        tools = ["docker", "kubernetes", "jenkins", "git", "terraform", "ansible",
+                "elasticsearch", "redis", "mongodb", "postgresql", "mysql"]
+        if any(tool in skill_lower for tool in tools):
+            return "tool"
+        
+        # Cloud platforms
+        cloud = ["aws", "azure", "gcp", "google cloud", "cloud"]
+        if any(c in skill_lower for c in cloud):
+            return "cloud"
+        
+        # Default
+        return "skill"
 
 
 # Create singleton instance
