@@ -862,7 +862,7 @@ Note: This is a summary. Full scorecard requires system access.
             <CardContent>
               <ul className="space-y-2">
                 {scorecard.keyTakeaways && scorecard.keyTakeaways.length > 0 ? (
-                  scorecard.keyTakeaways.map((takeaway, idx) => (
+                  scorecard.keyTakeaways.map((takeaway: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-2">
                       <BrainIcon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                       <span>{takeaway}</span>
