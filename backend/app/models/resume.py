@@ -8,16 +8,6 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
-# Try to import pgvector, but make it optional
-try:
-    from pgvector.sqlalchemy import Vector
-    HAS_PGVECTOR = True
-except ImportError:
-    HAS_PGVECTOR = False
-    # Define a placeholder that will be treated as a regular column
-    def Vector(dim):
-        return None
-
 from app.db.base_class import Base
 
 
@@ -49,9 +39,8 @@ class Resume(Base):
     parsed_data = Column(JSON)  # Structured data from parsing
     
     # Search & AI
-    # Note: embedding field requires pgvector extension
-    # If not available, it will be stored as JSON
-    embedding = Column(JSON) if not HAS_PGVECTOR else Column(Vector(1536))
+    # Store embeddings as JSON array since Railway PostgreSQL doesn't have pgvector
+    embedding = Column(JSON)  # Store embeddings as JSON array
     keywords = Column(JSON)  # Extracted keywords
     skills = Column(JSON)  # Extracted skills
     
