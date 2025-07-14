@@ -1,0 +1,33 @@
+Kevin Rodriguez
+UI Developer
+kevinr@workmail.com | +1-568-633-8227 | Philadelphia, PA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+UI Developer with 6 years of experience creating engaging web applications and optimizing performance.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Frontend Engineer at System Solutions
+2023 - 2024
+• Developed responsive React applications with 99.9% uptime
+• Built reusable component library used across multiple projects
+
+React Developer at Machine Learning Co
+2020 - 2023
+• Developed responsive React applications with 99.9% uptime
+• Improved page load speed by 50% through optimization techniques
+
+UI Developer at Smart Solutions
+2019 - 2020
+• Built reusable component library used across multiple projects
+• Implemented design system ensuring consistent UI across products
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Engineering in Software Engineering
+California Institute of Technology, 2012
+
+SKILLS
+--------------------------------------------------
+Responsive Design, React, Redux, JavaScript, GraphQL, CSS3, Vue.js, Webpack

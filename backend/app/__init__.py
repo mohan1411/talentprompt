@@ -1,3 +1,3 @@
-"""TalentPrompt Backend Application."""
+"""Promtitude Backend Application."""
 
 __version__ = "0.1.0"

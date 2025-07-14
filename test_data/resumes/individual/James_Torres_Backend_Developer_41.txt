@@ -1,0 +1,28 @@
+James Torres
+Senior Backend Engineer
+jamest@promail.com | +1-883-443-8007 | Las Vegas, NV
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Backend Developer with 4 years of experience designing and implementing scalable server-side applications.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Python Developer at Data Dynamics
+2022 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Built event-driven architecture using message queues
+
+Backend Developer at Startup Hub
+2020 - 2022
+• Designed scalable backend systems handling 10K+ requests per second
+• Built event-driven architecture using message queues
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Computer Science
+Johns Hopkins University, 2020
+
+SKILLS
+--------------------------------------------------
+Node.js, Java, MongoDB, GraphQL, Microservices, PostgreSQL, AWS, Python

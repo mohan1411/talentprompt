@@ -1,8 +1,9 @@
 """Token schemas."""
 
 from typing import Optional
+from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class Token(BaseModel):
@@ -13,6 +14,13 @@ class Token(BaseModel):
 
 
 class TokenPayload(BaseModel):
-    """JWT token payload."""
+    """Token payload schema."""
     
-    sub: Optional[str] = None
+    sub: UUID | str
+    exp: Optional[int] = None
+    
+    @field_validator('sub', mode='before')
+    def convert_uuid_to_str(cls, v):
+        if isinstance(v, UUID):
+            return str(v)
+        return v

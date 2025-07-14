@@ -1,10 +1,10 @@
-# TalentPrompt Technology Stack
+# Promtitude Technology Stack
 
 **Last Updated**: July 2025
 
 ## 1. Overview
 
-This document outlines the technology choices for TalentPrompt, focusing on cutting-edge AI capabilities, performance, and EU AI Act compliance. All selections are based on 2025 best practices and proven scalability.
+This document outlines the technology choices for Promtitude, focusing on cutting-edge AI capabilities, performance, and EU AI Act compliance. All selections are based on 2025 best practices and proven scalability.
 
 ## 2. Core Technologies
 
@@ -47,18 +47,26 @@ This document outlines the technology choices for TalentPrompt, focusing on cutt
 
 ### 2.2 AI/ML Stack
 
-#### Primary LLM: **OpenAI o4-mini** (As of June 2025)
-**Why OpenAI o4-mini?**
-- **Quality**: Most capable model in the GPT family
-- **Efficiency**: Better cost/performance than o3
-- **Speed**: Optimized for production use
+#### Primary LLM: **GPT-4o-mini** (Updated January 2025)
+**Why GPT-4o-mini?**
+- **Cost-Efficiency**: 98% cheaper than GPT-4-turbo while maintaining excellent quality
+- **Performance**: 82% MMLU score - ideal for recruitment tasks
+- **Speed**: Low latency for real-time operations
+- **Scalability**: Enables high-volume operations at sustainable costs
 - **Reliability**: 99.9% uptime SLA
 
 **Use Cases:**
-- Query understanding
-- Resume summarization
-- Skill extraction
-- Match explanation
+- Query understanding and natural language search
+- Resume parsing and summarization
+- Interview question generation
+- Candidate analysis and matching
+- Real-time search suggestions
+- Skill extraction and categorization
+
+**Cost Comparison:**
+- GPT-4o-mini: $0.15/million input tokens, $0.60/million output tokens
+- GPT-4-turbo: $10.00/million input tokens, $30.00/million output tokens
+- **Savings**: ~98% reduction in AI operational costs
 
 #### Secondary LLM: **Claude 4 Sonnet**
 **Why Claude 4?**
@@ -305,8 +313,9 @@ This document outlines the technology choices for TalentPrompt, focusing on cutt
 
 ### 9.2 Emerging Technologies
 - **Vector Database**: Watch ChromaDB progress
-- **LLMs**: Monitor Anthropic Claude 5, GPT-5
+- **LLMs**: Monitor Anthropic Claude 5, GPT-5, consider GPT-4-turbo for premium tier
 - **Framework**: Consider Rust/Axum for hot paths
+- **Embeddings**: Evaluate text-embedding-3-small for cost optimization
 
 ---
 

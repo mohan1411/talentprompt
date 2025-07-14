@@ -1,13 +1,13 @@
-# TalentPrompt API Specification
+# Promtitude API Specification
 
 ## 1. API Overview
 
-The TalentPrompt API provides programmatic access to our AI-powered resume search platform. This document describes the REST API v1.0.
+The Promtitude API provides programmatic access to our AI-powered resume search platform. This document describes the REST API v1.0.
 
 ### Base URL
 ```
-Production: https://api.talentprompt.ai/v1
-Staging: https://staging-api.talentprompt.ai/v1
+Production: https://api.promtitude.ai/v1
+Staging: https://staging-api.promtitude.ai/v1
 ```
 
 ### Authentication
@@ -188,7 +188,7 @@ Perform a prompt-based search for candidates.
           ],
           "overall": "Strong match for senior Python developer role"
         },
-        "resume_url": "https://storage.talentprompt.ai/resumes/res_456def.pdf"
+        "resume_url": "https://storage.promtitude.ai/resumes/res_456def.pdf"
       }
     ],
     "facets": {
@@ -550,7 +550,7 @@ Share a list with team members.
 
 ### Connection
 ```javascript
-const ws = new WebSocket('wss://api.talentprompt.ai/v1/ws');
+const ws = new WebSocket('wss://api.promtitude.ai/v1/ws');
 ws.send(JSON.stringify({
   type: 'auth',
   token: 'your-api-token'
@@ -581,7 +581,7 @@ ws.onmessage = (event) => {
 
 ### Endpoint
 ```
-POST https://api.talentprompt.ai/graphql
+POST https://api.promtitude.ai/graphql
 ```
 
 ### Example Query
@@ -620,9 +620,9 @@ query SearchCandidates($query: String!, $filters: SearchFilters) {
 
 ### Python
 ```python
-from talentprompt import TalentPromptAPI
+from promtitude import PromtitudeAPI
 
-api = TalentPromptAPI(api_key="your-api-key")
+api = PromtitudeAPI(api_key="your-api-key")
 
 # Search for candidates
 results = api.search(
@@ -639,9 +639,9 @@ for candidate in results:
 
 ### JavaScript/TypeScript
 ```typescript
-import { TalentPrompt } from '@talentprompt/sdk';
+import { Promtitude } from '@promtitude/sdk';
 
-const client = new TalentPrompt({ apiKey: 'your-api-key' });
+const client = new Promtitude({ apiKey: 'your-api-key' });
 
 // Search with async/await
 const results = await client.search({
@@ -679,5 +679,5 @@ for await (const candidate of stream) {
 
 **API Version**: 1.0
 **Last Updated**: [Date]
-**OpenAPI Spec**: [https://api.talentprompt.ai/v1/openapi.json](https://api.talentprompt.ai/v1/openapi.json)
-**Status Page**: [https://status.talentprompt.ai](https://status.talentprompt.ai)
+**OpenAPI Spec**: [https://api.promtitude.ai/v1/openapi.json](https://api.promtitude.ai/v1/openapi.json)
+**Status Page**: [https://status.promtitude.ai](https://status.promtitude.ai)

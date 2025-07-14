@@ -1,8 +1,8 @@
-# TalentPrompt Database Schema
+# Promtitude Database Schema
 
 ## 1. Overview
 
-TalentPrompt uses PostgreSQL as the primary database with pgvector extension for vector operations. This document describes the complete database schema.
+Promtitude uses PostgreSQL as the primary database with pgvector extension for vector operations. This document describes the complete database schema.
 
 ## 2. Database Configuration
 

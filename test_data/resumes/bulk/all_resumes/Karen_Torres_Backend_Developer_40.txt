@@ -1,0 +1,23 @@
+Karen Torres
+Backend Developer
+karentorres@mail.com | +1-764-352-4608 | Portland, OR
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 3 years of backend focus, specializing in microservices architecture.
+
+WORK EXPERIENCE
+--------------------------------------------------
+API Developer at Tech Pioneers
+2021 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Implemented secure authentication and authorization systems
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Massachusetts Institute of Technology, 2010
+
+SKILLS
+--------------------------------------------------
+PostgreSQL, Node.js, AWS, GraphQL, Microservices, REST APIs, Docker, Redis

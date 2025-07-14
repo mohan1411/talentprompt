@@ -2,8 +2,9 @@
 
 from datetime import datetime
 from typing import Optional
+from uuid import UUID
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 # Shared properties
@@ -31,17 +32,28 @@ class UserUpdate(UserBase):
 
 # Properties shared by models stored in DB
 class UserInDBBase(UserBase):
-    id: str
+    id: UUID | str
     created_at: datetime
     updated_at: Optional[datetime]
+    last_login: Optional[datetime] = None
+
+    @field_validator('id', mode='before')
+    def convert_uuid_to_str(cls, v):
+        if isinstance(v, UUID):
+            return str(v)
+        return v
 
     class Config:
         from_attributes = True
+        json_encoders = {
+            UUID: lambda v: str(v),
+            datetime: lambda v: v.isoformat() if v else None
+        }
 
 
 # Properties to return to client
 class User(UserInDBBase):
-    pass
+    id: str  # Ensure id is always string in response
 
 
 # Properties stored in DB

@@ -1,0 +1,28 @@
+Nancy Anderson
+Python Developer
+nancy.anderson@promail.com | +1-213-684-3757 | Detroit, MI
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Senior Backend Engineer with 6 years of expertise in API development and database optimization.
+
+WORK EXPERIENCE
+--------------------------------------------------
+API Developer at Tech Corp
+2022 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Built event-driven architecture using message queues
+
+Senior Backend Engineer at Tech Startup
+2018 - 2022
+• Built event-driven architecture using message queues
+• Optimized database queries reducing response time by 60%
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Artificial Intelligence
+Northwestern University, 2018
+
+SKILLS
+--------------------------------------------------
+Redis, Docker, Microservices, Java, Python, MongoDB, AWS, REST APIs

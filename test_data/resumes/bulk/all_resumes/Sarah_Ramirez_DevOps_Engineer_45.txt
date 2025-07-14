@@ -1,0 +1,33 @@
+Sarah Ramirez
+Infrastructure Engineer
+sramirez@techmail.com | +1-648-707-2731 | Jacksonville, FL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Cloud Engineer with 9 years of experience optimizing infrastructure and ensuring high availability.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Site Reliability Engineer at Software House
+2022 - 2024
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Managed Kubernetes clusters serving production workloads
+
+DevOps Engineer at AI Innovations
+2019 - 2022
+• Automated infrastructure provisioning using Terraform and Ansible
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+
+DevOps Engineer at System Solutions
+2015 - 2019
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Artificial Intelligence
+Cornell University, 2014
+
+SKILLS
+--------------------------------------------------
+Ansible, Azure, GCP, AWS, Kubernetes, Jenkins, Monitoring, Linux

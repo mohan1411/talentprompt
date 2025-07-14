@@ -1,0 +1,28 @@
+Robert Campbell
+React Developer
+robertc@mail.com | +1-614-345-1153 | Portland, OR
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+UI Developer with 6 years of experience creating engaging web applications and optimizing performance.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Frontend Engineer at Cyber Security Corp
+2023 - 2024
+• Improved page load speed by 50% through optimization techniques
+• Implemented design system ensuring consistent UI across products
+
+Senior Frontend Engineer at Digital Ventures
+2019 - 2023
+• Implemented design system ensuring consistent UI across products
+• Developed responsive React applications with 99.9% uptime
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Physics
+University of Washington, 2018
+
+SKILLS
+--------------------------------------------------
+HTML5, Webpack, JavaScript, TypeScript, React, CSS3, Vue.js, GraphQL

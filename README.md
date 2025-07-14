@@ -1,4 +1,4 @@
-# TalentPrompt 🚀
+# Promtitude 🚀
 
 > AI-Powered Recruitment Platform with Natural Language Search
 
@@ -11,7 +11,7 @@
 
 ## 🎯 Overview
 
-TalentPrompt revolutionizes recruitment by enabling natural language searches to find the perfect candidates. Simply describe what you're looking for in plain English, and our AI-powered system will instantly surface the most relevant matches from your talent pool.
+Promtitude revolutionizes recruitment by enabling natural language searches to find the perfect candidates. Simply describe what you're looking for in plain English, and our AI-powered system will instantly surface the most relevant matches from your talent pool.
 
 ### Key Features
 
@@ -25,7 +25,7 @@ TalentPrompt revolutionizes recruitment by enabling natural language searches to
 
 ## 🏗️ Architecture
 
-TalentPrompt is built on a modern, scalable microservices architecture:
+Promtitude is built on a modern, scalable microservices architecture:
 
 ```
 ┌─────────────────────┐     ┌─────────────────────┐     ┌─────────────────────┐
@@ -144,4 +144,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the TalentPrompt Team**
+**Built with ❤️ by the Promtitude Team**

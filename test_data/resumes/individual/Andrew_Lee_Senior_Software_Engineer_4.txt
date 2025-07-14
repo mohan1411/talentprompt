@@ -1,0 +1,28 @@
+Andrew Lee
+Senior Software Engineer
+alee@promail.com | +1-708-835-9460 | Phoenix, AZ
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Experienced Software Engineer with 5 years of expertise in full-stack development, cloud architecture, and team leadership.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Lead Developer at Big Data Inc
+2023 - 2024
+• Led development of microservices architecture serving 1M+ daily users
+• Implemented CI/CD pipelines reducing deployment time by 70%
+
+Senior Software Engineer at Future Systems
+2019 - 2023
+• Mentored team of 5 junior developers and conducted code reviews
+• Implemented CI/CD pipelines reducing deployment time by 70%
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Data Science
+Northwestern University, 2013
+
+SKILLS
+--------------------------------------------------
+AWS, Python, Java, REST APIs, CI/CD, Microservices, Git, React

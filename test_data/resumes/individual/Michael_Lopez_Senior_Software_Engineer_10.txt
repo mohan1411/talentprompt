@@ -1,0 +1,28 @@
+Michael Lopez
+Senior Software Engineer
+mlopez@techmail.com | +1-232-780-9526 | Fort Worth, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 6 years of experience in modern web technologies and distributed systems.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Software Engineer at Future Systems
+2021 - 2024
+• Implemented CI/CD pipelines reducing deployment time by 70%
+• Mentored team of 5 junior developers and conducted code reviews
+
+Software Engineer at Digital Solutions Inc
+2018 - 2021
+• Mentored team of 5 junior developers and conducted code reviews
+• Implemented CI/CD pipelines reducing deployment time by 70%
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Computer Science
+Georgia Institute of Technology, 2010
+
+SKILLS
+--------------------------------------------------
+Python, REST APIs, Microservices, JavaScript, Kubernetes, Git, AWS, Docker

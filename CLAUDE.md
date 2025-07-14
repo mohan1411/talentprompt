@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TalentPrompt is an AI-powered recruitment platform that enables natural language searches to find candidates. The project is currently in the documentation/planning phase with comprehensive technical specifications but no implemented source code yet.
+Promtitude is an AI-powered recruitment platform that enables natural language searches to find candidates. The project has evolved from the initial TalentPrompt concept and now includes a fully functional implementation with advanced features like AI Interview Copilot and real-time transcription.
 
 ## Development Commands
 
@@ -106,9 +106,9 @@ This project has built-in compliance features for the EU AI Act (required by Aug
 ## File Organization
 
 ```
-TalentPrompt/
-├── backend/           # FastAPI backend (to be implemented)
-├── frontend/          # Next.js frontend (to be implemented)
+Promtitude/
+├── backend/           # FastAPI backend (fully implemented)
+├── frontend/          # Next.js frontend (fully implemented)
 ├── docs/              # Comprehensive documentation
 │   ├── technical/     # Architecture, API specs, database schema
 │   ├── development/   # Setup guides

@@ -1,0 +1,23 @@
+Priya Thomas
+Senior Frontend Engineer
+priyathomas@workmail.com | +1-619-954-6366 | San Francisco, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+UI Developer with 1 years of experience creating engaging web applications and optimizing performance.
+
+WORK EXPERIENCE
+--------------------------------------------------
+UI Developer at Web Works
+2023 - 2024
+• Developed responsive React applications with 99.9% uptime
+• Implemented design system ensuring consistent UI across products
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+University of California, Los Angeles, 2019
+
+SKILLS
+--------------------------------------------------
+Redux, Webpack, React, Vue.js, Angular, CSS3, GraphQL, HTML5

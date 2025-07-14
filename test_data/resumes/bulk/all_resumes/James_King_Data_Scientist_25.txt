@@ -1,0 +1,23 @@
+James King
+Data Analyst
+james.king@promail.com | +1-365-616-9887 | Phoenix, AZ
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Analytical Data Scientist with 2 years of experience transforming data into actionable insights.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Data Scientist at System Solutions
+2022 - 2024
+• Created dashboards and visualizations for executive decision making
+• Implemented recommendation system increasing user engagement by 40%
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Engineering in Software Engineering
+California Institute of Technology, 2012
+
+SKILLS
+--------------------------------------------------
+Machine Learning, Python, Pandas, TensorFlow, Deep Learning, NumPy, SQL, Statistics

@@ -1,0 +1,28 @@
+Sharon Sharma
+Cloud Engineer
+sharon.sharma@workmail.com | +1-908-644-6620 | Washington, DC
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Site Reliability Engineer with 3 years of expertise in CI/CD pipelines and container orchestration.
+
+WORK EXPERIENCE
+--------------------------------------------------
+DevOps Engineer at Code Factory
+2022 - 2024
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Managed Kubernetes clusters serving production workloads
+
+DevOps Engineer at Digital Ventures
+2021 - 2022
+• Automated infrastructure provisioning using Terraform and Ansible
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Massachusetts Institute of Technology, 2019
+
+SKILLS
+--------------------------------------------------
+Terraform, Monitoring, Docker, CI/CD, AWS, Kubernetes, Linux, Azure

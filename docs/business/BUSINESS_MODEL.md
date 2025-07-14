@@ -1,8 +1,8 @@
-# TalentPrompt Business Model
+# Promtitude Business Model
 
 ## 1. Executive Summary
 
-TalentPrompt operates on a SaaS (Software as a Service) business model with tiered pricing, offering AI-powered recruitment solutions to businesses of all sizes. Our model focuses on sustainable growth through subscription revenue, usage-based pricing for enterprise clients, and value-added services.
+Promtitude operates on a SaaS (Software as a Service) business model with tiered pricing, offering AI-powered recruitment solutions to businesses of all sizes. Our model focuses on sustainable growth through subscription revenue, usage-based pricing for enterprise clients, and value-added services.
 
 ## 2. Revenue Streams
 
@@ -154,7 +154,7 @@ Price based on value delivered:
 
 ### 4.2 Competitive Positioning
 
-| Feature | TalentPrompt | Traditional ATS | AI Competitors |
+| Feature | Promtitude | Traditional ATS | AI Competitors |
 |---------|--------------|-----------------|----------------|
 | Price | $299-2,999 | $500-5,000 | $1,000-10,000 |
 | AI Search | ✓ | ✗ | Limited |

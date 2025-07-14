@@ -1,10 +1,10 @@
-# TalentPrompt Development Roadmap
+# Promtitude Development Roadmap
 
 **Last Updated**: July 7, 2025
 
 ## Overview
 
-This roadmap outlines the development phases for TalentPrompt, from MVP to full enterprise solution with EU AI Act compliance. Each phase builds upon the previous, with clearly defined deliverables and success metrics.
+This roadmap outlines the development phases for Promtitude, from MVP to full enterprise solution with EU AI Act compliance. Each phase builds upon the previous, with clearly defined deliverables and success metrics.
 
 ## Critical Update: EU AI Act Compliance
 

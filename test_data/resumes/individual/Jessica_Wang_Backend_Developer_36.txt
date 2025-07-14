@@ -1,0 +1,28 @@
+Jessica Wang
+Senior Backend Engineer
+jessica.wang@email.com | +1-343-944-8600 | San Antonio, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 9 years of backend focus, specializing in microservices architecture.
+
+WORK EXPERIENCE
+--------------------------------------------------
+API Developer at Digital Ventures
+2021 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Optimized database queries reducing response time by 60%
+
+API Developer at Machine Learning Co
+2020 - 2021
+• Built event-driven architecture using message queues
+• Implemented secure authentication and authorization systems
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Information Technology
+Massachusetts Institute of Technology, 2013
+
+SKILLS
+--------------------------------------------------
+Docker, AWS, Microservices, PostgreSQL, GraphQL, Redis, Java, Python

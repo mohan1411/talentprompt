@@ -1,0 +1,33 @@
+Jane Thompson
+DevOps Engineer
+jthompson@mail.com | +1-963-467-6244 | Portland, OR
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Site Reliability Engineer with 8 years of expertise in CI/CD pipelines and container orchestration.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Infrastructure Engineer at Digital Ventures
+2022 - 2024
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+Cloud Engineer at Code Factory
+2020 - 2022
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+
+Infrastructure Engineer at Next Gen Tech
+2016 - 2020
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Automated infrastructure provisioning using Terraform and Ansible
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Data Science
+Georgia Institute of Technology, 2011
+
+SKILLS
+--------------------------------------------------
+Azure, Ansible, Jenkins, Linux, Monitoring, Docker, CI/CD, Terraform

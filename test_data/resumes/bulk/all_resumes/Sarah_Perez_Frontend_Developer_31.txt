@@ -1,0 +1,28 @@
+Sarah Perez
+UI Developer
+sarahp@mail.com | +1-892-455-9437 | Oakland, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Frontend Engineer with 4 years of expertise in modern JavaScript frameworks and UI/UX best practices.
+
+WORK EXPERIENCE
+--------------------------------------------------
+UI Developer at App Builders
+2023 - 2024
+• Implemented design system ensuring consistent UI across products
+• Built reusable component library used across multiple projects
+
+Senior Frontend Engineer at Smart Solutions
+2020 - 2023
+• Improved page load speed by 50% through optimization techniques
+• Developed responsive React applications with 99.9% uptime
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Physics
+Princeton University, 2019
+
+SKILLS
+--------------------------------------------------
+JavaScript, Redux, CSS3, HTML5, TypeScript, Vue.js, GraphQL, Responsive Design

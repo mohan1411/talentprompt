@@ -1,8 +1,8 @@
-# TalentPrompt Development Setup Guide
+# Promtitude Development Setup Guide
 
 ## 1. Prerequisites
 
-Before setting up TalentPrompt, ensure you have the following installed:
+Before setting up Promtitude, ensure you have the following installed:
 
 ### Required Software
 - **Python** 3.12 or higher (3.12 recommended as of July 2025)
@@ -28,8 +28,8 @@ Before setting up TalentPrompt, ensure you have the following installed:
 ### 2.1 Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/talentprompt.git
-cd talentprompt
+git clone https://github.com/your-org/promtitude.git
+cd promtitude
 ```
 
 ### 2.2 Environment Variables
@@ -48,13 +48,13 @@ cp frontend/.env.example frontend/.env
 
 ```env
 # Application
-APP_NAME=TalentPrompt
+APP_NAME=Promtitude
 APP_ENV=development
 DEBUG=true
 SECRET_KEY=your-secret-key-here
 
 # Database
-DATABASE_URL=postgresql://postgres:password@localhost:5432/talentprompt
+DATABASE_URL=postgresql://postgres:password@localhost:5432/promtitude
 DATABASE_POOL_SIZE=20
 DATABASE_MAX_OVERFLOW=0
 
@@ -77,21 +77,21 @@ EMBEDDING_MODEL=text-embedding-ada-002
 # Vector Database
 PINECONE_API_KEY=your-pinecone-api-key
 PINECONE_ENVIRONMENT=us-east-1-aws
-PINECONE_INDEX_NAME=talentprompt-dev
+PINECONE_INDEX_NAME=promtitude-dev
 
 # Search
 ELASTICSEARCH_URL=http://localhost:9200
-ELASTICSEARCH_INDEX_PREFIX=talentprompt_
+ELASTICSEARCH_INDEX_PREFIX=promtitude_
 
 # Storage
 AWS_ACCESS_KEY_ID=your-aws-key
 AWS_SECRET_ACCESS_KEY=your-aws-secret
-AWS_S3_BUCKET=talentprompt-resumes-dev
+AWS_S3_BUCKET=promtitude-resumes-dev
 AWS_REGION=us-east-1
 
 # Email
 SENDGRID_API_KEY=your-sendgrid-key
-FROM_EMAIL=noreply@talentprompt.ai
+FROM_EMAIL=noreply@promtitude.com
 
 # Monitoring
 SENTRY_DSN=your-sentry-dsn
@@ -135,10 +135,10 @@ docker-compose logs -f postgres
 
 ```bash
 # Create database
-createdb talentprompt
+createdb promtitude
 
 # Install extensions
-psql talentprompt << EOF
+psql promtitude << EOF
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
@@ -240,7 +240,7 @@ open http://localhost:3000
 docker-compose up -d elasticsearch
 
 # Create indices
-curl -X PUT "localhost:9200/talentprompt_resumes" -H 'Content-Type: application/json' -d @scripts/elasticsearch/resume_mapping.json
+curl -X PUT "localhost:9200/promtitude_resumes" -H 'Content-Type: application/json' -d @scripts/elasticsearch/resume_mapping.json
 ```
 
 ### 6.2 Vector Database (Pinecone)
@@ -466,4 +466,4 @@ def slow_function():
 **Document Version**: 1.0
 **Last Updated**: [Date]
 **Maintained By**: Development Team
-**Support**: dev@talentprompt.ai
+**Support**: dev@promtitude.com

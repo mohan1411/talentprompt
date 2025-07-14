@@ -1,0 +1,730 @@
+"""Interview management endpoints."""
+
+import logging
+from typing import List, Optional, Dict, Any
+from uuid import UUID
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, and_, func
+
+from app import crud
+from app.api import deps
+from app.models.user import User
+from app.models.resume import Resume
+from app.models.interview import (
+    InterviewSession, InterviewQuestion, InterviewFeedback,
+    InterviewStatus, QuestionCategory
+)
+from app.schemas.interview import (
+    InterviewPrepareRequest, InterviewPreparationResponse,
+    InterviewSessionCreate, InterviewSessionUpdate, InterviewSessionResponse,
+    GenerateQuestionsRequest, InterviewQuestionResponse,
+    InterviewFeedbackCreate, QuestionResponseUpdate,
+    InterviewAnalyticsResponse, InterviewScorecardResponse
+)
+from app.services.interview_ai import interview_ai_service
+
+router = APIRouter()
+logger = logging.getLogger(__name__)
+
+
+@router.post("/prepare", response_model=InterviewPreparationResponse)
+async def prepare_interview(
+    request: InterviewPrepareRequest,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewPreparationResponse:
+    """Prepare for an interview with AI-generated questions and insights."""
+    
+    # Get resume
+    resume = await crud.resume.get(db, id=request.resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Analyze candidate
+    analysis = await interview_ai_service.analyze_candidate_for_interview(
+        resume=resume,
+        job_position=request.job_position,
+        job_requirements=request.job_requirements
+    )
+    
+    # Generate questions
+    questions_data = await interview_ai_service.generate_interview_questions(
+        resume=resume,
+        job_position=request.job_position,
+        job_requirements=request.job_requirements,
+        focus_areas=request.focus_areas,
+        difficulty_level=request.difficulty_level,
+        num_questions=request.num_questions,
+        interview_type=request.interview_type
+    )
+    
+    # Create interview session
+    session = InterviewSession(
+        resume_id=request.resume_id,
+        interviewer_id=current_user.id,
+        job_position=request.job_position,
+        job_requirements=request.job_requirements,
+        interview_type=request.interview_type,
+        preparation_notes={
+            "analysis": analysis,
+            "company_culture": request.company_culture,
+            "focus_areas": request.focus_areas
+        },
+        suggested_questions=questions_data["questions"]
+    )
+    
+    db.add(session)
+    await db.flush()
+    
+    # Create question records
+    question_responses = []
+    for q_data in questions_data["questions"]:
+        question = InterviewQuestion(
+            session_id=session.id,
+            question_text=q_data["question_text"],
+            category=q_data["category"],
+            difficulty_level=q_data["difficulty_level"],
+            ai_generated=True,
+            generation_context=q_data.get("generation_context"),
+            expected_answer_points=q_data.get("expected_answer_points", []),
+            order_index=q_data.get("order_index", 0)
+        )
+        db.add(question)
+        await db.flush()
+        
+        question_responses.append(InterviewQuestionResponse.model_validate(question))
+    
+    await db.commit()
+    
+    # Build response
+    return InterviewPreparationResponse(
+        session_id=session.id,
+        candidate_summary=analysis["candidate_summary"],
+        key_talking_points=analysis["key_talking_points"],
+        areas_to_explore=analysis["areas_to_explore"],
+        red_flags=analysis["red_flags"],
+        suggested_questions=question_responses,
+        interview_structure={
+            "opening": "5 minutes - Introduction and rapport building",
+            "main": f"{request.num_questions * 3} minutes - Core questions",
+            "candidate_questions": "10 minutes - Candidate's questions",
+            "closing": "5 minutes - Next steps and timeline"
+        },
+        estimated_duration=request.num_questions * 3 + 20  # 3 minutes per question + 20 minutes buffer
+    )
+
+
+@router.get("/sessions", response_model=List[InterviewSessionResponse])
+async def get_interview_sessions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    status: Optional[InterviewStatus] = None,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> List[InterviewSessionResponse]:
+    """Get interview sessions for current user."""
+    
+    query = select(InterviewSession).where(
+        InterviewSession.interviewer_id == current_user.id
+    )
+    
+    if status:
+        query = query.where(InterviewSession.status == status)
+    
+    query = query.order_by(InterviewSession.created_at.desc())
+    query = query.offset(skip).limit(limit)
+    
+    result = await db.execute(query)
+    sessions = result.scalars().all()
+    
+    # Convert to response models without questions for list view
+    responses = []
+    for session in sessions:
+        response_dict = {
+            "id": session.id,
+            "resume_id": session.resume_id,
+            "interviewer_id": session.interviewer_id,
+            "job_position": session.job_position,
+            "job_requirements": session.job_requirements,
+            "interview_type": session.interview_type,
+            "scheduled_at": session.scheduled_at,
+            "duration_minutes": session.duration_minutes,
+            "status": session.status,
+            "started_at": session.started_at,
+            "ended_at": session.ended_at,
+            "preparation_notes": session.preparation_notes,
+            "suggested_questions": session.suggested_questions,
+            "transcript": session.transcript,
+            "notes": session.notes,
+            "scorecard": session.scorecard,
+            "overall_rating": session.overall_rating,
+            "recommendation": session.recommendation,
+            "strengths": session.strengths,
+            "concerns": session.concerns,
+            "created_at": session.created_at,
+            "updated_at": session.updated_at,
+            "questions": []  # Don't load questions for list view
+        }
+        responses.append(InterviewSessionResponse(**response_dict))
+    
+    return responses
+
+
+@router.get("/sessions/{session_id}", response_model=InterviewSessionResponse)
+async def get_interview_session(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewSessionResponse:
+    """Get a specific interview session."""
+    
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    # Create response dict from session
+    response_dict = {
+        "id": session.id,
+        "resume_id": session.resume_id,
+        "interviewer_id": session.interviewer_id,
+        "job_position": session.job_position,
+        "job_requirements": session.job_requirements,
+        "interview_type": session.interview_type,
+        "scheduled_at": session.scheduled_at,
+        "duration_minutes": session.duration_minutes,
+        "status": session.status,
+        "started_at": session.started_at,
+        "ended_at": session.ended_at,
+        "preparation_notes": session.preparation_notes,
+        "suggested_questions": session.suggested_questions,
+        "transcript": session.transcript,
+        "notes": session.notes,
+        "scorecard": session.scorecard,
+        "overall_rating": session.overall_rating,
+        "recommendation": session.recommendation,
+        "strengths": session.strengths,
+        "concerns": session.concerns,
+        "created_at": session.created_at,
+        "updated_at": session.updated_at
+    }
+    
+    # Load questions separately
+    questions_query = select(InterviewQuestion).where(
+        InterviewQuestion.session_id == session_id
+    ).order_by(InterviewQuestion.order_index)
+    
+    questions_result = await db.execute(questions_query)
+    questions = questions_result.scalars().all()
+    
+    response_dict["questions"] = [InterviewQuestionResponse.model_validate(q) for q in questions]
+    
+    return InterviewSessionResponse(**response_dict)
+
+
+@router.patch("/sessions/{session_id}", response_model=InterviewSessionResponse)
+async def update_interview_session(
+    session_id: UUID,
+    update_data: InterviewSessionUpdate,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewSessionResponse:
+    """Update an interview session."""
+    
+    # Get session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    # Update fields
+    update_dict = update_data.model_dump(exclude_unset=True)
+    
+    # Handle status transitions
+    if "status" in update_dict:
+        if update_dict["status"] == InterviewStatus.IN_PROGRESS and not session.started_at:
+            session.started_at = datetime.utcnow()
+        elif update_dict["status"] == InterviewStatus.COMPLETED and not session.ended_at:
+            session.ended_at = datetime.utcnow()
+            # Calculate duration if we have both timestamps
+            if session.started_at:
+                duration = (session.ended_at - session.started_at).total_seconds() / 60
+                session.duration_minutes = int(duration)
+    
+    for field, value in update_dict.items():
+        setattr(session, field, value)
+    
+    await db.commit()
+    await db.refresh(session)
+    
+    # Create response dict from session
+    response_dict = {
+        "id": session.id,
+        "resume_id": session.resume_id,
+        "interviewer_id": session.interviewer_id,
+        "job_position": session.job_position,
+        "job_requirements": session.job_requirements,
+        "interview_type": session.interview_type,
+        "scheduled_at": session.scheduled_at,
+        "duration_minutes": session.duration_minutes,
+        "status": session.status,
+        "started_at": session.started_at,
+        "ended_at": session.ended_at,
+        "preparation_notes": session.preparation_notes,
+        "suggested_questions": session.suggested_questions,
+        "transcript": session.transcript,
+        "notes": session.notes,
+        "scorecard": session.scorecard,
+        "overall_rating": session.overall_rating,
+        "recommendation": session.recommendation,
+        "strengths": session.strengths,
+        "concerns": session.concerns,
+        "created_at": session.created_at,
+        "updated_at": session.updated_at
+    }
+    
+    # Load questions for response
+    questions_query = select(InterviewQuestion).where(
+        InterviewQuestion.session_id == session_id
+    ).order_by(InterviewQuestion.order_index)
+    
+    questions_result = await db.execute(questions_query)
+    questions = questions_result.scalars().all()
+    
+    response_dict["questions"] = [InterviewQuestionResponse.model_validate(q) for q in questions]
+    
+    return InterviewSessionResponse(**response_dict)
+
+
+@router.post("/sessions/{session_id}/questions", response_model=List[InterviewQuestionResponse])
+async def generate_more_questions(
+    session_id: UUID,
+    request: GenerateQuestionsRequest,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> List[InterviewQuestionResponse]:
+    """Generate additional questions for an interview session."""
+    
+    # Get session
+    session = await get_interview_session(session_id, db, current_user)
+    
+    # Get resume
+    resume = await crud.resume.get(db, id=session.resume_id)
+    
+    # Generate questions
+    questions_data = await interview_ai_service.generate_interview_questions(
+        resume=resume,
+        job_position=session.job_position,
+        job_requirements=session.job_requirements,
+        difficulty_level=request.difficulty_level or 3,
+        num_questions=request.num_questions,
+        interview_type=request.category.value if request.category else "general"
+    )
+    
+    # Create question records
+    question_responses = []
+    
+    # Get current max order index
+    max_order_query = select(func.max(InterviewQuestion.order_index)).where(
+        InterviewQuestion.session_id == session_id
+    )
+    max_order_result = await db.execute(max_order_query)
+    max_order = max_order_result.scalar() or 0
+    
+    for i, q_data in enumerate(questions_data["questions"]):
+        question = InterviewQuestion(
+            session_id=session_id,
+            question_text=q_data["question_text"],
+            category=q_data["category"],
+            difficulty_level=q_data["difficulty_level"],
+            ai_generated=True,
+            generation_context=request.context,
+            expected_answer_points=q_data.get("expected_answer_points", []),
+            order_index=max_order + i + 1
+        )
+        db.add(question)
+        await db.flush()
+        
+        question_responses.append(InterviewQuestionResponse.model_validate(question))
+    
+    await db.commit()
+    
+    return question_responses
+
+
+@router.put("/questions/{question_id}/response", response_model=InterviewQuestionResponse)
+async def update_question_response(
+    question_id: UUID,
+    update_data: QuestionResponseUpdate,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewQuestionResponse:
+    """Update a question's response data."""
+    
+    # Get question and verify access
+    query = select(InterviewQuestion).join(InterviewSession).where(
+        and_(
+            InterviewQuestion.id == question_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    question = result.scalar_one_or_none()
+    
+    if not question:
+        raise HTTPException(status_code=404, detail="Question not found")
+    
+    # Update fields
+    for field, value in update_data.model_dump(exclude_unset=True).items():
+        setattr(question, field, value)
+    
+    if update_data.asked and not question.asked_at:
+        question.asked_at = datetime.utcnow()
+    
+    await db.commit()
+    await db.refresh(question)
+    
+    return InterviewQuestionResponse.model_validate(question)
+
+
+@router.post("/sessions/{session_id}/feedback", response_model=Dict)
+async def add_interview_feedback(
+    session_id: UUID,
+    feedback_data: InterviewFeedbackCreate,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Dict:
+    """Add feedback for an interview session."""
+    
+    # Verify session exists
+    session_query = select(InterviewSession).where(InterviewSession.id == session_id)
+    session_result = await db.execute(session_query)
+    session = session_result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    # Create feedback
+    feedback = InterviewFeedback(
+        session_id=session_id,
+        reviewer_id=current_user.id,
+        **feedback_data.model_dump(exclude={"session_id"})
+    )
+    
+    db.add(feedback)
+    await db.commit()
+    
+    return {"message": "Feedback added successfully", "feedback_id": str(feedback.id)}
+
+
+@router.get("/sessions/{session_id}/scorecard", response_model=InterviewScorecardResponse)
+async def generate_interview_scorecard(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewScorecardResponse:
+    """Generate a comprehensive scorecard for an interview session."""
+    
+    # Get session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    # Get resume
+    resume = await crud.resume.get(db, id=session.resume_id)
+    
+    # Get question responses
+    questions_query = select(InterviewQuestion).where(
+        and_(
+            InterviewQuestion.session_id == session_id,
+            InterviewQuestion.asked == True
+        )
+    )
+    questions_result = await db.execute(questions_query)
+    questions = questions_result.scalars().all()
+    
+    # Generate scorecard
+    responses_data = [
+        {
+            "question_text": q.question_text,
+            "response_summary": q.response_summary,
+            "response_rating": q.response_rating,
+            "category": q.category.value if hasattr(q.category, 'value') else str(q.category)
+        }
+        for q in questions
+    ]
+    
+    logger.info(f"Generating scorecard for session {session_id} with {len(questions)} rated questions")
+    
+    scorecard_data = await interview_ai_service.generate_interview_scorecard(
+        session_data={
+            "job_position": session.job_position,
+            "duration_minutes": session.duration_minutes
+        },
+        responses=responses_data
+    )
+    
+    # Update session with scorecard
+    session.scorecard = scorecard_data
+    session.overall_rating = scorecard_data.get("overall_rating")
+    session.recommendation = scorecard_data.get("recommendation")
+    session.strengths = scorecard_data.get("strengths", [])
+    session.concerns = scorecard_data.get("concerns", [])
+    
+    await db.commit()
+    
+    return InterviewScorecardResponse(
+        session_id=session_id,
+        candidate_name=f"{resume.first_name} {resume.last_name}",
+        position=session.job_position,
+        interview_date=session.created_at,
+        overall_rating=scorecard_data.get("overall_rating", 0),
+        recommendation=scorecard_data.get("recommendation", "maybe"),
+        technical_skills=scorecard_data.get("technical_skills", {}),
+        soft_skills=scorecard_data.get("soft_skills", {}),
+        culture_fit=scorecard_data.get("culture_fit", 3.0),
+        strengths=scorecard_data.get("strengths", []),
+        concerns=scorecard_data.get("concerns", []),
+        next_steps=scorecard_data.get("next_steps", []),
+        interviewer_notes=session.notes or "",
+        key_takeaways=session.key_talking_points if hasattr(session, 'key_talking_points') else [],
+        percentile_rank=scorecard_data.get("percentile_rank"),
+        similar_candidates=[]  # TODO: Implement similar candidate search
+    )
+
+
+@router.post("/sessions/{session_id}/schedule-next", response_model=InterviewPreparationResponse)
+async def schedule_next_round(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewPreparationResponse:
+    """Schedule a follow-up interview round based on previous session performance."""
+    
+    # Get previous session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    previous_session = result.scalar_one_or_none()
+    
+    if not previous_session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    if previous_session.status != InterviewStatus.COMPLETED:
+        raise HTTPException(status_code=400, detail="Previous interview must be completed first")
+    
+    # Get resume
+    resume = await crud.resume.get(db, id=previous_session.resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Get previous questions and responses
+    questions_query = select(InterviewQuestion).where(
+        and_(
+            InterviewQuestion.session_id == session_id,
+            InterviewQuestion.asked == True
+        )
+    )
+    questions_result = await db.execute(questions_query)
+    previous_questions = questions_result.scalars().all()
+    
+    # Prepare context for follow-up
+    previous_performance = {
+        "overall_rating": previous_session.overall_rating,
+        "recommendation": previous_session.recommendation,
+        "strengths": previous_session.strengths or [],
+        "concerns": previous_session.concerns or [],
+        "questions_asked": [
+            {
+                "question": q.question_text,
+                "rating": q.response_rating,
+                "category": q.category.value if hasattr(q.category, 'value') else str(q.category)
+            }
+            for q in previous_questions
+        ]
+    }
+    
+    # Determine next interview type
+    next_interview_type = "final"  # Default to final round
+    if previous_session.interview_type == "general":
+        next_interview_type = "technical"
+    elif previous_session.interview_type == "technical":
+        next_interview_type = "behavioral"
+    elif previous_session.interview_type == "behavioral":
+        next_interview_type = "final"
+    
+    # Generate follow-up analysis and questions
+    analysis = await interview_ai_service.analyze_candidate_for_followup(
+        resume=resume,
+        job_position=previous_session.job_position,
+        job_requirements=previous_session.job_requirements,
+        previous_performance=previous_performance
+    )
+    
+    questions_data = await interview_ai_service.generate_followup_questions(
+        resume=resume,
+        job_position=previous_session.job_position,
+        job_requirements=previous_session.job_requirements,
+        previous_performance=previous_performance,
+        interview_type=next_interview_type,
+        focus_areas=previous_session.concerns or []
+    )
+    
+    # Create new interview session
+    new_session = InterviewSession(
+        resume_id=previous_session.resume_id,
+        interviewer_id=current_user.id,
+        job_position=previous_session.job_position,
+        job_requirements=previous_session.job_requirements,
+        interview_type=next_interview_type,
+        preparation_notes={
+            "analysis": analysis,
+            "previous_session_id": str(session_id),
+            "previous_performance": previous_performance,
+            "round_number": (previous_session.preparation_notes or {}).get("round_number", 1) + 1
+        },
+        suggested_questions=questions_data["questions"]
+    )
+    
+    db.add(new_session)
+    await db.flush()
+    
+    # Create question records
+    question_responses = []
+    for q_data in questions_data["questions"]:
+        question = InterviewQuestion(
+            session_id=new_session.id,
+            question_text=q_data["question_text"],
+            category=q_data["category"],
+            difficulty_level=q_data["difficulty_level"],
+            ai_generated=True,
+            generation_context=f"Follow-up from session {session_id}",
+            expected_answer_points=q_data.get("expected_answer_points", []),
+            order_index=q_data.get("order_index", 0)
+        )
+        db.add(question)
+        await db.flush()
+        
+        question_responses.append(InterviewQuestionResponse.model_validate(question))
+    
+    await db.commit()
+    
+    # Build response
+    return InterviewPreparationResponse(
+        session_id=new_session.id,
+        candidate_summary=analysis["candidate_summary"],
+        key_talking_points=analysis["key_talking_points"],
+        areas_to_explore=analysis["areas_to_explore"],
+        red_flags=analysis["red_flags"],
+        suggested_questions=question_responses,
+        interview_structure={
+            "opening": "5 minutes - Recap and rapport building",
+            "main": f"{len(question_responses) * 3} minutes - Follow-up questions",
+            "candidate_questions": "10 minutes - Candidate's questions",
+            "closing": "5 minutes - Next steps and timeline"
+        },
+        estimated_duration=len(question_responses) * 3 + 20
+    )
+
+
+@router.get("/analytics", response_model=InterviewAnalyticsResponse)
+async def get_interview_analytics(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> InterviewAnalyticsResponse:
+    """Get interview analytics for the current user."""
+    
+    # Get total interviews
+    total_query = select(func.count(InterviewSession.id)).where(
+        InterviewSession.interviewer_id == current_user.id
+    )
+    total_result = await db.execute(total_query)
+    total_interviews = total_result.scalar() or 0
+    
+    # Get average duration
+    avg_duration_query = select(func.avg(InterviewSession.duration_minutes)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    avg_duration_result = await db.execute(avg_duration_query)
+    avg_duration = avg_duration_result.scalar() or 60.0
+    
+    # Get average rating
+    avg_rating_query = select(func.avg(InterviewSession.overall_rating)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.overall_rating.isnot(None)
+        )
+    )
+    avg_rating_result = await db.execute(avg_rating_query)
+    avg_rating = avg_rating_result.scalar() or 3.0
+    
+    # Calculate hire rate
+    hire_count_query = select(func.count(InterviewSession.id)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.recommendation == "hire"
+        )
+    )
+    hire_count_result = await db.execute(hire_count_query)
+    hire_count = hire_count_result.scalar() or 0
+    
+    hire_rate = (hire_count / total_interviews * 100) if total_interviews > 0 else 0
+    
+    # Mock data for other metrics (would need more complex queries in production)
+    return InterviewAnalyticsResponse(
+        total_interviews=total_interviews,
+        avg_duration=avg_duration,
+        avg_rating=avg_rating,
+        hire_rate=hire_rate,
+        common_strengths=[
+            {"strength": "Technical skills", "count": 15},
+            {"strength": "Communication", "count": 12},
+            {"strength": "Problem solving", "count": 10}
+        ],
+        common_concerns=[
+            {"concern": "Limited experience", "count": 8},
+            {"concern": "Salary expectations", "count": 5}
+        ],
+        question_effectiveness=[
+            {"question": "Technical assessment", "avg_rating": 4.2, "times_asked": 20},
+            {"question": "Behavioral questions", "avg_rating": 3.8, "times_asked": 18}
+        ],
+        interviewer_consistency={"overall": 0.85}
+    )

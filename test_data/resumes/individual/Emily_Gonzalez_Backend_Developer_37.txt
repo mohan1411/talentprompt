@@ -1,0 +1,38 @@
+Emily Gonzalez
+API Developer
+emilyg@promail.com | +1-908-826-7305 | Chicago, IL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Senior Backend Engineer with 10 years of expertise in API development and database optimization.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Backend Developer at Cloud Systems
+2021 - 2024
+• Optimized database queries reducing response time by 60%
+• Built event-driven architecture using message queues
+
+Python Developer at Tech Corp
+2017 - 2021
+• Built event-driven architecture using message queues
+• Implemented secure authentication and authorization systems
+
+Senior Backend Engineer at Enterprise Software
+2015 - 2017
+• Built event-driven architecture using message queues
+• Implemented secure authentication and authorization systems
+
+Senior Backend Engineer at Future Systems
+2014 - 2015
+• Built event-driven architecture using message queues
+• Designed scalable backend systems handling 10K+ requests per second
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+University of Washington, 2016
+
+SKILLS
+--------------------------------------------------
+MongoDB, Node.js, REST APIs, Java, GraphQL, Docker, Redis, Python

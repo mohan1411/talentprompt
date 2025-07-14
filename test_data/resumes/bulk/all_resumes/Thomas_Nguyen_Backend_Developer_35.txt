@@ -1,0 +1,28 @@
+Thomas Nguyen
+Backend Developer
+thomasn@mail.com | +1-201-296-3021 | Oakland, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Backend Developer with 3 years of experience designing and implementing scalable server-side applications.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Backend Developer at Enterprise Software
+2023 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Optimized database queries reducing response time by 60%
+
+Senior Backend Engineer at App Builders
+2021 - 2023
+• Designed scalable backend systems handling 10K+ requests per second
+• Implemented secure authentication and authorization systems
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Information Technology
+Princeton University, 2011
+
+SKILLS
+--------------------------------------------------
+REST APIs, Microservices, AWS, Node.js, Redis, Python, GraphQL, Docker

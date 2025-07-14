@@ -1,0 +1,23 @@
+Sharon Miller
+Python Developer
+smiller@mail.com | +1-487-761-2977 | Chicago, IL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Backend Developer with 4 years of experience designing and implementing scalable server-side applications.
+
+WORK EXPERIENCE
+--------------------------------------------------
+API Developer at Innovation Labs
+2020 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Implemented secure authentication and authorization systems
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Mathematics
+University of Michigan, 2011
+
+SKILLS
+--------------------------------------------------
+REST APIs, Python, PostgreSQL, AWS, GraphQL, Docker, Microservices, MongoDB

@@ -1,0 +1,28 @@
+Ruth Rivera
+Full Stack Developer
+rrivera@workmail.com | +1-437-396-5404 | New York, NY
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 4 years of experience in modern web technologies and distributed systems.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Software Engineer at Mobile Apps Inc
+2023 - 2024
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+Software Engineer at Code Factory
+2021 - 2023
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Georgia Institute of Technology, 2011
+
+SKILLS
+--------------------------------------------------
+REST APIs, Node.js, Python, AWS, Kubernetes, CI/CD, Docker, Java

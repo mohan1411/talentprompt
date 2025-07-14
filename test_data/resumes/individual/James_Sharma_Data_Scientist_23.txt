@@ -1,0 +1,28 @@
+James Sharma
+Data Scientist
+jamessharma@promail.com | +1-525-501-2574 | Oakland, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Data Scientist with 6 years of experience in machine learning, statistical analysis, and predictive modeling.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Data Scientist at Data Dynamics
+2022 - 2024
+• Created dashboards and visualizations for executive decision making
+• Developed machine learning models improving prediction accuracy by 30%
+
+Machine Learning Engineer at Enterprise Software
+2018 - 2022
+• Built data pipelines processing 100GB+ of daily data
+• Implemented recommendation system increasing user engagement by 40%
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Data Science
+Yale University, 2019
+
+SKILLS
+--------------------------------------------------
+R, Pandas, SQL, Statistics, TensorFlow, Deep Learning, PyTorch, Scikit-learn

@@ -1,0 +1,33 @@
+Robert Young
+Full Stack Developer
+roberty@mail.com | +1-964-753-7370 | Indianapolis, IN
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Senior Software Engineer with 12 years of experience building scalable applications and leading development teams.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Full Stack Developer at Code Factory
+2020 - 2024
+• Mentored team of 5 junior developers and conducted code reviews
+• Designed and developed RESTful APIs for core platform features
+
+Full Stack Developer at Cloud Systems
+2019 - 2020
+• Led development of microservices architecture serving 1M+ daily users
+• Mentored team of 5 junior developers and conducted code reviews
+
+Senior Software Engineer at Web Works
+2018 - 2019
+• Mentored team of 5 junior developers and conducted code reviews
+• Led development of microservices architecture serving 1M+ daily users
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Computer Science
+Columbia University, 2019
+
+SKILLS
+--------------------------------------------------
+Node.js, Microservices, REST APIs, CI/CD, Docker, JavaScript, Git, Python

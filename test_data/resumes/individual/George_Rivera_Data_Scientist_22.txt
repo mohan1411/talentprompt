@@ -1,0 +1,28 @@
+George Rivera
+Data Scientist
+george.rivera@mail.com | +1-200-625-6153 | Portland, OR
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Analytical Data Scientist with 2 years of experience transforming data into actionable insights.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Data Scientist at App Builders
+2023 - 2024
+• Built data pipelines processing 100GB+ of daily data
+• Created dashboards and visualizations for executive decision making
+
+Machine Learning Engineer at Digital Solutions Inc
+2022 - 2023
+• Built data pipelines processing 100GB+ of daily data
+• Developed machine learning models improving prediction accuracy by 30%
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Columbia University, 2022
+
+SKILLS
+--------------------------------------------------
+NumPy, Pandas, TensorFlow, PyTorch, Python, Machine Learning, R, Deep Learning
