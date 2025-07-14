@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+"""Main entry point for Railway."""
 import os
 import uvicorn
 
