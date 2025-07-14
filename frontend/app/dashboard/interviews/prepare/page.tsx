@@ -213,7 +213,7 @@ export default function PrepareInterviewPage() {
       console.log('Preparing interview with resume:', selectedResume.id, 'position:', jobPosition)
       
       // Call the real API to prepare interview
-      const response = await interviewsApi.prepare({
+      const response = await interviewsApi.prepareInterview({
         resume_id: selectedResume.id,
         job_position: jobPosition,
         job_requirements: jobRequirements ? { description: jobRequirements } : undefined,
