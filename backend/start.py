@@ -4,6 +4,12 @@ import asyncio
 import uvicorn
 
 async def main():
+    # Run debug script if requested
+    if "--debug" in sys.argv or os.environ.get("DEBUG_ENV", "false").lower() == "true":
+        import subprocess
+        subprocess.run([sys.executable, "debug_env.py"])
+        print("\n" + "="*50 + "\n")
+    
     # Check if we should initialize the database
     if "--init-db" in sys.argv or os.environ.get("INIT_DB", "false").lower() == "true":
         print("Initializing database...")
