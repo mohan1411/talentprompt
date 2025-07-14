@@ -52,6 +52,17 @@ async def root():
     }
 
 
+@app.get("/api/v1/health")
+async def health_check():
+    """Health check endpoint for Railway."""
+    return {
+        "status": "healthy",
+        "service": "promtitude-api",
+        "version": settings.VERSION,
+        "docs": "/docs",
+    }
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
