@@ -44,11 +44,20 @@ class Settings(BaseSettings):
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
         # First check if DATABASE_URL is provided in environment
         if v:
+            # Log the database URL (without password) for debugging
+            import re
+            safe_url = re.sub(r'://[^@]+@', '://***:***@', v)
+            print(f"Using DATABASE_URL: {safe_url}")
+            
             # Ensure we use asyncpg driver
             if v.startswith("postgresql://"):
                 return v.replace("postgresql://", "postgresql+asyncpg://")
+            elif v.startswith("postgres://"):
+                return v.replace("postgres://", "postgresql+asyncpg://")
             return v
+        
         # Otherwise, build from individual components
+        print("WARNING: DATABASE_URL not found, using default localhost settings")
         return (
             f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:"
             f"{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:"

@@ -15,6 +15,13 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+# Log startup configuration
+import os
+print(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
+print(f"Environment: {os.environ.get('RAILWAY_ENVIRONMENT', 'local')}")
+print(f"DATABASE_URL present: {'DATABASE_URL' in os.environ}")
+print(f"CORS Origins: {settings.BACKEND_CORS_ORIGINS}")
+
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     # Handle both with and without trailing slashes
