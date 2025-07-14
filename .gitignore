@@ -235,8 +235,8 @@ frontend-temp/
 qdrant_storage/
 pinecone_data/
 
-# AI Model Files
-models/
+# AI Model Files (ML model files, not app/models)
+/models/
 *.bin
 *.h5
 *.pkl
