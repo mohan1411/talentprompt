@@ -28,7 +28,7 @@ interface TabsContentProps {
 }
 
 interface TabsInternalProps {
-  value?: string
+  currentValue?: string
   onValueChange?: (value: string) => void
 }
 
@@ -41,7 +41,7 @@ export function Tabs({ defaultValue, children, className = "" }: TabsProps) {
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child as React.ReactElement<TabsInternalProps>, { 
-            value, 
+            currentValue: value, 
             onValueChange: setValue 
           })
         }
@@ -57,7 +57,7 @@ export function TabsList({ children, className = "", value, onValueChange }: Tab
       {React.Children.map(children, (child) => {
         if (React.isValidElement(child)) {
           return React.cloneElement(child as React.ReactElement<TabsInternalProps>, { 
-            value, 
+            currentValue: value, 
             onValueChange 
           })
         }
@@ -67,9 +67,7 @@ export function TabsList({ children, className = "", value, onValueChange }: Tab
   )
 }
 
-export function TabsTrigger({ children, value: tabValue, className = "", ...internalProps }: TabsTriggerProps & TabsInternalProps) {
-  const currentValue = internalProps.value
-  const onValueChange = internalProps.onValueChange
+export function TabsTrigger({ children, value: tabValue, className = "", currentValue, onValueChange }: TabsTriggerProps & TabsInternalProps) {
   const isActive = currentValue === tabValue
   
   return (
@@ -84,8 +82,7 @@ export function TabsTrigger({ children, value: tabValue, className = "", ...inte
   )
 }
 
-export function TabsContent({ children, value: tabValue, className = "", ...internalProps }: TabsContentProps & TabsInternalProps) {
-  const currentValue = internalProps.value
+export function TabsContent({ children, value: tabValue, className = "", currentValue }: TabsContentProps & TabsInternalProps) {
   
   if (currentValue !== tabValue) return null
   
