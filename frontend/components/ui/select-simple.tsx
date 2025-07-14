@@ -90,8 +90,11 @@ export function SelectContent({ children }: any) {
   React.useEffect(() => {
     if (context && context.value) {
       React.Children.forEach(children, (child) => {
-        if (React.isValidElement(child) && child.props.value === context.value) {
-          context.setSelectedLabel(child.props.children)
+        if (React.isValidElement(child)) {
+          const childProps = child.props as { value?: string; children?: React.ReactNode }
+          if (childProps.value === context.value) {
+            context.setSelectedLabel(childProps.children)
+          }
         }
       })
     }
