@@ -988,7 +988,7 @@ Note: This is a summary. Full scorecard requires system access.
                     <div>
                       <h4 className="font-medium mb-2">Red Flags to Consider</h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
-                        {session.preparation_notes.analysis.red_flags.map((flag, idx) => (
+                        {session.preparation_notes.analysis.red_flags.map((flag: string, idx: number) => (
                           <li key={idx}>• {flag}</li>
                         ))}
                       </ul>
@@ -1048,7 +1048,7 @@ Note: This is a summary. Full scorecard requires system access.
                           concerns: scorecardData.concerns || [],
                           keyTakeaways: scorecardData.key_takeaways || [],
                           nextSteps: scorecardData.next_steps || [],
-                          questionPerformance: session?.questions?.filter(q => q.response_rating).map(q => ({
+                          questionPerformance: session?.questions?.filter((q: any) => q.response_rating).map((q: any) => ({
                             question: q.question_text,
                             rating: q.response_rating || 0,
                             category: q.category
