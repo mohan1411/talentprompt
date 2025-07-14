@@ -67,9 +67,9 @@ export function TabsList({ children, className = "", value, onValueChange }: Tab
   )
 }
 
-export function TabsTrigger({ children, value: tabValue, className = "", ...props }: TabsTriggerProps & TabsInternalProps) {
-  const currentValue = props.value
-  const onValueChange = props.onValueChange
+export function TabsTrigger({ children, value: tabValue, className = "", ...internalProps }: TabsTriggerProps & TabsInternalProps) {
+  const currentValue = internalProps.value
+  const onValueChange = internalProps.onValueChange
   const isActive = currentValue === tabValue
   
   return (
@@ -84,8 +84,8 @@ export function TabsTrigger({ children, value: tabValue, className = "", ...prop
   )
 }
 
-export function TabsContent({ children, value: tabValue, className = "", ...props }: TabsContentProps & TabsInternalProps) {
-  const currentValue = props.value
+export function TabsContent({ children, value: tabValue, className = "", ...internalProps }: TabsContentProps & TabsInternalProps) {
+  const currentValue = internalProps.value
   
   if (currentValue !== tabValue) return null
   
