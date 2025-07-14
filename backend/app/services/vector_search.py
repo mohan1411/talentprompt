@@ -191,17 +191,32 @@ class VectorSearchService:
     async def get_collection_info(self) -> Dict[str, Any]:
         """Get information about the collection."""
         try:
-            info = self.client.get_collection(self.collection_name)
-            return {
-                "status": "connected",
-                "points_count": info.points_count,
-                "vectors_count": info.vectors_count,
-                "indexed_vectors_count": info.indexed_vectors_count,
-                "config": {
-                    "size": info.config.params.vectors.size,
-                    "distance": info.config.params.vectors.distance
+            # Try to get basic info without full collection details
+            collections = self.client.get_collections()
+            collection_exists = any(c.name == self.collection_name for c in collections.collections)
+            
+            if collection_exists:
+                # Try to count points
+                try:
+                    count_result = self.client.count(
+                        collection_name=self.collection_name,
+                        exact=False  # Approximate count is faster
+                    )
+                    points_count = count_result.count
+                except:
+                    points_count = "unknown"
+                
+                return {
+                    "status": "connected",
+                    "points_count": points_count,
+                    "collection": self.collection_name
                 }
-            }
+            else:
+                return {
+                    "status": "connected",
+                    "points_count": 0,
+                    "collection": f"{self.collection_name} (not created yet)"
+                }
         except Exception as e:
             logger.error(f"Error getting collection info: {e}")
             return {
