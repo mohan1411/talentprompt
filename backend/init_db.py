@@ -13,6 +13,15 @@ from app.core.config import settings
 
 async def init_db():
     """Initialize database."""
+    # First, create pgvector extension
+    async with engine.begin() as conn:
+        try:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+            print("✓ pgvector extension created")
+        except Exception as e:
+            print(f"! Warning: Could not create pgvector extension: {e}")
+            print("  This may be normal if the extension is already installed or not available")
+    
     # Create all tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
