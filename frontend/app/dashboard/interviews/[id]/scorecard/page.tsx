@@ -625,7 +625,7 @@ Note: This is a summary. Full scorecard requires system access.
               <CardContent>
                 <ul className="space-y-2">
                   {scorecard?.strengths && scorecard.strengths.length > 0 ? (
-                    scorecard.strengths.map((strength, idx) => (
+                    scorecard.strengths.map((strength: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
                         <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span>{strength}</span>
@@ -648,7 +648,7 @@ Note: This is a summary. Full scorecard requires system access.
               <CardContent>
                 <ul className="space-y-2">
                   {scorecard?.concerns && scorecard.concerns.length > 0 ? (
-                    scorecard.concerns.map((concern, idx) => (
+                    scorecard.concerns.map((concern: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
                         <AlertCircleIcon className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
                         <span>{concern}</span>
@@ -670,7 +670,7 @@ Note: This is a summary. Full scorecard requires system access.
             <CardContent>
               <ol className="space-y-2">
                 {scorecard?.nextSteps && scorecard.nextSteps.length > 0 ? (
-                  scorecard.nextSteps.map((step, idx) => (
+                  scorecard.nextSteps.map((step: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center mt-0.5">
                         {idx + 1}
@@ -695,7 +695,7 @@ Note: This is a summary. Full scorecard requires system access.
               <Card>
                 <CardContent className="p-6">
                   <div className="space-y-4">
-                    {scorecard.questionPerformance.map((q, idx) => (
+                    {scorecard.questionPerformance.map((q: any, idx: number) => (
                       <div key={idx} className="border rounded-lg p-4">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex-1">
@@ -817,7 +817,7 @@ Note: This is a summary. Full scorecard requires system access.
               <CardContent>
                 <ul className="space-y-2">
                   {scorecard.strengths && scorecard.strengths.length > 0 ? (
-                    scorecard.strengths.map((strength, idx) => (
+                    scorecard.strengths.map((strength: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
                         <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <span>{strength}</span>
@@ -840,7 +840,7 @@ Note: This is a summary. Full scorecard requires system access.
               <CardContent>
                 <ul className="space-y-2">
                   {scorecard.concerns && scorecard.concerns.length > 0 ? (
-                    scorecard.concerns.map((concern, idx) => (
+                    scorecard.concerns.map((concern: string, idx: number) => (
                       <li key={idx} className="flex items-start gap-2">
                         <AlertCircleIcon className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
                         <span>{concern}</span>
@@ -883,7 +883,7 @@ Note: This is a summary. Full scorecard requires system access.
             <CardContent>
               <ol className="space-y-2">
                 {scorecard.nextSteps && scorecard.nextSteps.length > 0 ? (
-                  scorecard.nextSteps.map((step, idx) => (
+                  scorecard.nextSteps.map((step: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center mt-0.5">
                         {idx + 1}
@@ -910,7 +910,7 @@ Note: This is a summary. Full scorecard requires system access.
             <CardContent>
               <div className="space-y-4">
                 {scorecard.questionPerformance && scorecard.questionPerformance.length > 0 ? (
-                  scorecard.questionPerformance.map((q, idx) => (
+                  scorecard.questionPerformance.map((q: any, idx: number) => (
                     <div key={idx} className="border rounded-lg p-4">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
