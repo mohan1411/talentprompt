@@ -5,7 +5,7 @@ import asyncio
 import os
 from sqlalchemy import text
 
-from app.db.session import async_engine, AsyncSessionLocal
+from app.db.session import engine, async_session_maker
 from app.db.base import Base
 from app.crud.user import create_user
 from app.schemas.user import UserCreate
@@ -14,12 +14,12 @@ from app.core.config import settings
 async def init_db():
     """Initialize database."""
     # Create all tables
-    async with async_engine.begin() as conn:
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         print("✓ Database tables created")
     
     # Create first superuser if it doesn't exist
-    async with AsyncSessionLocal() as db:
+    async with async_session_maker() as db:
         try:
             # Check if any users exist
             result = await db.execute(text("SELECT COUNT(*) FROM users"))
