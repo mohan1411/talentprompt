@@ -370,7 +370,7 @@ export default function InterviewSessionPage() {
                   <CardTitle>Question {currentQuestionIndex + 1} of {questions.length}</CardTitle>
                   <div className="flex gap-2 mt-2">
                     <Badge variant="outline">{currentQuestion.category}</Badge>
-                    <Badge variant="outline">Difficulty: {currentQuestion.difficulty}/5</Badge>
+                    <Badge variant="outline">Difficulty: {currentQuestion.difficulty_level}/5</Badge>
                   </div>
                 </div>
                 <Progress value={progress} className="w-24" />
