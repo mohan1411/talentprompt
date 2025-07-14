@@ -55,12 +55,29 @@ async def root():
 @app.get("/api/v1/health")
 async def health_check():
     """Health check endpoint for Railway."""
-    return {
+    from app.api.v1.dependencies.database import get_db
+    from sqlalchemy import text
+    
+    health_status = {
         "status": "healthy",
         "service": "promtitude-api",
         "version": settings.VERSION,
         "docs": "/docs",
+        "database": "unknown"
     }
+    
+    # Test database connection
+    try:
+        async for db in get_db():
+            result = await db.execute(text("SELECT 1"))
+            if result.scalar() == 1:
+                health_status["database"] = "connected"
+            break
+    except Exception as e:
+        health_status["database"] = f"error: {str(e)}"
+        health_status["status"] = "unhealthy"
+    
+    return health_status
 
 
 @app.get("/health")
