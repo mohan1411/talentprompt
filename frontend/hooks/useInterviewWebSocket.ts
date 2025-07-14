@@ -81,7 +81,7 @@ export function useInterviewWebSocket(sessionId: string) {
     }
 
     try {
-      const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000'}/api/v1/ws/interview/${sessionId}?token=${token}`
+      const wsUrl = `${process.env.NEXT_PUBLIC_WS_URL || 'wss://talentprompt-production.up.railway.app'}/api/v1/ws/interview/${sessionId}?token=${token}`
       console.log('Connecting to WebSocket:', wsUrl)
       ws.current = new WebSocket(wsUrl)
 
