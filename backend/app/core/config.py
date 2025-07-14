@@ -19,13 +19,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
     # CORS
-    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = [
-        "http://localhost:3000",
-        "http://localhost:3001", 
-        "https://promtitude.vercel.app",
-        "https://promtitude-git-main-mohans-projects-bdb40a1d.vercel.app",
-        "https://promtitude-20ul82ph0-mohans-projects-bdb40a1d.vercel.app"
-    ]
+    BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
     @validator("BACKEND_CORS_ORIGINS", pre=True)
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
