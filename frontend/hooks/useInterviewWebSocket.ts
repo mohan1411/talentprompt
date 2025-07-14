@@ -192,8 +192,13 @@ export function useInterviewWebSocket(sessionId: string) {
         const audioData = convertFloat32ToInt16(inputData)
         
         // Send audio chunk to server
+        const uint8Array = new Uint8Array(audioData.buffer)
+        let binaryString = ''
+        for (let i = 0; i < uint8Array.length; i++) {
+          binaryString += String.fromCharCode(uint8Array[i])
+        }
         sendMessage('audio_chunk', {
-          audio: btoa(String.fromCharCode(...new Uint8Array(audioData.buffer))),
+          audio: btoa(binaryString),
           is_final: false
         })
       }
