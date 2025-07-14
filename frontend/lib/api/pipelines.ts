@@ -121,9 +121,8 @@ export const pipelineApi = {
 
   async completeStage(journeyId: string, sessionId: string): Promise<CandidateJourney> {
     const response = await apiClient.post(
-      `/pipelines/journeys/${journeyId}/complete-stage`,
-      null,
-      { params: { session_id: sessionId } }
+      `/pipelines/journeys/${journeyId}/complete-stage?session_id=${sessionId}`,
+      null
     )
     return response.data
   },
