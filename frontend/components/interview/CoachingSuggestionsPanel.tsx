@@ -8,7 +8,7 @@ import {
   SparklesIcon,
   AlertTriangleIcon,
   CheckCircleIcon,
-  QuestionMarkCircleIcon,
+  HelpCircleIcon,
   TrendingUpIcon,
   LightbulbIcon,
   MessageSquareIcon,
@@ -41,7 +41,7 @@ export function CoachingSuggestionsPanel({
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <QuestionMarkCircleIcon className="h-4 w-4" />
+              <HelpCircleIcon className="h-4 w-4" />
               Suggested Follow-ups
             </CardTitle>
           </CardHeader>
