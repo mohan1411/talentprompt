@@ -3,6 +3,20 @@
 import * as React from "react"
 import { ChevronDown } from "lucide-react"
 
+// Helper function to convert ReactNode to string for display
+function nodeToString(node: React.ReactNode): string {
+  if (typeof node === 'string' || typeof node === 'number') {
+    return String(node)
+  }
+  if (Array.isArray(node)) {
+    return node.map(nodeToString).join('')
+  }
+  if (React.isValidElement(node) && node.props.children) {
+    return nodeToString(node.props.children)
+  }
+  return ''
+}
+
 interface SelectProps {
   value?: string
   onValueChange?: (value: string) => void
@@ -15,14 +29,18 @@ interface SelectContextValue {
   open: boolean
   setOpen: (open: boolean) => void
   selectedLabel?: string
-  setSelectedLabel: (label: string) => void
+  setSelectedLabel: (label: React.ReactNode) => void
 }
 
 const SelectContext = React.createContext<SelectContextValue | null>(null)
 
 export function Select({ value, onValueChange, children }: SelectProps) {
   const [open, setOpen] = React.useState(false)
-  const [selectedLabel, setSelectedLabel] = React.useState<string>("")
+  const [selectedLabel, setSelectedLabelState] = React.useState<string>("")
+  
+  const setSelectedLabel = React.useCallback((label: React.ReactNode) => {
+    setSelectedLabelState(nodeToString(label))
+  }, [])
   
   // Initialize selected label based on initial value
   React.useEffect(() => {
@@ -60,7 +78,12 @@ export function Select({ value, onValueChange, children }: SelectProps) {
   )
 }
 
-export function SelectTrigger({ children, className = "" }: any) {
+interface SelectTriggerProps {
+  children: React.ReactNode
+  className?: string
+}
+
+export function SelectTrigger({ children, className = "" }: SelectTriggerProps) {
   const context = React.useContext(SelectContext)
   if (!context) return null
   
@@ -83,7 +106,11 @@ export function SelectValue({ placeholder = "" }: { placeholder?: string }) {
   return <span>{context.selectedLabel || placeholder}</span>
 }
 
-export function SelectContent({ children }: any) {
+interface SelectContentProps {
+  children: React.ReactNode
+}
+
+export function SelectContent({ children }: SelectContentProps) {
   const context = React.useContext(SelectContext)
   
   // Set initial selected label based on value
@@ -114,7 +141,12 @@ export function SelectContent({ children }: any) {
   )
 }
 
-export function SelectItem({ children, value }: any) {
+interface SelectItemProps {
+  children: React.ReactNode
+  value: string
+}
+
+export function SelectItem({ children, value }: SelectItemProps) {
   const context = React.useContext(SelectContext)
   if (!context) return null
   

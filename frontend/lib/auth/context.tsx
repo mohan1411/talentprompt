@@ -8,12 +8,21 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useRouter } from 'next/navigation';
 import { authApi, User } from '@/lib/api/client';
 
+interface RegisterData {
+  email: string;
+  username: string;
+  password: string;
+  full_name?: string;
+  company?: string;
+  job_title?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
-  register: (data: any) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -69,7 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const register = async (data: any) => {
+  const register = async (data: RegisterData) => {
     try {
       await authApi.register(data);
       // Auto-login after registration
