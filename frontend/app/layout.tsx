@@ -6,8 +6,8 @@ import { Providers } from '@/components/providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'TalentPrompt - AI-Powered Recruitment',
-  description: 'Find the perfect candidates with natural language search',
+  title: 'Promtitude - Where AI Meets Aptitude | AI-Powered Recruitment Platform',
+  description: 'Complete AI-powered recruitment platform with natural language search, live interview transcription, intelligent scoring, and real-time coaching. Find, interview, and hire better with AI.',
 };
 
 export default function RootLayout({

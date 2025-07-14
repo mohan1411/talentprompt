@@ -1,0 +1,23 @@
+Sarah Moore
+Site Reliability Engineer
+sarahm@email.com | +1-544-281-2115 | Columbus, OH
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Site Reliability Engineer with 2 years of expertise in CI/CD pipelines and container orchestration.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Cloud Engineer at Global Tech
+2022 - 2024
+• Automated infrastructure provisioning using Terraform and Ansible
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Computer Science
+Northwestern University, 2020
+
+SKILLS
+--------------------------------------------------
+Monitoring, CI/CD, Jenkins, Terraform, Linux, Docker, Kubernetes, AWS

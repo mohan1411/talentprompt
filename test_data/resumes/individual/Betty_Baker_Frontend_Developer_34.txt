@@ -1,0 +1,28 @@
+Betty Baker
+Senior Frontend Engineer
+bbaker@email.com | +1-677-805-3807 | Atlanta, GA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+UI Developer with 6 years of experience creating engaging web applications and optimizing performance.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Frontend Developer at Digital Solutions Inc
+2020 - 2024
+• Built reusable component library used across multiple projects
+• Improved page load speed by 50% through optimization techniques
+
+React Developer at Web Works
+2018 - 2020
+• Improved page load speed by 50% through optimization techniques
+• Built reusable component library used across multiple projects
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Mathematics
+Cornell University, 2017
+
+SKILLS
+--------------------------------------------------
+Angular, HTML5, Redux, Webpack, Responsive Design, TypeScript, CSS3, Vue.js

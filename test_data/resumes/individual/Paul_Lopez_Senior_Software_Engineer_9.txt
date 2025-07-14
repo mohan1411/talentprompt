@@ -1,0 +1,33 @@
+Paul Lopez
+Senior Software Engineer
+paul.lopez@email.com | +1-631-658-5384 | Washington, DC
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 11 years of experience in modern web technologies and distributed systems.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Software Engineer at Big Data Inc
+2021 - 2024
+• Designed and developed RESTful APIs for core platform features
+• Mentored team of 5 junior developers and conducted code reviews
+
+Full Stack Developer at Data Dynamics
+2018 - 2021
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+Lead Developer at Next Gen Tech
+2014 - 2018
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+University of Pennsylvania, 2019
+
+SKILLS
+--------------------------------------------------
+JavaScript, CI/CD, AWS, Python, Docker, Kubernetes, Microservices, React

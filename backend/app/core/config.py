@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     """Application settings."""
 
     # Project Info
-    PROJECT_NAME: str = "TalentPrompt"
+    PROJECT_NAME: str = "Promtitude"
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
     
@@ -42,11 +42,13 @@ class Settings(BaseSettings):
 
     @validator("DATABASE_URL", pre=True)
     def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        if isinstance(v, str):
+        # First check if DATABASE_URL is provided in environment
+        if v:
             # Ensure we use asyncpg driver
             if v.startswith("postgresql://"):
                 return v.replace("postgresql://", "postgresql+asyncpg://")
             return v
+        # Otherwise, build from individual components
         return (
             f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:"
             f"{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:"
@@ -57,8 +59,8 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
     
     # AI Services
-    OPENAI_API_KEY: str
-    OPENAI_MODEL: str = "gpt-4-turbo"
+    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_MODEL: str = "gpt-4o-mini"
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: str = "claude-3-sonnet-20240229"
     EMBEDDING_MODEL: str = "text-embedding-ada-002"
@@ -66,7 +68,7 @@ class Settings(BaseSettings):
     # Vector Database (Qdrant)
     QDRANT_URL: str = "http://localhost:6333"
     QDRANT_API_KEY: Optional[str] = None
-    QDRANT_COLLECTION_NAME: str = "talentprompt_resumes"
+    QDRANT_COLLECTION_NAME: str = "promtitude_resumes"
     
     # Supabase
     SUPABASE_URL: Optional[str] = None

@@ -17,9 +17,16 @@ app = FastAPI(
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
+    # Handle both with and without trailing slashes
+    origins = []
+    for origin in settings.BACKEND_CORS_ORIGINS:
+        origin_str = str(origin).rstrip('/')
+        origins.append(origin_str)
+        origins.append(f"{origin_str}/")
+    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -39,7 +46,7 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 async def root():
     """Root endpoint."""
     return {
-        "message": "Welcome to TalentPrompt API",
+        "message": "Welcome to Promtitude API",
         "version": settings.VERSION,
         "docs": "/docs",
     }

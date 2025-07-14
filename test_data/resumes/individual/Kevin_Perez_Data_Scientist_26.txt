@@ -1,0 +1,23 @@
+Kevin Perez
+Data Analyst
+kevinp@techmail.com | +1-224-949-6380 | San Antonio, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Data Scientist with 2 years of experience in machine learning, statistical analysis, and predictive modeling.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Data Scientist at Web Works
+2022 - 2024
+• Implemented recommendation system increasing user engagement by 40%
+• Built data pipelines processing 100GB+ of daily data
+
+EDUCATION
+--------------------------------------------------
+Master of Business Administration
+Harvard University, 2015
+
+SKILLS
+--------------------------------------------------
+Pandas, PyTorch, Machine Learning, Scikit-learn, TensorFlow, Deep Learning, Python, SQL

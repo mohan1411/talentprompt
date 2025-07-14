@@ -1,0 +1,28 @@
+Raj Jones
+Data Scientist
+rjones@techmail.com | +1-935-609-7927 | Jacksonville, FL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Analytical Data Scientist with 4 years of experience transforming data into actionable insights.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Data Analyst at Next Gen Tech
+2022 - 2024
+• Built data pipelines processing 100GB+ of daily data
+• Implemented recommendation system increasing user engagement by 40%
+
+Senior Data Scientist at Web Works
+2020 - 2022
+• Created dashboards and visualizations for executive decision making
+• Built data pipelines processing 100GB+ of daily data
+
+EDUCATION
+--------------------------------------------------
+Master of Business Administration
+Massachusetts Institute of Technology, 2014
+
+SKILLS
+--------------------------------------------------
+Pandas, SQL, Statistics, PyTorch, TensorFlow, Scikit-learn, NumPy, Machine Learning

@@ -1,6 +1,6 @@
-# TalentPrompt Frontend
+# Promtitude Frontend
 
-Next.js 14 frontend for the TalentPrompt AI recruitment platform.
+Next.js 14 frontend for the Promtitude AI recruitment platform.
 
 ## Quick Start
 
@@ -87,6 +87,6 @@ npm start
 
 Or with Docker:
 ```bash
-docker build -t talentprompt-frontend .
-docker run -p 3000:3000 talentprompt-frontend
+docker build -t promtitude-frontend .
+docker run -p 3000:3000 promtitude-frontend
 ```

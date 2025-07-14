@@ -1,0 +1,33 @@
+Donald Adams
+Cloud Engineer
+dadams@techmail.com | +1-702-922-3797 | Austin, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Cloud Engineer with 9 years of experience optimizing infrastructure and ensuring high availability.
+
+WORK EXPERIENCE
+--------------------------------------------------
+DevOps Engineer at Startup Hub
+2023 - 2024
+• Managed Kubernetes clusters serving production workloads
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+Cloud Engineer at Mobile Apps Inc
+2020 - 2023
+• Managed Kubernetes clusters serving production workloads
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+Cloud Engineer at System Solutions
+2017 - 2020
+• Managed Kubernetes clusters serving production workloads
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Massachusetts Institute of Technology, 2013
+
+SKILLS
+--------------------------------------------------
+Kubernetes, Terraform, Monitoring, GCP, Linux, Jenkins, CI/CD, Docker

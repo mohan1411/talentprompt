@@ -1,0 +1,28 @@
+Kevin Mitchell
+Lead Developer
+kevin.mitchell@techmail.com | +1-254-347-6023 | Dallas, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 12 years of experience in modern web technologies and distributed systems.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Lead Developer at Future Systems
+2021 - 2024
+• Implemented CI/CD pipelines reducing deployment time by 70%
+• Mentored team of 5 junior developers and conducted code reviews
+
+Senior Software Engineer at Next Gen Tech
+2018 - 2021
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Engineering in Software Engineering
+Duke University, 2010
+
+SKILLS
+--------------------------------------------------
+AWS, REST APIs, Microservices, Kubernetes, Docker, JavaScript, Node.js, Python

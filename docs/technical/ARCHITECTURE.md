@@ -1,8 +1,8 @@
-# TalentPrompt System Architecture
+# Promtitude System Architecture
 
 ## 1. Overview
 
-TalentPrompt is built on a modern microservices architecture designed for scalability, performance, and AI/ML workloads. The system prioritizes real-time processing, semantic understanding, and EU AI Act compliance.
+Promtitude is built on a modern microservices architecture designed for scalability, performance, and AI/ML workloads. The system prioritizes real-time processing, semantic understanding, and EU AI Act compliance.
 
 ## 2. High-Level Architecture
 
@@ -240,7 +240,7 @@ Resume Upload → API Gateway → Core API → File Storage
 
 ### 8.1 Code Organization
 ```
-talentprompt/
+promtitude/
 ├── services/
 │   ├── core-api/
 │   ├── search-api/

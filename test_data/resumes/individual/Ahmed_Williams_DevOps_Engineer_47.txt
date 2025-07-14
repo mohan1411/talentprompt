@@ -1,0 +1,28 @@
+Ahmed Williams
+Cloud Engineer
+awilliams@email.com | +1-681-240-9326 | Seattle, WA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+DevOps Engineer with 4 years of experience automating deployments and managing cloud infrastructure.
+
+WORK EXPERIENCE
+--------------------------------------------------
+DevOps Engineer at Innovation Labs
+2021 - 2024
+• Reduced deployment failures by 80% through improved CI/CD pipelines
+• Implemented monitoring and alerting systems for 99.99% uptime
+
+Site Reliability Engineer at Tech Corp
+2020 - 2021
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Managed Kubernetes clusters serving production workloads
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Computer Science
+Carnegie Mellon University, 2020
+
+SKILLS
+--------------------------------------------------
+CI/CD, Kubernetes, Terraform, Docker, Ansible, GCP, Linux, Azure

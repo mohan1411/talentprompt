@@ -1,0 +1,23 @@
+Mark Brown
+Infrastructure Engineer
+markbrown@techmail.com | +1-918-656-1155 | Houston, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+DevOps Engineer with 4 years of experience automating deployments and managing cloud infrastructure.
+
+WORK EXPERIENCE
+--------------------------------------------------
+DevOps Engineer at Digital Ventures
+2020 - 2024
+• Implemented monitoring and alerting systems for 99.99% uptime
+• Automated infrastructure provisioning using Terraform and Ansible
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Harvard University, 2022
+
+SKILLS
+--------------------------------------------------
+CI/CD, Linux, Terraform, Docker, AWS, Ansible, GCP, Monitoring

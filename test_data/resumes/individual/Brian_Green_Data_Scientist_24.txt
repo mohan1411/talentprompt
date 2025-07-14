@@ -1,0 +1,28 @@
+Brian Green
+Data Scientist
+bgreen@techmail.com | +1-242-614-6386 | Miami, FL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Analytical Data Scientist with 3 years of experience transforming data into actionable insights.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Data Scientist at Web Works
+2023 - 2024
+• Built data pipelines processing 100GB+ of daily data
+• Implemented recommendation system increasing user engagement by 40%
+
+Data Analyst at Digital Solutions Inc
+2021 - 2023
+• Built data pipelines processing 100GB+ of daily data
+• Created dashboards and visualizations for executive decision making
+
+EDUCATION
+--------------------------------------------------
+Master of Business Administration
+Carnegie Mellon University, 2020
+
+SKILLS
+--------------------------------------------------
+SQL, R, NumPy, TensorFlow, Scikit-learn, Python, Deep Learning, Statistics

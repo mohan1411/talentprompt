@@ -1,0 +1,33 @@
+Betty Taylor
+UI Developer
+betty.taylor@promail.com | +1-987-958-6189 | Jacksonville, FL
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+UI Developer with 7 years of experience creating engaging web applications and optimizing performance.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Frontend Engineer at Web Works
+2021 - 2024
+• Implemented design system ensuring consistent UI across products
+• Built reusable component library used across multiple projects
+
+Frontend Developer at Cloud Systems
+2019 - 2021
+• Built reusable component library used across multiple projects
+• Implemented design system ensuring consistent UI across products
+
+UI Developer at Cloud Systems
+2017 - 2019
+• Developed responsive React applications with 99.9% uptime
+• Improved page load speed by 50% through optimization techniques
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Carnegie Mellon University, 2012
+
+SKILLS
+--------------------------------------------------
+Responsive Design, GraphQL, JavaScript, Vue.js, React, Angular, TypeScript, CSS3

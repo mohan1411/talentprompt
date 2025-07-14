@@ -1,0 +1,33 @@
+David Gonzalez
+API Developer
+dgonzalez@promail.com | +1-790-747-3301 | Houston, TX
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Backend Developer with 10 years of experience designing and implementing scalable server-side applications.
+
+WORK EXPERIENCE
+--------------------------------------------------
+API Developer at Smart Solutions
+2020 - 2024
+• Designed scalable backend systems handling 10K+ requests per second
+• Built event-driven architecture using message queues
+
+API Developer at Data Dynamics
+2019 - 2020
+• Optimized database queries reducing response time by 60%
+• Designed scalable backend systems handling 10K+ requests per second
+
+Senior Backend Engineer at Smart Solutions
+2018 - 2019
+• Implemented secure authentication and authorization systems
+• Designed scalable backend systems handling 10K+ requests per second
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Physics
+Georgia Institute of Technology, 2011
+
+SKILLS
+--------------------------------------------------
+Microservices, AWS, REST APIs, PostgreSQL, MongoDB, Python, Docker, Java

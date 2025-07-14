@@ -1,0 +1,28 @@
+Barbara Adams
+Software Engineer
+barbara.adams@mail.com | +1-987-399-7759 | San Francisco, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Experienced Software Engineer with 7 years of expertise in full-stack development, cloud architecture, and team leadership.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Lead Developer at Machine Learning Co
+2021 - 2024
+• Mentored team of 5 junior developers and conducted code reviews
+• Led development of microservices architecture serving 1M+ daily users
+
+Software Engineer at Software House
+2017 - 2021
+• Designed and developed RESTful APIs for core platform features
+• Mentored team of 5 junior developers and conducted code reviews
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Mathematics
+Northwestern University, 2020
+
+SKILLS
+--------------------------------------------------
+REST APIs, AWS, Node.js, JavaScript, React, Microservices, Docker, CI/CD

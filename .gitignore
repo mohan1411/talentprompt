@@ -223,6 +223,8 @@ static/
 media/
 data/
 backups/
+SS/
+frontend-temp/
 
 # Database
 *.db

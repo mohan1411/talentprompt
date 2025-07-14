@@ -1,0 +1,28 @@
+Sharon Walker
+Senior Frontend Engineer
+swalker@promail.com | +1-699-388-4287 | Nashville, TN
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Creative Frontend Developer with 4 years of experience building responsive and intuitive user interfaces.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Frontend Engineer at Tech Corp
+2023 - 2024
+• Implemented design system ensuring consistent UI across products
+• Built reusable component library used across multiple projects
+
+React Developer at Next Gen Tech
+2022 - 2023
+• Built reusable component library used across multiple projects
+• Improved page load speed by 50% through optimization techniques
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Computer Science
+Georgia Institute of Technology, 2011
+
+SKILLS
+--------------------------------------------------
+CSS3, TypeScript, Vue.js, Redux, Angular, Webpack, React, Responsive Design

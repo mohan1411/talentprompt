@@ -1,6 +1,6 @@
-# TalentPrompt Backend
+# Promtitude Backend
 
-FastAPI-based backend for the TalentPrompt AI recruitment platform.
+FastAPI-based backend for the Promtitude AI recruitment platform.
 
 ## Quick Start
 

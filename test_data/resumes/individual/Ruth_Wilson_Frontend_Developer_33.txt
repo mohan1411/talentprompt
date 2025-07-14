@@ -1,0 +1,33 @@
+Ruth Wilson
+React Developer
+ruthw@email.com | +1-386-528-4113 | Boston, MA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Frontend Engineer with 7 years of expertise in modern JavaScript frameworks and UI/UX best practices.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Frontend Developer at Code Factory
+2022 - 2024
+• Improved page load speed by 50% through optimization techniques
+• Developed responsive React applications with 99.9% uptime
+
+Senior Frontend Engineer at Future Systems
+2018 - 2022
+• Improved page load speed by 50% through optimization techniques
+• Developed responsive React applications with 99.9% uptime
+
+Senior Frontend Engineer at Innovation Labs
+2017 - 2018
+• Developed responsive React applications with 99.9% uptime
+• Implemented design system ensuring consistent UI across products
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Data Science
+Johns Hopkins University, 2020
+
+SKILLS
+--------------------------------------------------
+Vue.js, GraphQL, TypeScript, Responsive Design, CSS3, JavaScript, Webpack, HTML5

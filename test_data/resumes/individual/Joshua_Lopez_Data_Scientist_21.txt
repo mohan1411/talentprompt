@@ -1,0 +1,33 @@
+Joshua Lopez
+Data Analyst
+joshua.lopez@techmail.com | +1-638-628-1568 | New York, NY
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Machine Learning specialist with 4 years of experience developing and deploying AI solutions.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Senior Data Scientist at Future Systems
+2022 - 2024
+• Developed machine learning models improving prediction accuracy by 30%
+• Implemented recommendation system increasing user engagement by 40%
+
+Data Analyst at App Builders
+2021 - 2022
+• Built data pipelines processing 100GB+ of daily data
+• Implemented recommendation system increasing user engagement by 40%
+
+Data Analyst at Startup Hub
+2020 - 2021
+• Created dashboards and visualizations for executive decision making
+• Built data pipelines processing 100GB+ of daily data
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Physics
+University of Chicago, 2020
+
+SKILLS
+--------------------------------------------------
+Pandas, Python, Scikit-learn, Statistics, SQL, TensorFlow, Deep Learning, NumPy

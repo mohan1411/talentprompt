@@ -1,0 +1,38 @@
+Laura Jones
+Lead Developer
+laurajones@mail.com | +1-427-980-5978 | San Francisco, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Experienced Software Engineer with 9 years of expertise in full-stack development, cloud architecture, and team leadership.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Full Stack Developer at Machine Learning Co
+2021 - 2024
+• Led development of microservices architecture serving 1M+ daily users
+• Mentored team of 5 junior developers and conducted code reviews
+
+Software Engineer at Global Tech
+2018 - 2021
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+Senior Software Engineer at Cloud Systems
+2016 - 2018
+• Mentored team of 5 junior developers and conducted code reviews
+• Led development of microservices architecture serving 1M+ daily users
+
+Full Stack Developer at Software House
+2015 - 2016
+• Led development of microservices architecture serving 1M+ daily users
+• Designed and developed RESTful APIs for core platform features
+
+EDUCATION
+--------------------------------------------------
+Bachelor of Science in Mathematics
+University of Pennsylvania, 2012
+
+SKILLS
+--------------------------------------------------
+Node.js, Docker, Git, Java, React, Kubernetes, Python, Microservices

@@ -10,8 +10,10 @@ engine = create_async_engine(
     str(settings.DATABASE_URL),  # Convert to string
     echo=False,
     future=True,
-    pool_size=20,
-    max_overflow=0,
+    pool_size=40,  # Increased pool size
+    max_overflow=10,  # Allow overflow connections
+    pool_pre_ping=True,  # Check connection health
+    pool_recycle=3600,  # Recycle connections after 1 hour
 )
 
 # Create async session maker

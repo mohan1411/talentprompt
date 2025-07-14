@@ -1,8 +1,8 @@
-# TalentPrompt Budget-Friendly Hosting Architecture
+# Promtitude Budget-Friendly Hosting Architecture
 
 ## Executive Summary
 
-This document outlines a production-ready, budget-friendly hosting architecture for TalentPrompt that maintains our core tech stack without compromise while keeping costs between $350-500/month. The architecture prioritizes managed services to reduce operational overhead for solo developers, provides clear scaling paths, and ensures production reliability.
+This document outlines a production-ready, budget-friendly hosting architecture for Promtitude that maintains our core tech stack without compromise while keeping costs between $350-500/month. The architecture prioritizes managed services to reduce operational overhead for solo developers, provides clear scaling paths, and ensures production reliability.
 
 **Key Principles:**
 - Leverage managed services to minimize DevOps burden

@@ -1,0 +1,23 @@
+Paul Allen
+Senior Data Scientist
+paula@techmail.com | +1-948-558-7705 | Minneapolis, MN
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Analytical Data Scientist with 1 years of experience transforming data into actionable insights.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Data Analyst at Innovation Labs
+2023 - 2024
+• Developed machine learning models improving prediction accuracy by 30%
+• Created dashboards and visualizations for executive decision making
+
+EDUCATION
+--------------------------------------------------
+Master of Science in Machine Learning
+Columbia University, 2011
+
+SKILLS
+--------------------------------------------------
+R, Deep Learning, Scikit-learn, PyTorch, Machine Learning, NumPy, SQL, TensorFlow

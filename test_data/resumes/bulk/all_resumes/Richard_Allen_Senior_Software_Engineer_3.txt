@@ -1,0 +1,28 @@
+Richard Allen
+Senior Software Engineer
+rallen@workmail.com | +1-592-958-3345 | San Diego, CA
+
+PROFESSIONAL SUMMARY
+--------------------------------------------------
+Full-stack developer with 5 years of experience in modern web technologies and distributed systems.
+
+WORK EXPERIENCE
+--------------------------------------------------
+Software Engineer at Big Data Inc
+2023 - 2024
+• Led development of microservices architecture serving 1M+ daily users
+• Mentored team of 5 junior developers and conducted code reviews
+
+Lead Developer at Machine Learning Co
+2021 - 2023
+• Designed and developed RESTful APIs for core platform features
+• Implemented CI/CD pipelines reducing deployment time by 70%
+
+EDUCATION
+--------------------------------------------------
+Master of Business Administration
+New York University, 2022
+
+SKILLS
+--------------------------------------------------
+REST APIs, Kubernetes, CI/CD, JavaScript, Git, Microservices, Java, Python
