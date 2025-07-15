@@ -59,12 +59,15 @@ async function handleImportProfile(profileData, authToken) {
     const errorText = await response.text();
     console.error('Error response:', errorText);
     
+    let errorMessage = `Import failed: ${response.statusText}`;
     try {
       const error = JSON.parse(errorText);
-      throw new Error(error.detail || `Import failed: ${response.statusText}`);
+      errorMessage = error.detail || errorMessage;
+      console.error('Parsed error:', error);
     } catch (e) {
-      throw new Error(`Import failed: ${response.statusText} - ${errorText}`);
+      errorMessage = errorText || errorMessage;
     }
+    throw new Error(errorMessage);
   }
   
   return await response.json();
