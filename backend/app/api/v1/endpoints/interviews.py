@@ -920,9 +920,10 @@ async def get_extended_analytics(
     category_mapping = {
         QuestionCategory.TECHNICAL: "Technical Skills",
         QuestionCategory.BEHAVIORAL: "Communication",
-        QuestionCategory.SITUATIONAL: "Problem Solving",
+        QuestionCategory.SITUATIONAL: "Situational Awareness",
+        QuestionCategory.PROBLEM_SOLVING: "Problem Solving",
         QuestionCategory.EXPERIENCE: "Leadership",
-        QuestionCategory.GENERAL: "Culture Fit"
+        QuestionCategory.CULTURE_FIT: "Culture Fit"
     }
     
     for category, count in skill_coverage_raw:

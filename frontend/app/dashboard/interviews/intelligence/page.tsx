@@ -98,13 +98,7 @@ export default function InterviewIntelligencePage() {
         completed_interviews: data.completed_interviews || 0,
         average_duration: Math.round(data.average_duration || 45),
         average_rating: data.average_rating || 0,
-        skill_coverage: data.skill_coverage || {
-          'Technical Skills': 0,
-          'Communication': 0,
-          'Problem Solving': 0,
-          'Leadership': 0,
-          'Culture Fit': 0
-        },
+        skill_coverage: data.skill_coverage || {},
         sentiment_distribution: data.sentiment_distribution || {
           positive: 0,
           neutral: 0,
