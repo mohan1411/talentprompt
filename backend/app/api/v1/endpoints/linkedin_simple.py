@@ -31,6 +31,8 @@ class LinkedInProfileImport(BaseModel):
     experience: Optional[list] = []
     education: Optional[list] = []
     skills: Optional[list] = []
+    full_text: Optional[str] = None  # Full resume text
+    years_experience: Optional[int] = None  # Total years of experience
 
 
 class LinkedInImportResponse(BaseModel):
@@ -67,22 +69,23 @@ async def import_linkedin_profile(
                 is_duplicate=True
             )
         
-        # Parse LinkedIn data
+        # Parse LinkedIn data (will use AI if available and full_text is provided)
         parser = LinkedInParser()
         parsed_data = await parser.parse_linkedin_data(profile_data.dict())
         
         # Create new resume
+        # Use AI-parsed data when available, fallback to raw data
         resume_data = {
             "user_id": current_user.id,
             "first_name": parsed_data.get("first_name", ""),
             "last_name": parsed_data.get("last_name", ""),
             "email": parsed_data.get("email", ""),
             "phone": parsed_data.get("phone", ""),
-            "location": profile_data.location or "",
-            "summary": profile_data.about or "",
-            "current_title": profile_data.headline or "",
-            "years_experience": parsed_data.get("years_experience", 0),
-            "skills": profile_data.skills or [],
+            "location": parsed_data.get("location") or profile_data.location or "",
+            "summary": parsed_data.get("summary") or profile_data.about or "",
+            "current_title": parsed_data.get("current_title") or profile_data.headline or "",
+            "years_experience": parsed_data.get("years_experience") or profile_data.years_experience or 0,
+            "skills": parsed_data.get("skills") or profile_data.skills or [],
             "keywords": parsed_data.get("keywords", []),
             "linkedin_url": profile_data.linkedin_url,
             "linkedin_data": profile_data.dict(),
@@ -93,6 +96,10 @@ async def import_linkedin_profile(
             "raw_text": parsed_data.get("raw_text", ""),
             "parsed_data": parsed_data
         }
+        
+        # Log parsing method for debugging
+        parsing_method = parsed_data.get("parsing_method", "rule-based")
+        logger.info(f"Resume created using {parsing_method} parsing")
         
         resume = Resume(**resume_data)
         db.add(resume)

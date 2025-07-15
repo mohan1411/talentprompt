@@ -141,23 +141,16 @@
       const authToken = await getAuthToken();
       if (!authToken) return;
       
-      const response = await fetch(`${API_URL}/linkedin/check-exists`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          linkedin_url: profileData.linkedin_url
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.exists) {
-          updateButtonState('exists', data.candidate_id);
+      // Send through background script to avoid CORS
+      chrome.runtime.sendMessage({
+        action: 'checkProfileExists',
+        linkedin_url: profileData.linkedin_url,
+        authToken: authToken
+      }, response => {
+        if (response && response.exists) {
+          updateButtonState('exists', response.candidate_id);
         }
-      }
+      });
     } catch (error) {
       console.error('Error checking profile:', error);
     }
@@ -185,8 +178,54 @@
         return;
       }
       
-      const profileData = extractProfileData();
-      console.log('Extracted profile data:', profileData);
+      // Try advanced extraction first
+      let profileData = extractProfileData();
+      console.log('Advanced extraction result:', profileData);
+      
+      // If we didn't get much data, try clean extraction
+      if (!profileData.experience.length) {
+        console.log('No experience found, trying clean extraction...');
+        if (window.extractCleanProfileData) {
+          const cleanData = window.extractCleanProfileData();
+          console.log('Clean extraction result:', cleanData);
+          
+          // Use clean data if it has more experience entries
+          if (cleanData.experience.length > profileData.experience.length) {
+            profileData.experience = cleanData.experience;
+            profileData.full_text = cleanData.full_text;
+            profileData.years_experience = cleanData.years_experience || 0;
+            console.log('Using clean extraction for experience data');
+          }
+        }
+      }
+      
+      // If still no data, try simple extraction
+      if (!profileData.name || (!profileData.experience.length && !profileData.about)) {
+        console.log('Still limited data, trying simple extraction...');
+        const simpleData = window.extractProfileDataSimple ? window.extractProfileDataSimple() : {};
+        
+        // Merge the results, preferring advanced data when available
+        profileData = {
+          ...simpleData,
+          ...profileData,
+          name: profileData.name || simpleData.name,
+          headline: profileData.headline || simpleData.headline,
+          location: profileData.location || simpleData.location,
+          about: profileData.about || simpleData.about,
+          experience: profileData.experience.length ? profileData.experience : simpleData.experience,
+          education: profileData.education.length ? profileData.education : simpleData.education,
+          skills: profileData.skills.length ? profileData.skills : simpleData.skills,
+          full_text: profileData.full_text || simpleData.raw_text
+        };
+      }
+      
+      // Clean the full_text to remove irrelevant content
+      if (profileData.full_text && window.filterLinkedInText) {
+        profileData.full_text = window.filterLinkedInText(profileData.full_text);
+        console.log('Filtered full_text to remove irrelevant content');
+      }
+      
+      console.log('Final profile data to import:', profileData);
       
       console.log('Sending import request through background script...');
       console.log('Auth token:', authToken ? 'Present' : 'Missing');
@@ -240,55 +279,343 @@
       about: '',
       experience: [],
       education: [],
-      skills: []
+      skills: [],
+      years_experience: 0
     };
     
-    // Extract name
-    const nameElement = document.querySelector('.pv-text-details__left-panel h1');
+    // Extract name - updated selectors for 2025 LinkedIn
+    const nameElement = document.querySelector('h1.text-heading-xlarge') || 
+                       document.querySelector('h1') ||
+                       document.querySelector('[aria-label*="Name"]');
     if (nameElement) {
       data.name = nameElement.textContent.trim();
     }
     
-    // Extract headline
-    const headlineElement = document.querySelector('.pv-text-details__left-panel .text-body-medium');
+    // Extract headline - updated selectors
+    const headlineElement = document.querySelector('.text-body-medium.break-words') ||
+                           document.querySelector('div.text-body-medium:not(.t-black--light)') ||
+                           document.querySelector('[data-generated-suggestion-target]');
     if (headlineElement) {
       data.headline = headlineElement.textContent.trim();
     }
     
-    // Extract location
-    const locationElement = document.querySelector('.pv-text-details__left-panel .text-body-small:last-child');
+    // Extract location - updated selectors
+    const locationElement = document.querySelector('.text-body-small.inline.t-black--light.break-words') ||
+                           document.querySelector('span.text-body-small.inline.t-black--light') ||
+                           document.querySelector('[aria-label*="Location"]');
     if (locationElement) {
       data.location = locationElement.textContent.trim();
     }
     
-    // Extract about section
-    const aboutSection = document.querySelector('.pv-about-section .pv-about__summary-text');
+    // Extract about section - updated selectors
+    const aboutSection = document.querySelector('#about')?.parentElement;
     if (aboutSection) {
-      data.about = aboutSection.textContent.trim();
+      const aboutText = aboutSection.querySelector('.display-flex.full-width span[aria-hidden="true"]') ||
+                       aboutSection.querySelector('.inline-show-more-text span[aria-hidden="true"]') ||
+                       aboutSection.querySelector('.pv-shared-text-with-see-more span');
+      if (aboutText) {
+        data.about = aboutText.textContent.trim();
+      }
     }
     
-    // Extract experience
-    const experienceItems = document.querySelectorAll('.pv-profile-section__card-item-v2');
-    experienceItems.forEach(item => {
-      const titleEl = item.querySelector('.pv-entity__summary-info h3');
-      const companyEl = item.querySelector('.pv-entity__secondary-title');
-      const durationEl = item.querySelector('.pv-entity__date-range span:nth-child(2)');
-      const descriptionEl = item.querySelector('.pv-entity__description');
+    // Extract experience - more robust approach
+    const experienceSection = document.querySelector('#experience')?.parentElement?.parentElement;
+    if (experienceSection) {
+      console.log('Found experience section, attempting extraction...');
       
-      if (titleEl && companyEl) {
-        data.experience.push({
-          title: titleEl.textContent.trim(),
-          company: companyEl.textContent.trim(),
-          duration: durationEl ? durationEl.textContent.trim() : '',
-          description: descriptionEl ? descriptionEl.textContent.trim() : ''
+      // Method 1: Try the most common structure first
+      const experienceList = experienceSection.querySelector('ul') || experienceSection.querySelector('div > div > ul');
+      if (experienceList) {
+        const items = experienceList.querySelectorAll('li');
+        console.log(`Found ${items.length} experience items in list`);
+        
+        items.forEach((item, index) => {
+          try {
+            // Get all visible text content
+            const visibleSpans = item.querySelectorAll('span[aria-hidden="true"]:not(.visually-hidden)');
+            const texts = Array.from(visibleSpans)
+              .map(span => span.textContent.trim())
+              .filter(t => t && t.length > 1);
+            
+            console.log(`Item ${index + 1} texts:`, texts);
+            
+            if (texts.length >= 2) {
+              const exp = {
+                title: '',
+                company: '',
+                duration: '',
+                description: '',
+                location: ''
+              };
+              
+              // Pattern 1: Role title is usually the first bold text
+              const boldText = item.querySelector('.t-bold span[aria-hidden="true"]');
+              if (boldText) {
+                exp.title = boldText.textContent.trim();
+              } else if (texts[0]) {
+                exp.title = texts[0];
+              }
+              
+              // Pattern 2: Company info usually follows the title
+              let companyIndex = exp.title ? 1 : 0;
+              if (texts[companyIndex]) {
+                const companyText = texts[companyIndex];
+                if (companyText.includes(' · ')) {
+                  const parts = companyText.split(' · ');
+                  exp.company = parts[0].trim();
+                  exp.employment_type = parts[1].trim();
+                } else {
+                  exp.company = companyText;
+                }
+              }
+              
+              // Pattern 3: Look for dates
+              for (let i = companyIndex + 1; i < texts.length; i++) {
+                const text = texts[i];
+                if (text.match(/\d{4}|Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/i)) {
+                  exp.duration = text;
+                  // Check if location follows duration
+                  if (i + 1 < texts.length && texts[i + 1].includes(',')) {
+                    exp.location = texts[i + 1];
+                  }
+                  break;
+                }
+              }
+              
+              // Pattern 4: Description is usually after duration/location
+              const durationIndex = texts.indexOf(exp.duration);
+              if (durationIndex !== -1 && durationIndex + 1 < texts.length) {
+                const remainingTexts = texts.slice(durationIndex + 1);
+                // Skip location if it's next
+                const descTexts = exp.location && remainingTexts[0] === exp.location ? 
+                                 remainingTexts.slice(1) : remainingTexts;
+                exp.description = descTexts.join(' ').substring(0, 500);
+              }
+              
+              // Only add if we have meaningful data
+              if (exp.title || exp.company) {
+                data.experience.push(exp);
+                console.log(`Added experience ${data.experience.length}:`, exp);
+              }
+            }
+          } catch (e) {
+            console.error(`Error parsing experience item ${index + 1}:`, e);
+          }
         });
       }
-    });
+      
+      // Method 2: If no list found, try alternative structure
+      if (data.experience.length === 0) {
+        const experienceItems = experienceSection.querySelectorAll('[data-view-name="profile-component-entity"]') ||
+                               experienceSection.querySelectorAll('.pvs-entity');
+        
+        console.log(`Trying alternative method, found ${experienceItems.length} items`);
+        
+        experienceItems.forEach((item, index) => {
+          try {
+            const texts = [];
+            item.querySelectorAll('span[aria-hidden="true"]').forEach(span => {
+              const text = span.textContent.trim();
+              if (text && !texts.includes(text)) texts.push(text);
+            });
+            
+            if (texts.length >= 2) {
+              data.experience.push({
+                title: texts[0],
+                company: texts[1].split(' · ')[0],
+                duration: texts.find(t => t.match(/\d{4}|Present/i)) || '',
+                description: texts.slice(3).join(' ').substring(0, 300)
+              });
+            }
+          } catch (e) {
+            console.error('Error in alternative experience parsing:', e);
+          }
+        });
+      }
+      
+      // Method 3: Last resort - extract from section text
+      if (data.experience.length === 0) {
+        console.log('No structured experience found, extracting from text');
+        const sectionText = experienceSection.innerText || experienceSection.textContent || '';
+        
+        // Look for common patterns in the text
+        const lines = sectionText.split('\n').map(l => l.trim()).filter(l => l);
+        let currentExp = null;
+        
+        lines.forEach(line => {
+          // Skip the "Experience" header
+          if (line === 'Experience') return;
+          
+          // Check for job titles (usually don't contain "at" and are not too long)
+          if (line.length > 5 && line.length < 100 && 
+              !line.toLowerCase().includes(' at ') && 
+              !line.match(/\d{4}/) &&
+              /^[A-Z]/.test(line)) {
+            if (currentExp) data.experience.push(currentExp);
+            currentExp = {
+              title: line,
+              company: '',
+              duration: '',
+              description: ''
+            };
+          } else if (currentExp) {
+            if (line.toLowerCase().includes(' at ') || 
+                line.includes('GmbH') || 
+                line.includes('Ltd') || 
+                line.includes('Inc')) {
+              currentExp.company = line.replace(/^at\s+/i, '');
+            } else if (line.match(/\d{4}|Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/i)) {
+              currentExp.duration = line;
+            }
+          }
+        });
+        
+        if (currentExp) data.experience.push(currentExp);
+      }
+    }
     
-    // Extract skills (if visible)
-    const skillElements = document.querySelectorAll('.pv-skill-category-entity__name-text');
-    skillElements.forEach(skill => {
-      data.skills.push(skill.textContent.trim());
+    // Extract education - updated selectors
+    const educationSection = document.querySelector('#education')?.parentElement;
+    if (educationSection) {
+      const educationItems = educationSection.querySelectorAll('li.artdeco-list__item') ||
+                            educationSection.querySelectorAll('.pvs-entity');
+      
+      educationItems.forEach(item => {
+        const schoolEl = item.querySelector('.mr1.hoverable-link-text span[aria-hidden="true"]') ||
+                        item.querySelector('[data-field="education_school_name"]');
+        
+        const degreeEl = item.querySelector('.t-14.t-normal span[aria-hidden="true"]') ||
+                        item.querySelector('[data-field="education_degree_name"]');
+        
+        const datesEl = item.querySelector('.t-14.t-normal.t-black--light span[aria-hidden="true"]') ||
+                       item.querySelector('[data-field="education_date_range"]');
+        
+        if (schoolEl) {
+          const edu = {
+            school: schoolEl.textContent.trim(),
+            degree: degreeEl ? degreeEl.textContent.trim() : '',
+            dates: datesEl ? datesEl.textContent.trim() : ''
+          };
+          
+          if (edu.school) {
+            data.education.push(edu);
+          }
+        }
+      });
+    }
+    
+    // Extract skills - updated selectors
+    const skillsSection = document.querySelector('#skills')?.parentElement;
+    if (skillsSection) {
+      const skillElements = skillsSection.querySelectorAll('.mr1.t-bold span[aria-hidden="true"]') ||
+                           skillsSection.querySelectorAll('[data-field="skill_name"]');
+      
+      skillElements.forEach(skill => {
+        const skillName = skill.textContent.trim();
+        if (skillName && !data.skills.includes(skillName)) {
+          data.skills.push(skillName);
+        }
+      });
+    }
+    
+    // Build full resume text from all extracted data
+    const resumeParts = [];
+    
+    // Add name and headline
+    if (data.name) resumeParts.push(data.name);
+    if (data.headline) resumeParts.push(data.headline);
+    if (data.location) resumeParts.push(data.location);
+    
+    // Add about section
+    if (data.about) {
+      resumeParts.push('\nABOUT');
+      resumeParts.push(data.about);
+    }
+    
+    // Add experience
+    if (data.experience.length > 0) {
+      resumeParts.push('\nEXPERIENCE');
+      data.experience.forEach(exp => {
+        resumeParts.push(''); // Empty line before each experience
+        if (exp.title) resumeParts.push(exp.title);
+        if (exp.company) {
+          if (exp.employment_type) {
+            resumeParts.push(`${exp.company} · ${exp.employment_type}`);
+          } else {
+            resumeParts.push(exp.company);
+          }
+        }
+        if (exp.duration) resumeParts.push(exp.duration);
+        if (exp.location) resumeParts.push(exp.location);
+        if (exp.description) resumeParts.push(exp.description);
+      });
+    }
+    
+    // Add education
+    if (data.education.length > 0) {
+      resumeParts.push('\nEDUCATION');
+      data.education.forEach(edu => {
+        if (edu.school) resumeParts.push(`\n${edu.school}`);
+        if (edu.degree) resumeParts.push(edu.degree);
+        if (edu.dates) resumeParts.push(edu.dates);
+      });
+    }
+    
+    // Add skills
+    if (data.skills.length > 0) {
+      resumeParts.push('\nSKILLS');
+      resumeParts.push(data.skills.join(', '));
+    }
+    
+    // Create full_text field
+    data.full_text = resumeParts.join('\n').trim();
+    
+    // If we still don't have much text, try to get raw content from profile sections only
+    if (data.full_text.length < 200) {
+      // Get only the profile content, not the entire page
+      const profileSections = [];
+      
+      // Get the main profile card
+      const profileCard = document.querySelector('.pv-top-card') || 
+                         document.querySelector('[data-view-name="profile-card"]');
+      if (profileCard) {
+        profileSections.push(profileCard.innerText || profileCard.textContent || '');
+      }
+      
+      // Get the main content area (exclude aside/sidebar)
+      const mainContent = document.querySelector('.scaffold-layout__main') ||
+                         document.querySelector('main > section') ||
+                         document.querySelector('.core-rail');
+      
+      if (mainContent) {
+        // Exclude aside elements and recommendation sections
+        const sections = mainContent.querySelectorAll('section');
+        sections.forEach(section => {
+          const sectionText = section.innerText || section.textContent || '';
+          // Exclude sections that contain recommendations or "People also viewed"
+          if (!sectionText.includes('People also viewed') && 
+              !sectionText.includes('People you may know') &&
+              !sectionText.includes('followers') &&
+              !sectionText.includes('Promoted') &&
+              section.id) { // Only include sections with IDs (profile sections)
+            profileSections.push(sectionText);
+          }
+        });
+      }
+      
+      data.full_text = profileSections.join('\n\n').substring(0, 5000).trim();
+    }
+    
+    // Log what we found for debugging
+    console.log('Extracted LinkedIn data:', {
+      name: data.name,
+      headline: data.headline,
+      location: data.location,
+      aboutLength: data.about.length,
+      experienceCount: data.experience.length,
+      educationCount: data.education.length,
+      skillsCount: data.skills.length,
+      fullTextLength: data.full_text.length
     });
     
     return data;

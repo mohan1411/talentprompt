@@ -26,6 +26,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Keep the message channel open for async response
   }
   
+  if (request.action === 'checkProfileExists') {
+    checkProfileExists(request.linkedin_url, request.authToken)
+      .then(result => sendResponse(result))
+      .catch(error => sendResponse({ exists: false, error: error.message }));
+    return true;
+  }
+  
   // Echo back for other messages
   sendResponse({ received: true, action: request.action });
   return true;
@@ -71,4 +78,35 @@ async function handleImportProfile(profileData, authToken) {
   }
   
   return await response.json();
+}
+
+// Check if profile exists
+async function checkProfileExists(linkedinUrl, authToken) {
+  if (!authToken) {
+    return { exists: false };
+  }
+  
+  const url = `${API_URL}/linkedin/check-exists`;
+  console.log('Checking if profile exists:', linkedinUrl);
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ linkedin_url: linkedinUrl })
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data;
+    }
+    
+    return { exists: false };
+  } catch (error) {
+    console.error('Error checking profile existence:', error);
+    return { exists: false };
+  }
 }

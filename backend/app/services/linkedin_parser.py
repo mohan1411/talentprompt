@@ -1,9 +1,14 @@
 """LinkedIn profile parser service."""
 
 import re
+import json
 import logging
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+
+from openai import AsyncOpenAI
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -11,15 +16,35 @@ logger = logging.getLogger(__name__)
 class LinkedInParser:
     """Service for parsing LinkedIn profile data."""
     
-    async def parse_linkedin_data(self, profile_data: Dict[str, Any]) -> Dict[str, Any]:
+    def __init__(self):
+        """Initialize the LinkedIn parser."""
+        self.client = None
+        if settings.OPENAI_API_KEY:
+            self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+            self.model = settings.OPENAI_MODEL
+    
+    async def parse_linkedin_data(self, profile_data: Dict[str, Any], use_ai: bool = True) -> Dict[str, Any]:
         """Parse LinkedIn profile data into structured format.
         
         Args:
             profile_data: Raw LinkedIn profile data from Chrome extension
+            use_ai: Whether to use AI for parsing (requires OpenAI API key)
             
         Returns:
             Parsed and structured data
         """
+        # Try AI parsing first if available and we have full_text
+        if use_ai and self.client and profile_data.get("full_text"):
+            try:
+                logger.info("Using AI to parse LinkedIn profile")
+                ai_parsed = await self._parse_with_ai(profile_data)
+                if ai_parsed:
+                    return ai_parsed
+            except Exception as e:
+                logger.error(f"AI parsing failed, falling back to rule-based: {str(e)}")
+        
+        # Fallback to rule-based parsing
+        logger.info("Using rule-based parsing for LinkedIn profile")
         parsed = {
             "first_name": "",
             "last_name": "",
@@ -56,7 +81,7 @@ class LinkedInParser:
         parsed["keywords"] = self._extract_keywords(profile_data)
         
         # Build raw text for search
-        parsed["raw_text"] = self._build_raw_text(profile_data)
+        parsed["raw_text"] = profile_data.get("full_text") or self._build_raw_text(profile_data)
         
         return parsed
     
@@ -85,17 +110,23 @@ class LinkedInParser:
                 continue
             
             # Extract years and months from duration string
-            # Examples: "2 years 3 months", "1 year", "6 months"
-            years_match = re.search(r'(\d+)\s*year', duration, re.I)
-            months_match = re.search(r'(\d+)\s*month', duration, re.I)
+            # Examples: "2 years 3 months", "1 year", "6 months", "11 yrs 7 mos"
+            years_match = re.search(r'(\d+)\s*(?:year|yr)', duration, re.I)
+            months_match = re.search(r'(\d+)\s*(?:month|mo)', duration, re.I)
             
             years = int(years_match.group(1)) if years_match else 0
             months = int(months_match.group(1)) if months_match else 0
             
             total_months += (years * 12) + months
+            
+            # Log for debugging
+            if years or months:
+                logger.debug(f"Experience duration '{duration}' = {years} years, {months} months")
         
-        # Convert to years (rounded down)
-        return total_months // 12
+        # Convert to years (rounded to nearest)
+        total_years = round(total_months / 12)
+        logger.info(f"Total experience calculated: {total_years} years from {total_months} months")
+        return total_years
     
     def _parse_experience(self, experiences: List[Dict]) -> List[Dict]:
         """Parse experience entries."""
@@ -216,3 +247,103 @@ class LinkedInParser:
     def _is_current_position(self, duration_str: str) -> bool:
         """Check if position is current based on duration string."""
         return "present" in duration_str.lower() or "current" in duration_str.lower()
+    
+    async def _parse_with_ai(self, profile_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Parse LinkedIn profile using AI (OpenAI).
+        
+        Args:
+            profile_data: LinkedIn profile data with full_text field
+            
+        Returns:
+            Parsed profile data or None if parsing fails
+        """
+        if not profile_data.get("full_text"):
+            return None
+        
+        system_prompt = """You are an expert LinkedIn profile parser. Extract structured information from the LinkedIn profile text.
+
+IMPORTANT: Ignore any content about other people (like "Narendra Modi", "Jeff Weiner", followers, etc.) - focus ONLY on the profile owner's information.
+
+Return a JSON object with the following structure:
+{
+    "first_name": "string",
+    "last_name": "string",
+    "email": "string or null",
+    "phone": "string or null",
+    "location": "string or null",
+    "current_title": "string (job title/headline)",
+    "summary": "string (about section)",
+    "years_experience": number (calculate total years from ALL experience durations),
+    "keywords": ["list", "of", "relevant", "keywords"],
+    "skills": ["list", "of", "skills"],
+    "experience": [
+        {
+            "title": "Job Title",
+            "company": "Company Name",
+            "location": "Location or null",
+            "duration": "Date range as shown (e.g., 'Jan 2014 - Present · 11 yrs 7 mos')",
+            "description": "Job description or null",
+            "is_current": boolean
+        }
+    ],
+    "education": [
+        {
+            "degree": "Degree type",
+            "field": "Field of study",
+            "school": "Institution name",
+            "dates": "Date range or graduation year",
+            "activities": "Activities or null"
+        }
+    ],
+    "certifications": ["list of certifications if any"],
+    "languages": ["list of languages if mentioned"]
+}
+
+Important:
+- Extract ALL experience entries, don't skip any
+- Calculate years_experience by adding up all durations (e.g., "11 yrs 7 mos" + "6 yrs 3 mos" = ~18 years)
+- Ignore endorsement numbers, follower counts, and references to other people
+- Set is_current to true if the position shows "Present" in the date range
+- Keep the full duration string exactly as shown"""
+        
+        user_prompt = f"""Parse this LinkedIn profile:
+
+{profile_data.get('full_text', '')}
+
+Additional structured data if available:
+Name: {profile_data.get('name', '')}
+Headline: {profile_data.get('headline', '')}
+Location: {profile_data.get('location', '')}
+About: {profile_data.get('about', '')[:500] if profile_data.get('about') else ''}
+Skills: {', '.join(profile_data.get('skills', [])[:20])}"""
+        
+        try:
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0,
+                response_format={"type": "json_object"}
+            )
+            
+            parsed = json.loads(response.choices[0].message.content)
+            
+            # Add metadata
+            parsed["parsed_at"] = datetime.utcnow().isoformat()
+            parsed["raw_text"] = profile_data.get("full_text", "")
+            parsed["parsing_method"] = "ai"
+            
+            # Ensure required fields exist
+            parsed.setdefault("email", "")
+            parsed.setdefault("phone", "")
+            parsed.setdefault("certifications", [])
+            parsed.setdefault("languages", [])
+            
+            logger.info(f"Successfully parsed LinkedIn profile with AI: {parsed.get('first_name')} {parsed.get('last_name')}")
+            return parsed
+            
+        except Exception as e:
+            logger.error(f"AI parsing error: {str(e)}")
+            return None

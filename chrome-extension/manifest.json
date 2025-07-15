@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.linkedin.com/*"],
-      "js": ["content/linkedin-profile.js", "content/linkedin-search.js"],
+      "js": ["content/text-filter.js", "content/simple-extractor.js", "content/clean-extractor.js", "content/debug-helper.js", "content/experience-debug.js", "content/linkedin-profile.js", "content/linkedin-search.js"],
       "css": ["content/styles.css"],
       "run_at": "document_end"
     }
