@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "run_migration_once.py"]
+CMD ["python", "force_migration.py"]
