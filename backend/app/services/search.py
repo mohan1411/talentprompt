@@ -5,7 +5,7 @@ import re
 from typing import List, Optional, Tuple, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import select, or_, func
+from sqlalchemy import select, or_, func, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -128,8 +128,10 @@ class SearchService:
             if filters.get("skills"):
                 # For each skill, check if it exists in the skills JSON array
                 for skill in filters["skills"]:
+                    # Use PostgreSQL JSON operators
+                    # Cast JSON to text and use ILIKE for case-insensitive search
                     stmt = stmt.where(
-                        Resume.skills.contains([skill])
+                        func.cast(Resume.skills, String).ilike(f'%"{skill}"%')
                     )
         
         # Execute query
@@ -292,7 +294,7 @@ class SearchService:
                     or_(
                         Resume.summary.ilike(f"%{keyword}%"),
                         Resume.current_title.ilike(f"%{keyword}%"),
-                        Resume.skills.contains([keyword.title()])
+                        func.cast(Resume.skills, String).ilike(f'%"{keyword}"%')
                     )
                 )
                 count_result = await db.execute(count_stmt)
