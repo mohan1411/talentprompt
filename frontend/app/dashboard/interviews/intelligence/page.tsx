@@ -82,64 +82,52 @@ export default function InterviewIntelligencePage() {
       setIsLoading(true)
       setError(null)
       
-      // Mock analytics data - in production, this would come from an API endpoint
-      const mockAnalytics: InterviewAnalytics = {
-        total_interviews: 25,
-        completed_interviews: 20,
-        average_duration: 45,
-        average_rating: 4.2,
-        skill_coverage: {
-          'Technical Skills': 85,
-          'Communication': 78,
-          'Problem Solving': 82,
-          'Leadership': 65,
-          'Culture Fit': 90
+      // Fetch real analytics data from the API
+      const response = await fetch(`/api/v1/interviews/analytics/extended?time_range=${timeRange}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        }
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch analytics')
+      }
+
+      const data = await response.json()
+      
+      // Transform the API response to match the frontend interface
+      const analytics: InterviewAnalytics = {
+        total_interviews: data.total_interviews || 0,
+        completed_interviews: data.completed_interviews || 0,
+        average_duration: Math.round(data.average_duration || 45),
+        average_rating: data.average_rating || 0,
+        skill_coverage: data.skill_coverage || {
+          'Technical Skills': 0,
+          'Communication': 0,
+          'Problem Solving': 0,
+          'Leadership': 0,
+          'Culture Fit': 0
         },
-        sentiment_distribution: {
-          positive: 65,
-          neutral: 25,
-          negative: 10
+        sentiment_distribution: data.sentiment_distribution || {
+          positive: 0,
+          neutral: 0,
+          negative: 0
         },
-        top_candidates: [
-          { candidate_name: 'Betty Taylor', position: 'Senior Developer', rating: 4.8, interview_date: '2025-07-10' },
-          { candidate_name: 'Mark Johnson', position: 'Backend Engineer', rating: 4.6, interview_date: '2025-07-09' },
-          { candidate_name: 'Sarah Williams', position: 'Full Stack Developer', rating: 4.5, interview_date: '2025-07-08' },
-          { candidate_name: 'James Chen', position: 'DevOps Engineer', rating: 4.4, interview_date: '2025-07-07' },
-          { candidate_name: 'Emily Brown', position: 'Frontend Developer', rating: 4.3, interview_date: '2025-07-06' }
-        ],
-        common_strengths: [
-          'Strong technical foundation',
-          'Good communication skills',
-          'Problem-solving ability',
-          'Team collaboration experience',
-          'Relevant project experience'
-        ],
-        common_concerns: [
-          'Limited experience with specific tech stack',
-          'Salary expectations above budget',
-          'Availability concerns',
-          'Relocation requirements',
-          'Culture fit questions'
-        ],
-        interview_trends: [
-          { date: '2025-07-05', count: 3, average_rating: 4.0 },
-          { date: '2025-07-06', count: 4, average_rating: 4.3 },
-          { date: '2025-07-07', count: 5, average_rating: 4.4 },
-          { date: '2025-07-08', count: 3, average_rating: 4.5 },
-          { date: '2025-07-09', count: 3, average_rating: 4.6 },
-          { date: '2025-07-10', count: 2, average_rating: 4.8 }
-        ],
-        interviewer_performance: {
-          questions_asked_ratio: 0.85,
-          follow_up_rate: 0.72,
-          time_management_score: 0.88
+        top_candidates: data.top_candidates || [],
+        common_strengths: data.common_strengths || ['No data available yet'],
+        common_concerns: data.common_concerns || ['No data available yet'],
+        interview_trends: data.interview_trends || [],
+        interviewer_performance: data.interviewer_performance || {
+          questions_asked_ratio: 0,
+          follow_up_rate: 0,
+          time_management_score: 0
         }
       }
       
-      setAnalytics(mockAnalytics)
+      setAnalytics(analytics)
     } catch (error: any) {
       console.error('Failed to load analytics:', error)
-      setError('Failed to load interview analytics')
+      setError('Failed to load interview analytics. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -208,8 +196,13 @@ export default function InterviewIntelligencePage() {
               <SelectItem value="all">All time</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon">
-            <RefreshCwIcon className="h-4 w-4" />
+          <Button 
+            variant="outline" 
+            size="icon"
+            onClick={() => loadAnalytics()}
+            disabled={isLoading}
+          >
+            <RefreshCwIcon className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           <Button variant="outline" size="icon">
             <DownloadIcon className="h-4 w-4" />
@@ -226,8 +219,14 @@ export default function InterviewIntelligencePage() {
           <CardContent>
             <div className="text-2xl font-bold">{analytics.total_interviews}</div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-              <TrendingUpIcon className="h-4 w-4 text-green-500" />
-              <span className="text-green-600">+15%</span> vs last period
+              {analytics.total_interviews > 0 ? (
+                <>
+                  <TrendingUpIcon className="h-4 w-4 text-green-500" />
+                  <span>Active interviewing</span>
+                </>
+              ) : (
+                <span>Start interviewing to see trends</span>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -270,8 +269,7 @@ export default function InterviewIntelligencePage() {
               <StarIcon className="h-5 w-5 text-yellow-500 fill-yellow-500" />
             </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-              <TrendingUpIcon className="h-4 w-4 text-green-500" />
-              <span className="text-green-600">+0.3</span> vs last period
+              <span>Out of 5.0</span>
             </div>
           </CardContent>
         </Card>
@@ -371,20 +369,32 @@ export default function InterviewIntelligencePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-end gap-2">
-                {analytics.interview_trends.map((trend, idx) => (
-                  <div key={idx} className="flex-1 flex flex-col items-center gap-2">
-                    <div className="w-full bg-primary/10 rounded-t relative" style={{ height: `${(trend.count / 5) * 100}%` }}>
-                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium">
-                        {trend.count}
+              {analytics.interview_trends.length > 0 ? (
+                <div className="h-64 flex items-end gap-2">
+                  {analytics.interview_trends.map((trend, idx) => {
+                    const maxCount = Math.max(...analytics.interview_trends.map(t => t.count), 1)
+                    const heightPercent = (trend.count / maxCount) * 100
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center gap-2">
+                        <div className="w-full bg-primary/10 rounded-t relative" style={{ height: `${heightPercent}%` }}>
+                          {trend.count > 0 && (
+                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-medium">
+                              {trend.count}
+                            </div>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          {new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
                       </div>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="h-64 flex items-center justify-center">
+                  <p className="text-muted-foreground">No interview data for this period</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

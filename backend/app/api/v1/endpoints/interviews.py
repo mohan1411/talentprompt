@@ -3,7 +3,7 @@
 import logging
 from typing import List, Optional, Dict, Any
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -664,16 +664,45 @@ async def schedule_next_round(
 @router.get("/analytics", response_model=InterviewAnalyticsResponse)
 async def get_interview_analytics(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_active_user),
+    time_range: Optional[str] = Query("30d", description="Time range: 7d, 30d, 90d, all")
 ) -> InterviewAnalyticsResponse:
     """Get interview analytics for the current user."""
+    
+    # Set up time filter
+    time_filter = None
+    if time_range != "all":
+        days = {"7d": 7, "30d": 30, "90d": 90}.get(time_range, 30)
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        time_filter = InterviewSession.created_at >= cutoff_date
+    
+    # Build base query with time filter
+    base_query = select(InterviewSession).where(
+        InterviewSession.interviewer_id == current_user.id
+    )
+    if time_filter is not None:
+        base_query = base_query.where(time_filter)
     
     # Get total interviews
     total_query = select(func.count(InterviewSession.id)).where(
         InterviewSession.interviewer_id == current_user.id
     )
+    if time_filter is not None:
+        total_query = total_query.where(time_filter)
     total_result = await db.execute(total_query)
     total_interviews = total_result.scalar() or 0
+    
+    # Get completed interviews count
+    completed_query = select(func.count(InterviewSession.id)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    if time_filter is not None:
+        completed_query = completed_query.where(time_filter)
+    completed_result = await db.execute(completed_query)
+    completed_interviews = completed_result.scalar() or 0
     
     # Get average duration
     avg_duration_query = select(func.avg(InterviewSession.duration_minutes)).where(
@@ -682,8 +711,10 @@ async def get_interview_analytics(
             InterviewSession.status == InterviewStatus.COMPLETED
         )
     )
+    if time_filter is not None:
+        avg_duration_query = avg_duration_query.where(time_filter)
     avg_duration_result = await db.execute(avg_duration_query)
-    avg_duration = avg_duration_result.scalar() or 60.0
+    avg_duration = float(avg_duration_result.scalar() or 45.0)
     
     # Get average rating
     avg_rating_query = select(func.avg(InterviewSession.overall_rating)).where(
@@ -692,8 +723,10 @@ async def get_interview_analytics(
             InterviewSession.overall_rating.isnot(None)
         )
     )
+    if time_filter is not None:
+        avg_rating_query = avg_rating_query.where(time_filter)
     avg_rating_result = await db.execute(avg_rating_query)
-    avg_rating = avg_rating_result.scalar() or 3.0
+    avg_rating = float(avg_rating_result.scalar() or 3.0)
     
     # Calculate hire rate
     hire_count_query = select(func.count(InterviewSession.id)).where(
@@ -702,29 +735,380 @@ async def get_interview_analytics(
             InterviewSession.recommendation == "hire"
         )
     )
+    if time_filter is not None:
+        hire_count_query = hire_count_query.where(time_filter)
     hire_count_result = await db.execute(hire_count_query)
     hire_count = hire_count_result.scalar() or 0
     
-    hire_rate = (hire_count / total_interviews * 100) if total_interviews > 0 else 0
+    hire_rate = (hire_count / completed_interviews * 100) if completed_interviews > 0 else 0
     
-    # Mock data for other metrics (would need more complex queries in production)
+    # Get common strengths from completed sessions
+    strengths_query = select(InterviewSession.strengths).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.strengths.isnot(None),
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    if time_filter is not None:
+        strengths_query = strengths_query.where(time_filter)
+    strengths_result = await db.execute(strengths_query)
+    all_strengths = strengths_result.scalars().all()
+    
+    # Count strength occurrences
+    strength_counts = {}
+    for strengths_list in all_strengths:
+        if strengths_list:
+            for strength in strengths_list:
+                strength_counts[strength] = strength_counts.get(strength, 0) + 1
+    
+    common_strengths = [
+        {"strength": strength, "count": count}
+        for strength, count in sorted(strength_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    # Get common concerns from completed sessions
+    concerns_query = select(InterviewSession.concerns).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.concerns.isnot(None),
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    if time_filter is not None:
+        concerns_query = concerns_query.where(time_filter)
+    concerns_result = await db.execute(concerns_query)
+    all_concerns = concerns_result.scalars().all()
+    
+    # Count concern occurrences
+    concern_counts = {}
+    for concerns_list in all_concerns:
+        if concerns_list:
+            for concern in concerns_list:
+                concern_counts[concern] = concern_counts.get(concern, 0) + 1
+    
+    common_concerns = [
+        {"concern": concern, "count": count}
+        for concern, count in sorted(concern_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+    ]
+    
+    # Get question effectiveness (top rated questions)
+    questions_query = select(
+        InterviewQuestion.question_text,
+        func.avg(InterviewQuestion.response_rating).label("avg_rating"),
+        func.count(InterviewQuestion.id).label("times_asked")
+    ).join(
+        InterviewSession
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewQuestion.asked == True,
+            InterviewQuestion.response_rating.isnot(None)
+        )
+    ).group_by(
+        InterviewQuestion.question_text
+    ).order_by(
+        func.avg(InterviewQuestion.response_rating).desc()
+    ).limit(10)
+    
+    if time_filter is not None:
+        questions_query = questions_query.where(time_filter)
+    
+    questions_result = await db.execute(questions_query)
+    question_stats = questions_result.all()
+    
+    question_effectiveness = [
+        {
+            "question": q.question_text[:100] + "..." if len(q.question_text) > 100 else q.question_text,
+            "avg_rating": float(q.avg_rating),
+            "times_asked": q.times_asked
+        }
+        for q in question_stats
+    ]
+    
+    # Calculate interviewer consistency (standard deviation of ratings)
+    consistency_query = select(
+        func.stddev(InterviewSession.overall_rating)
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.overall_rating.isnot(None)
+        )
+    )
+    if time_filter is not None:
+        consistency_query = consistency_query.where(time_filter)
+    
+    consistency_result = await db.execute(consistency_query)
+    rating_stddev = consistency_result.scalar() or 0.0
+    
+    # Convert stddev to consistency score (lower stddev = higher consistency)
+    # Normalize to 0-1 scale where 1 is perfect consistency
+    consistency_score = max(0, 1 - (float(rating_stddev) / 2.5))  # Assuming 2.5 is max acceptable stddev
+    
     return InterviewAnalyticsResponse(
         total_interviews=total_interviews,
-        avg_duration=avg_duration,
-        avg_rating=avg_rating,
-        hire_rate=hire_rate,
-        common_strengths=[
-            {"strength": "Technical skills", "count": 15},
-            {"strength": "Communication", "count": 12},
-            {"strength": "Problem solving", "count": 10}
+        avg_duration=round(avg_duration, 1),
+        avg_rating=round(avg_rating, 1),
+        hire_rate=round(hire_rate, 1),
+        common_strengths=common_strengths if common_strengths else [
+            {"strength": "No data yet", "count": 0}
         ],
-        common_concerns=[
-            {"concern": "Limited experience", "count": 8},
-            {"concern": "Salary expectations", "count": 5}
+        common_concerns=common_concerns if common_concerns else [
+            {"concern": "No data yet", "count": 0}
         ],
-        question_effectiveness=[
-            {"question": "Technical assessment", "avg_rating": 4.2, "times_asked": 20},
-            {"question": "Behavioral questions", "avg_rating": 3.8, "times_asked": 18}
+        question_effectiveness=question_effectiveness if question_effectiveness else [
+            {"question": "No questions rated yet", "avg_rating": 0.0, "times_asked": 0}
         ],
-        interviewer_consistency={"overall": 0.85}
+        interviewer_consistency={"overall": round(consistency_score, 2)}
     )
+
+
+@router.get("/analytics/extended")
+async def get_extended_analytics(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+    time_range: Optional[str] = Query("30d", description="Time range: 7d, 30d, 90d, all")
+) -> Dict[str, Any]:
+    """Get extended interview analytics including all data for intelligence dashboard."""
+    
+    # Get basic analytics first
+    basic_analytics = await get_interview_analytics(db, current_user, time_range)
+    
+    # Set up time filter
+    time_filter = None
+    if time_range != "all":
+        days = {"7d": 7, "30d": 30, "90d": 90}.get(time_range, 30)
+        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        time_filter = InterviewSession.created_at >= cutoff_date
+    
+    # Get completed interviews count
+    completed_query = select(func.count(InterviewSession.id)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    if time_filter is not None:
+        completed_query = completed_query.where(time_filter)
+    completed_result = await db.execute(completed_query)
+    completed_interviews = completed_result.scalar() or 0
+    
+    # Get skill coverage from questions asked
+    skill_coverage_query = select(
+        InterviewQuestion.category,
+        func.count(InterviewQuestion.id).label("count")
+    ).join(
+        InterviewSession
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewQuestion.asked == True
+        )
+    ).group_by(InterviewQuestion.category)
+    
+    if time_filter is not None:
+        skill_coverage_query = skill_coverage_query.where(time_filter)
+    
+    skill_coverage_result = await db.execute(skill_coverage_query)
+    skill_coverage_raw = skill_coverage_result.all()
+    
+    # Calculate skill coverage percentages
+    total_questions = sum(s.count for s in skill_coverage_raw)
+    skill_coverage = {}
+    
+    # Map categories to display names
+    category_mapping = {
+        QuestionCategory.TECHNICAL: "Technical Skills",
+        QuestionCategory.BEHAVIORAL: "Communication",
+        QuestionCategory.SITUATIONAL: "Problem Solving",
+        QuestionCategory.EXPERIENCE: "Leadership",
+        QuestionCategory.GENERAL: "Culture Fit"
+    }
+    
+    for category, count in skill_coverage_raw:
+        display_name = category_mapping.get(category, str(category))
+        if total_questions > 0:
+            skill_coverage[display_name] = int((count / total_questions) * 100)
+        else:
+            skill_coverage[display_name] = 0
+    
+    # Ensure all categories are present
+    for display_name in category_mapping.values():
+        if display_name not in skill_coverage:
+            skill_coverage[display_name] = 0
+    
+    # Get sentiment distribution based on ratings
+    sentiment_query = select(
+        InterviewSession.overall_rating
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.overall_rating.isnot(None),
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    )
+    if time_filter is not None:
+        sentiment_query = sentiment_query.where(time_filter)
+    
+    sentiment_result = await db.execute(sentiment_query)
+    ratings = sentiment_result.scalars().all()
+    
+    positive = sum(1 for r in ratings if r >= 4)
+    neutral = sum(1 for r in ratings if 2.5 <= r < 4)
+    negative = sum(1 for r in ratings if r < 2.5)
+    total_rated = len(ratings)
+    
+    sentiment_distribution = {
+        "positive": int((positive / total_rated * 100)) if total_rated > 0 else 0,
+        "neutral": int((neutral / total_rated * 100)) if total_rated > 0 else 0,
+        "negative": int((negative / total_rated * 100)) if total_rated > 0 else 0
+    }
+    
+    # Get top candidates
+    top_candidates_query = select(
+        InterviewSession,
+        Resume
+    ).join(
+        Resume, InterviewSession.resume_id == Resume.id
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.overall_rating.isnot(None),
+            InterviewSession.status == InterviewStatus.COMPLETED
+        )
+    ).order_by(
+        InterviewSession.overall_rating.desc()
+    ).limit(5)
+    
+    if time_filter is not None:
+        top_candidates_query = top_candidates_query.where(time_filter)
+    
+    top_candidates_result = await db.execute(top_candidates_query)
+    top_candidates_raw = top_candidates_result.all()
+    
+    top_candidates = [
+        {
+            "candidate_name": f"{resume.first_name} {resume.last_name}",
+            "position": session.job_position,
+            "rating": float(session.overall_rating or 0),
+            "interview_date": session.created_at.isoformat()
+        }
+        for session, resume in top_candidates_raw
+    ]
+    
+    # Get interview trends (daily counts for the period)
+    if time_range == "7d":
+        trend_days = 7
+    elif time_range == "30d":
+        trend_days = 10  # Show 10 data points for 30 days
+    elif time_range == "90d":
+        trend_days = 12  # Show 12 data points for 90 days
+    else:
+        trend_days = 10
+    
+    interview_trends = []
+    for i in range(trend_days - 1, -1, -1):
+        day_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=i)
+        day_end = day_start + timedelta(days=1)
+        
+        day_query = select(
+            func.count(InterviewSession.id),
+            func.avg(InterviewSession.overall_rating)
+        ).where(
+            and_(
+                InterviewSession.interviewer_id == current_user.id,
+                InterviewSession.created_at >= day_start,
+                InterviewSession.created_at < day_end
+            )
+        )
+        
+        day_result = await db.execute(day_query)
+        count, avg_rating = day_result.one()
+        
+        interview_trends.append({
+            "date": day_start.isoformat(),
+            "count": count or 0,
+            "average_rating": float(avg_rating or 0)
+        })
+    
+    # Calculate interviewer performance metrics
+    total_questions_query = select(func.count(InterviewQuestion.id)).join(
+        InterviewSession
+    ).where(
+        InterviewSession.interviewer_id == current_user.id
+    )
+    if time_filter is not None:
+        total_questions_query = total_questions_query.where(time_filter)
+    total_questions_result = await db.execute(total_questions_query)
+    total_questions = total_questions_result.scalar() or 0
+    
+    asked_questions_query = select(func.count(InterviewQuestion.id)).join(
+        InterviewSession
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewQuestion.asked == True
+        )
+    )
+    if time_filter is not None:
+        asked_questions_query = asked_questions_query.where(time_filter)
+    asked_questions_result = await db.execute(asked_questions_query)
+    asked_questions = asked_questions_result.scalar() or 0
+    
+    questions_asked_ratio = (asked_questions / total_questions) if total_questions > 0 else 0
+    
+    # Calculate follow-up rate (simplified - based on whether sessions have follow-up questions)
+    sessions_with_followup_query = select(func.count(InterviewQuestion.id)).join(
+        InterviewSession
+    ).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewQuestion.follow_up_questions.isnot(None)
+        )
+    )
+    if time_filter is not None:
+        sessions_with_followup_query = sessions_with_followup_query.where(time_filter)
+    sessions_with_followup_result = await db.execute(sessions_with_followup_query)
+    sessions_with_followup = sessions_with_followup_result.scalar() or 0
+    
+    follow_up_rate = (sessions_with_followup / asked_questions) if asked_questions > 0 else 0
+    
+    # Time management score (sessions completed within target duration)
+    target_duration = 60  # Target 60 minutes
+    on_time_sessions_query = select(func.count(InterviewSession.id)).where(
+        and_(
+            InterviewSession.interviewer_id == current_user.id,
+            InterviewSession.status == InterviewStatus.COMPLETED,
+            InterviewSession.duration_minutes.between(target_duration * 0.8, target_duration * 1.2)
+        )
+    )
+    if time_filter is not None:
+        on_time_sessions_query = on_time_sessions_query.where(time_filter)
+    on_time_sessions_result = await db.execute(on_time_sessions_query)
+    on_time_sessions = on_time_sessions_result.scalar() or 0
+    
+    time_management_score = (on_time_sessions / completed_interviews) if completed_interviews > 0 else 0
+    
+    interviewer_performance = {
+        "questions_asked_ratio": round(questions_asked_ratio, 2),
+        "follow_up_rate": round(follow_up_rate, 2),
+        "time_management_score": round(time_management_score, 2)
+    }
+    
+    # Combine all analytics
+    return {
+        "total_interviews": basic_analytics.total_interviews,
+        "completed_interviews": completed_interviews,
+        "average_duration": basic_analytics.avg_duration,
+        "average_rating": basic_analytics.avg_rating,
+        "hire_rate": basic_analytics.hire_rate,
+        "skill_coverage": skill_coverage,
+        "sentiment_distribution": sentiment_distribution,
+        "top_candidates": top_candidates,
+        "common_strengths": [s["strength"] for s in basic_analytics.common_strengths],
+        "common_concerns": [c["concern"] for c in basic_analytics.common_concerns],
+        "interview_trends": interview_trends,
+        "interviewer_performance": interviewer_performance,
+        "question_effectiveness": basic_analytics.question_effectiveness,
+        "interviewer_consistency": basic_analytics.interviewer_consistency
+    }
