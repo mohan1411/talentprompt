@@ -32,7 +32,14 @@ window.extractUltraCleanProfile = function() {
       /Prime Minister|Narendra Modi|Jeff Weiner|Bill Gates/i,
       /The world of startups/i,
       /^\d+$/, // Just numbers
-      /^at\s*\d+/i // "at 3 endorsements"
+      /^at\s*\d+/i, // "at 3 endorsements"
+      /^Endorsed by \d+ colleagues/i,
+      /^at Endorsed by/i,
+      /^Google$/i, // Just company names without context
+      /^Amazon$/i,
+      /^Microsoft$/i,
+      /^Apple$/i,
+      /^Facebook$/i
     ];
     return patterns.some(p => p.test(text));
   };
@@ -63,23 +70,41 @@ window.extractUltraCleanProfile = function() {
     }
   }
   
-  // Extract experience - ultra clean
-  const expSection = document.querySelector('#experience')?.closest('section');
+  // Extract experience - ultra clean with better selectors
+  const expSection = document.querySelector('#experience')?.closest('section') || 
+                    document.querySelector('#experience')?.parentElement?.parentElement;
   if (expSection) {
     console.log('Processing experience section...');
-    const expList = expSection.querySelector('ul');
+    
+    // Try multiple ways to find the list
+    const expList = expSection.querySelector('ul') || 
+                   expSection.querySelector('.pvs-list') ||
+                   expSection.querySelector('div > div > ul');
+                   
     if (expList) {
-      const items = expList.querySelectorAll('li');
+      const items = expList.querySelectorAll('li') || expList.children;
       console.log(`Found ${items.length} potential experience items`);
       
-      items.forEach((item, idx) => {
+      Array.from(items).forEach((item, idx) => {
+        // Skip if not a list item
+        if (item.tagName !== 'LI' && !item.classList.contains('pvs-entity')) {
+          return;
+        }
+        
         const texts = [];
-        item.querySelectorAll('span[aria-hidden="true"]').forEach(span => {
+        // Get all visible text - LinkedIn uses aria-hidden="true" for visible text
+        const spans = item.querySelectorAll('span[aria-hidden="true"]');
+        spans.forEach(span => {
+          // Skip if parent is visually hidden
+          if (span.closest('.visually-hidden')) return;
+          
           const text = span.textContent.trim();
-          if (text && !isIrrelevant(text) && text.length > 2) {
+          if (text && !isIrrelevant(text) && text.length > 2 && !texts.includes(text)) {
             texts.push(text);
           }
         });
+        
+        console.log(`Item ${idx + 1} texts:`, texts);
         
         if (texts.length >= 2) {
           const exp = {
@@ -90,18 +115,21 @@ window.extractUltraCleanProfile = function() {
             description: ''
           };
           
-          // Parse company
-          if (texts[1] && texts[1].includes('·')) {
-            const parts = texts[1].split('·').map(p => p.trim());
-            exp.company = parts[0];
-          } else if (texts[1]) {
-            exp.company = texts[1];
+          // Parse company - handle various formats
+          if (texts[1]) {
+            if (texts[1].includes('·')) {
+              const parts = texts[1].split('·').map(p => p.trim());
+              exp.company = parts[0];
+            } else {
+              exp.company = texts[1];
+            }
           }
           
-          // Find duration
+          // Find duration - look for date patterns
           for (let i = 2; i < texts.length; i++) {
-            if (texts[i].match(/\d{4}|Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/i)) {
+            if (texts[i].match(/\d{4}|Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
               exp.duration = texts[i];
+              // Check if next item is location
               if (i + 1 < texts.length && texts[i + 1].includes(',')) {
                 exp.location = texts[i + 1];
               }
@@ -112,13 +140,23 @@ window.extractUltraCleanProfile = function() {
           // Verify this is a real experience
           if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
             data.experience.push(exp);
-            console.log(`Added experience ${idx + 1}:`, exp.title, 'at', exp.company);
+            console.log(`Added experience ${data.experience.length}:`, exp.title, 'at', exp.company);
           } else {
-            console.log(`Skipped irrelevant item ${idx + 1}:`, texts[0]);
+            console.log(`Skipped item ${idx + 1} - title: "${texts[0]}" company: "${texts[1] || 'none'}"`);
           }
+        } else {
+          console.log(`Item ${idx + 1} has insufficient text (${texts.length} items)`);
         }
       });
+    } else {
+      console.log('No experience list found, trying alternative structure...');
+      // Try to find experience items without a list
+      const expItems = expSection.querySelectorAll('[data-view-name="profile-component-entity"]') ||
+                      expSection.querySelectorAll('.pvs-entity');
+      console.log(`Found ${expItems.length} experience items with alternative method`);
     }
+  } else {
+    console.log('No experience section found!');
   }
   
   // Extract education - ultra clean

@@ -153,7 +153,44 @@ window.extractContactInfo = async function() {
       }
     } else {
       console.log('WARNING: No contact info button found on profile');
-      console.log('Available buttons:', document.querySelectorAll('.pv-top-card a, .pv-top-card button'));
+      
+      // Debug: Look for all links and buttons that might be contact info
+      console.log('=== Debugging Contact Button Search ===');
+      
+      // Check all links
+      const allLinks = document.querySelectorAll('a');
+      allLinks.forEach(link => {
+        const text = link.textContent.trim().toLowerCase();
+        const href = link.href || '';
+        if (text.includes('contact') || href.includes('contact')) {
+          console.log('Found potential contact link:', {
+            text: link.textContent.trim(),
+            href: href,
+            classes: link.className
+          });
+        }
+      });
+      
+      // Check all buttons
+      const allButtons = document.querySelectorAll('button');
+      allButtons.forEach(button => {
+        const text = button.textContent.trim().toLowerCase();
+        if (text.includes('contact')) {
+          console.log('Found potential contact button:', {
+            text: button.textContent.trim(),
+            classes: button.className,
+            ariaLabel: button.getAttribute('aria-label')
+          });
+        }
+      });
+      
+      // Check the profile actions area specifically
+      const profileActions = document.querySelector('.pvs-profile-actions') || 
+                           document.querySelector('.pv-s-profile-actions') ||
+                           document.querySelector('[data-view-name="profile-actions"]');
+      if (profileActions) {
+        console.log('Profile actions area found, links:', profileActions.querySelectorAll('a').length);
+      }
     }
     
     // Method 2: Check profile intro section for any visible contact info
