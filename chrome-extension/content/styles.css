@@ -1,0 +1,147 @@
+/* Promtitude LinkedIn Integration Styles */
+
+.talentprompt-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-left: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.talentprompt-import-btn:hover {
+  background: #1d4ed8;
+}
+
+.talentprompt-import-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Search results integration */
+.talentprompt-bulk-toolbar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+  min-width: 300px;
+}
+
+.talentprompt-bulk-toolbar h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.talentprompt-profile-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background: #2563eb;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.talentprompt-profile-indicator.exists {
+  background: #10b981;
+}
+
+.talentprompt-profile-indicator.selected {
+  background: #f59e0b;
+}
+
+.talentprompt-profile-indicator:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Status notifications */
+.talentprompt-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.talentprompt-status.success {
+  border-left: 4px solid #10b981;
+  color: #065f46;
+}
+
+.talentprompt-status.error {
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+.talentprompt-status.exists {
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Tooltip */
+.talentprompt-tooltip {
+  position: absolute;
+  background: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.talentprompt-tooltip.visible {
+  opacity: 1;
+}
+
+.talentprompt-tooltip::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #1f2937;
+}

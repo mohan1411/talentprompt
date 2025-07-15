@@ -50,6 +50,11 @@ class Resume(Base):
     file_type = Column(String)
     job_position = Column(String, index=True)  # Job position/role this resume is for
     
+    # LinkedIn Integration
+    linkedin_url = Column(String, unique=True, index=True)  # LinkedIn profile URL
+    linkedin_data = Column(JSON)  # Raw LinkedIn data
+    last_linkedin_sync = Column(DateTime(timezone=True), nullable=True)  # Last sync timestamp
+    
     # Status
     status = Column(String, default="active")  # active, archived, deleted
     parse_status = Column(String, default="pending")  # pending, processing, completed, failed

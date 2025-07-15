@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <img src="../assets/icons/icon-32.png" alt="Promtitude" class="logo">
+      <h1>Promtitude</h1>
+    </div>
+    
+    <div id="auth-section" class="section">
+      <div id="login-form" class="hidden">
+        <h2>Login to Promtitude</h2>
+        <input type="email" id="email" placeholder="Email" />
+        <input type="password" id="password" placeholder="Password" />
+        <button id="login-btn" class="primary-btn">Login</button>
+        <div id="error-message" class="error hidden"></div>
+      </div>
+      
+      <div id="logged-in" class="hidden">
+        <p class="user-info">Logged in as: <span id="user-email"></span></p>
+        <button id="logout-btn" class="secondary-btn">Logout</button>
+      </div>
+    </div>
+    
+    <div id="stats-section" class="section hidden">
+      <h2>Today's Activity</h2>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="imported-today">0</span>
+          <span class="stat-label">Profiles Imported</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="duplicates-found">0</span>
+          <span class="stat-label">Duplicates Found</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="actions-section" class="section hidden">
+      <h2>Quick Actions</h2>
+      <button id="import-current" class="primary-btn" disabled>
+        Import Current Profile
+      </button>
+      <button id="bulk-import" class="secondary-btn" disabled>
+        Bulk Import Search Results
+      </button>
+    </div>
+    
+    <div class="footer">
+      <a href="#" id="settings-link">Settings</a>
+      <a href="#" id="help-link">Help</a>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
