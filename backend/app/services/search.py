@@ -256,10 +256,10 @@ class SearchService:
                 result = await db.execute(stmt)
                 if result.scalar():
                     suggestions.append({
-                        "suggestion": info["full"],
-                        "match": keyword,
-                        "category": info["category"],
-                        "candidate_count": 1  # Simplified for now
+                        "query": info["full"],
+                        "count": 1,  # Simplified for now
+                        "confidence": 0.9 if keyword == query_lower else 0.7,
+                        "category": info["category"]
                     })
         
         # Get job titles from existing resumes
@@ -272,12 +272,12 @@ class SearchService:
             titles = result.scalars().all()
             
             for title in titles:
-                if title and title not in [s["suggestion"] for s in suggestions]:
+                if title and title not in [s["query"] for s in suggestions]:
                     suggestions.append({
-                        "suggestion": title,
-                        "match": query,
-                        "category": "title",
-                        "candidate_count": 1
+                        "query": title,
+                        "count": 1,
+                        "confidence": 0.6,
+                        "category": "title"
                     })
         
         return suggestions[:10]  # Limit to 10 suggestions
