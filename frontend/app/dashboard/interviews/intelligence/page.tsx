@@ -34,6 +34,7 @@ import {
   ChevronDownIcon
 } from 'lucide-react'
 import { interviewsApi } from '@/lib/api/interviews'
+import { apiClient } from '@/lib/api/client'
 
 interface InterviewAnalytics {
   total_interviews: number
@@ -83,17 +84,9 @@ export default function InterviewIntelligencePage() {
       setError(null)
       
       // Fetch real analytics data from the API
-      const response = await fetch(`/api/v1/interviews/analytics/extended?time_range=${timeRange}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
+      const data = await apiClient.get('/interviews/analytics/extended', {
+        params: { time_range: timeRange }
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics')
-      }
-
-      const data = await response.json()
       
       // Transform the API response to match the frontend interface
       const analytics: InterviewAnalytics = {
