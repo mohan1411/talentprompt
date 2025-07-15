@@ -83,10 +83,14 @@ export default function InterviewIntelligencePage() {
       setIsLoading(true)
       setError(null)
       
+      console.log('Fetching analytics with time range:', timeRange)
+      
       // Fetch real analytics data from the API
       const data = await apiClient.get('/interviews/analytics/extended', {
         params: { time_range: timeRange }
       })
+      
+      console.log('Analytics data received:', data)
       
       // Transform the API response to match the frontend interface
       const analytics: InterviewAnalytics = {
@@ -120,7 +124,21 @@ export default function InterviewIntelligencePage() {
       setAnalytics(analytics)
     } catch (error: any) {
       console.error('Failed to load analytics:', error)
-      setError('Failed to load interview analytics. Please try again.')
+      
+      // Better error message based on the error type
+      let errorMessage = 'Failed to load interview analytics. Please try again.'
+      
+      if (error.status === 401) {
+        errorMessage = 'Your session has expired. Please log in again.'
+      } else if (error.status === 404) {
+        errorMessage = 'Analytics endpoint not found. Please contact support.'
+      } else if (error.detail) {
+        errorMessage = error.detail
+      } else if (error.message) {
+        errorMessage = `Error: ${error.message}`
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

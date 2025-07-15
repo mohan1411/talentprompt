@@ -4,6 +4,11 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://talentprompt-production.up.railway.app';
 
+// Debug log for API URL
+if (typeof window !== 'undefined') {
+  console.log('API Base URL:', API_BASE_URL);
+}
+
 export class ApiError extends Error {
   constructor(public status: number, public detail: string) {
     super(detail);
