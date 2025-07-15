@@ -5,7 +5,7 @@ import re
 from typing import List, Optional, Tuple, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import select, or_, func, String
+from sqlalchemy import select, or_, and_, func, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -268,15 +268,57 @@ class SearchService:
             suggested_title = f"{found_level.title()} {tech_info.get('full', found_tech.title() + ' Developer')}"
             
             # Count actual resumes matching this combination
+            # Check for both words appearing together (with possible words in between)
             count_stmt = select(func.count(Resume.id)).where(
                 Resume.status == 'active',
                 or_(
-                    Resume.current_title.ilike(f"%{found_level}%{found_tech}%"),
-                    Resume.summary.ilike(f"%{found_level}%{found_tech}%")
+                    # Check for level AND tech in title/summary
+                    and_(
+                        Resume.current_title.ilike(f"%{found_level}%"),
+                        Resume.current_title.ilike(f"%{found_tech}%")
+                    ),
+                    and_(
+                        Resume.summary.ilike(f"%{found_level}%"),
+                        Resume.summary.ilike(f"%{found_tech}%")
+                    ),
+                    # Also check for exact phrase
+                    Resume.current_title.ilike(f"%{found_level} {found_tech}%"),
+                    Resume.summary.ilike(f"%{found_level} {found_tech}%"),
+                    # Check skills JSON for the technology (case-insensitive)
+                    and_(
+                        or_(
+                            Resume.current_title.ilike(f"%{found_level}%"),
+                            Resume.summary.ilike(f"%{found_level}%")
+                        ),
+                        or_(
+                            func.cast(Resume.skills, String).ilike(f'%"{found_tech}"%'),
+                            func.cast(Resume.skills, String).ilike(f'%"{found_tech.title()}"%'),
+                            func.cast(Resume.skills, String).ilike(f'%"{found_tech.upper()}"%')
+                        )
+                    )
                 )
             )
             count_result = await db.execute(count_stmt)
             actual_count = count_result.scalar() or 0
+            
+            # If no exact matches found, try counting just the technology
+            if actual_count == 0:
+                tech_count_stmt = select(func.count(Resume.id)).where(
+                    Resume.status == 'active',
+                    or_(
+                        Resume.current_title.ilike(f"%{found_tech}%"),
+                        Resume.summary.ilike(f"%{found_tech}%"),
+                        func.cast(Resume.skills, String).ilike(f'%"{found_tech}"%'),
+                        func.cast(Resume.skills, String).ilike(f'%"{found_tech.title()}"%')
+                    )
+                )
+                tech_count_result = await db.execute(tech_count_stmt)
+                tech_count = tech_count_result.scalar() or 0
+                
+                # Show tech count as a hint
+                if tech_count > 0:
+                    actual_count = tech_count
+                    suggested_title = f"{suggested_title} ({tech_count} {found_tech.title()} developers)"
             
             suggestions.append({
                 "query": suggested_title,
