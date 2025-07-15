@@ -1,5 +1,7 @@
 // Extract contact information from LinkedIn profile
 window.extractContactInfo = async function() {
+  console.log('=== Starting Contact Info Extraction ===');
+  
   const contactInfo = {
     email: '',
     phone: '',
@@ -9,45 +11,97 @@ window.extractContactInfo = async function() {
   };
   
   try {
-    // Method 1: Look for Contact Info button in the profile
-    const contactButton = document.querySelector('a[id*="contact-info"]') ||
-                         document.querySelector('button[aria-label*="Contact info"]') ||
-                         document.querySelector('[data-control-name="contact_see_more"]') ||
-                         document.querySelector('.pv-top-card-v2-ctas a[href*="overlay/contact-info"]');
+    // Method 1: Look for Contact Info button with multiple selectors
+    const contactButtonSelectors = [
+      'a[id*="contact-info"]',
+      'button[aria-label*="Contact info"]',
+      'button[aria-label*="contact info" i]',
+      '[data-control-name="contact_see_more"]',
+      '.pv-top-card a[href*="contact-info"]',
+      '.pv-top-card-v2-ctas a[href*="contact-info"]',
+      '.pv-top-card-v3-ctas a[href*="contact-info"]',
+      'a[href*="/overlay/contact-info/"]',
+      'button:has-text("Contact info")',
+      '.pvs-profile-actions a[href*="contact-info"]',
+      '[data-test-id="contact-info"]'
+    ];
+    
+    let contactButton = null;
+    for (const selector of contactButtonSelectors) {
+      try {
+        contactButton = document.querySelector(selector);
+        if (contactButton) {
+          console.log(`Found contact button with selector: ${selector}`);
+          break;
+        }
+      } catch (e) {
+        // Some selectors might not be valid, continue
+      }
+    }
     
     if (contactButton) {
-      console.log('Found contact info button, attempting to extract...');
+      console.log('Contact info button found, attempting to click...');
       
       // Check if contact modal is already open
       let contactModal = document.querySelector('.pv-profile-modal__content') ||
                         document.querySelector('[data-test-modal]') ||
-                        document.querySelector('.artdeco-modal__content');
+                        document.querySelector('.artdeco-modal__content') ||
+                        document.querySelector('[role="dialog"]');
       
       if (!contactModal) {
+        console.log('Modal not open, clicking button...');
         // Click the button to open modal
         contactButton.click();
         
-        // Wait for modal to appear
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        contactModal = document.querySelector('.pv-profile-modal__content') ||
-                      document.querySelector('[data-test-modal]') ||
-                      document.querySelector('.artdeco-modal__content');
+        // Wait for modal to appear with multiple attempts
+        for (let i = 0; i < 5; i++) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          contactModal = document.querySelector('.pv-profile-modal__content') ||
+                        document.querySelector('[data-test-modal]') ||
+                        document.querySelector('.artdeco-modal__content') ||
+                        document.querySelector('[role="dialog"]') ||
+                        document.querySelector('.pv-overlay__content');
+          
+          if (contactModal) {
+            console.log(`Modal appeared after ${i + 1} attempts`);
+            break;
+          }
+        }
+      } else {
+        console.log('Modal already open');
       }
       
       if (contactModal) {
-        // Extract email
-        const emailSection = contactModal.querySelector('section[class*="email"]') ||
-                           contactModal.querySelector('[href^="mailto:"]');
-        if (emailSection) {
-          const emailLink = emailSection.querySelector('a[href^="mailto:"]');
-          if (emailLink) {
-            contactInfo.email = emailLink.href.replace('mailto:', '').trim();
-          } else {
-            const emailText = emailSection.textContent.match(/[\w.-]+@[\w.-]+\.\w+/);
-            if (emailText) {
-              contactInfo.email = emailText[0];
+        console.log('Modal found, extracting contact info...');
+        
+        // Extract email - try multiple methods
+        const emailSelectors = [
+          'a[href^="mailto:"]',
+          'section[class*="email"] a',
+          '[data-field="email"] a',
+          '.pv-contact-info__contact-type:has(svg[data-test-icon="envelope"]) a',
+          '.ci-email a'
+        ];
+        
+        for (const selector of emailSelectors) {
+          const emailElement = contactModal.querySelector(selector);
+          if (emailElement) {
+            if (emailElement.href && emailElement.href.startsWith('mailto:')) {
+              contactInfo.email = emailElement.href.replace('mailto:', '').trim();
+              console.log(`Found email with selector: ${selector}`);
+              break;
             }
+          }
+        }
+        
+        // If no email link found, try regex on modal text
+        if (!contactInfo.email) {
+          const modalText = contactModal.textContent || '';
+          const emailMatch = modalText.match(/[\w.-]+@[\w.-]+\.\w+/);
+          if (emailMatch) {
+            contactInfo.email = emailMatch[0];
+            console.log('Found email via regex');
           }
         }
         
@@ -87,11 +141,19 @@ window.extractContactInfo = async function() {
         
         // Close modal
         const closeButton = contactModal.querySelector('button[aria-label*="Dismiss"]') ||
-                          contactModal.querySelector('button[data-test-modal-close-btn]');
+                          contactModal.querySelector('button[data-test-modal-close-btn]') ||
+                          contactModal.querySelector('button[aria-label*="Close"]') ||
+                          contactModal.querySelector('.artdeco-modal__dismiss');
         if (closeButton) {
+          console.log('Closing modal');
           closeButton.click();
         }
+      } else {
+        console.log('WARNING: Contact modal did not appear after clicking button');
       }
+    } else {
+      console.log('WARNING: No contact info button found on profile');
+      console.log('Available buttons:', document.querySelectorAll('.pv-top-card a, .pv-top-card button'));
     }
     
     // Method 2: Check profile intro section for any visible contact info
@@ -110,6 +172,13 @@ window.extractContactInfo = async function() {
     console.error('Error extracting contact info:', error);
   }
   
-  console.log('Extracted contact info:', contactInfo);
+  // Final summary
+  console.log('=== Contact Extraction Results ===');
+  console.log('Email:', contactInfo.email || 'Not found');
+  console.log('Phone:', contactInfo.phone || 'Not found');
+  console.log('Website:', contactInfo.website || 'Not found');
+  console.log('Address:', contactInfo.address || 'Not found');
+  console.log('Full contact info:', contactInfo);
+  
   return contactInfo;
 };

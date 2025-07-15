@@ -185,84 +185,32 @@
         contactInfo = await window.extractContactInfo();
       }
       
-      // Try advanced extraction first
-      let profileData = extractProfileData();
-      console.log('Advanced extraction result:', profileData);
+      // Use ultra clean extraction - no fallbacks, no unfiltered content
+      let profileData;
+      if (window.extractUltraCleanProfile) {
+        console.log('Using ultra clean extraction...');
+        profileData = window.extractUltraCleanProfile();
+      } else {
+        console.log('Ultra clean extractor not available, using standard extraction');
+        profileData = extractProfileData();
+      }
       
       // Add contact info to profile data
-      if (contactInfo.email) profileData.email = contactInfo.email;
-      if (contactInfo.phone) profileData.phone = contactInfo.phone;
+      if (contactInfo.email) {
+        profileData.email = contactInfo.email;
+        console.log('Added email to profile data');
+      }
+      if (contactInfo.phone) {
+        profileData.phone = contactInfo.phone;
+        console.log('Added phone to profile data');
+      }
       
-      // If we didn't get much data, try clean extraction
-      if (!profileData.experience.length) {
-        console.log('No experience found, trying clean extraction...');
-        if (window.extractCleanProfileData) {
-          const cleanData = window.extractCleanProfileData();
-          console.log('Clean extraction result:', cleanData);
-          
-          // Use clean data if it has more experience entries
-          if (cleanData.experience.length > profileData.experience.length) {
-            profileData.experience = cleanData.experience;
-            profileData.full_text = cleanData.full_text;
-            profileData.years_experience = cleanData.years_experience || 0;
-            console.log('Using clean extraction for experience data');
-          }
+      // Verify the data is clean
+      if (window.verifyCleanData) {
+        const isClean = window.verifyCleanData(profileData);
+        if (!isClean) {
+          console.warn('WARNING: Profile data contains irrelevant content!');
         }
-      }
-      
-      // If still no data, try simple extraction
-      if (!profileData.name || (!profileData.experience.length && !profileData.about)) {
-        console.log('Still limited data, trying simple extraction...');
-        const simpleData = window.extractProfileDataSimple ? window.extractProfileDataSimple() : {};
-        
-        // Merge the results, preferring advanced data when available
-        profileData = {
-          ...simpleData,
-          ...profileData,
-          name: profileData.name || simpleData.name,
-          headline: profileData.headline || simpleData.headline,
-          location: profileData.location || simpleData.location,
-          about: profileData.about || simpleData.about,
-          experience: profileData.experience.length ? profileData.experience : simpleData.experience,
-          education: profileData.education.length ? profileData.education : simpleData.education,
-          skills: profileData.skills.length ? profileData.skills : simpleData.skills,
-          full_text: profileData.full_text || simpleData.raw_text
-        };
-      }
-      
-      // Apply aggressive cleaning to profile data
-      if (window.aggressiveClean) {
-        console.log('Applying aggressive cleaning to profile data...');
-        profileData = window.aggressiveClean.cleanProfileData(profileData);
-        
-        // Rebuild full_text with only clean data
-        profileData.full_text = window.aggressiveClean.buildCleanText(
-          profileData.name,
-          profileData.headline,
-          profileData.location,
-          profileData.about,
-          profileData.experience,
-          profileData.education,
-          profileData.skills,
-          profileData.years_experience
-        );
-      } else {
-        // Fallback to old filtering
-        if (profileData.full_text && window.filterLinkedInText) {
-          profileData.full_text = window.filterLinkedInText(profileData.full_text);
-          console.log('Filtered full_text to remove irrelevant content');
-        }
-      }
-      
-      // Calculate years of experience if not already set
-      if (!profileData.years_experience && window.calculateTotalExperience) {
-        profileData.years_experience = window.calculateTotalExperience(profileData.experience);
-        console.log(`Calculated ${profileData.years_experience} years of experience from ${profileData.experience.length} positions`);
-      }
-      
-      // Log experience details for debugging
-      if (window.logExperienceDetails) {
-        window.logExperienceDetails(profileData.experience);
       }
       
       console.log('Final profile data to import:', profileData);
@@ -560,111 +508,8 @@
       });
     }
     
-    // Build full resume text - use cleaner if available
-    if (window.cleanResumeText) {
-      // Build header
-      const header = [];
-      if (data.name) header.push(data.name);
-      if (data.headline) header.push(data.headline);
-      if (data.location) header.push(data.location);
-      
-      // Add about if available
-      const aboutSection = data.about ? `\nABOUT\n${data.about}\n` : '';
-      
-      // Get clean resume body
-      const resumeBody = window.cleanResumeText(data.experience, data.education, data.skills);
-      
-      // Combine all parts
-      data.full_text = header.join('\n') + aboutSection + '\n' + resumeBody;
-    } else {
-      // Fallback to old method
-      const resumeParts = [];
-      
-      // Add name and headline
-      if (data.name) resumeParts.push(data.name);
-      if (data.headline) resumeParts.push(data.headline);
-      if (data.location) resumeParts.push(data.location);
-      
-      // Add about section
-      if (data.about) {
-        resumeParts.push('\nABOUT');
-        resumeParts.push(data.about);
-      }
-      
-      // Add experience
-      if (data.experience.length > 0) {
-        resumeParts.push('\nEXPERIENCE');
-        data.experience.forEach(exp => {
-          resumeParts.push(''); // Empty line before each experience
-          if (exp.title) resumeParts.push(exp.title);
-          if (exp.company) {
-            if (exp.employment_type) {
-              resumeParts.push(`${exp.company} · ${exp.employment_type}`);
-            } else {
-              resumeParts.push(exp.company);
-            }
-          }
-          if (exp.duration) resumeParts.push(exp.duration);
-          if (exp.location) resumeParts.push(exp.location);
-          if (exp.description) resumeParts.push(exp.description);
-        });
-      }
-      
-      // Add education
-      if (data.education.length > 0) {
-        resumeParts.push('\nEDUCATION');
-        data.education.forEach(edu => {
-          if (edu.school) resumeParts.push(`\n${edu.school}`);
-          if (edu.degree) resumeParts.push(edu.degree);
-          if (edu.dates) resumeParts.push(edu.dates);
-        });
-      }
-      
-      // Add skills
-      if (data.skills.length > 0) {
-        resumeParts.push('\nSKILLS');
-        resumeParts.push(data.skills.join(', '));
-      }
-      
-      // Create full_text field
-      data.full_text = resumeParts.join('\n').trim();
-    }
-    
-    // If we still don't have much text, try to get raw content from profile sections only
-    if (data.full_text.length < 200) {
-      // Get only the profile content, not the entire page
-      const profileSections = [];
-      
-      // Get the main profile card
-      const profileCard = document.querySelector('.pv-top-card') || 
-                         document.querySelector('[data-view-name="profile-card"]');
-      if (profileCard) {
-        profileSections.push(profileCard.innerText || profileCard.textContent || '');
-      }
-      
-      // Get the main content area (exclude aside/sidebar)
-      const mainContent = document.querySelector('.scaffold-layout__main') ||
-                         document.querySelector('main > section') ||
-                         document.querySelector('.core-rail');
-      
-      if (mainContent) {
-        // Exclude aside elements and recommendation sections
-        const sections = mainContent.querySelectorAll('section');
-        sections.forEach(section => {
-          const sectionText = section.innerText || section.textContent || '';
-          // Exclude sections that contain recommendations or "People also viewed"
-          if (!sectionText.includes('People also viewed') && 
-              !sectionText.includes('People you may know') &&
-              !sectionText.includes('followers') &&
-              !sectionText.includes('Promoted') &&
-              section.id) { // Only include sections with IDs (profile sections)
-            profileSections.push(sectionText);
-          }
-        });
-      }
-      
-      data.full_text = profileSections.join('\n\n').substring(0, 5000).trim();
-    }
+    // DO NOT build full_text here - let aggressive cleaning handle it completely
+    data.full_text = ''; // Will be built by aggressive cleaning
     
     // Log what we found for debugging
     console.log('Extracted LinkedIn data:', {
