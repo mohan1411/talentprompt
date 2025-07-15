@@ -150,8 +150,8 @@ class InterviewAnalyticsResponse(BaseModel):
     avg_duration: float
     avg_rating: float
     hire_rate: float
-    common_strengths: List[Dict[str, int]]
-    common_concerns: List[Dict[str, int]]
+    common_strengths: List[Dict[str, Any]]  # Changed to Any to support both string and int values
+    common_concerns: List[Dict[str, Any]]   # Changed to Any to support both string and int values
     question_effectiveness: List[Dict[str, Any]]
     interviewer_consistency: Dict[str, float]
 
