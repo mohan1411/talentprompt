@@ -225,6 +225,17 @@
         console.log('Filtered full_text to remove irrelevant content');
       }
       
+      // Calculate years of experience if not already set
+      if (!profileData.years_experience && window.calculateTotalExperience) {
+        profileData.years_experience = window.calculateTotalExperience(profileData.experience);
+        console.log(`Calculated ${profileData.years_experience} years of experience from ${profileData.experience.length} positions`);
+      }
+      
+      // Log experience details for debugging
+      if (window.logExperienceDetails) {
+        window.logExperienceDetails(profileData.experience);
+      }
+      
       console.log('Final profile data to import:', profileData);
       
       console.log('Sending import request through background script...');
@@ -518,57 +529,75 @@
       });
     }
     
-    // Build full resume text from all extracted data
-    const resumeParts = [];
-    
-    // Add name and headline
-    if (data.name) resumeParts.push(data.name);
-    if (data.headline) resumeParts.push(data.headline);
-    if (data.location) resumeParts.push(data.location);
-    
-    // Add about section
-    if (data.about) {
-      resumeParts.push('\nABOUT');
-      resumeParts.push(data.about);
-    }
-    
-    // Add experience
-    if (data.experience.length > 0) {
-      resumeParts.push('\nEXPERIENCE');
-      data.experience.forEach(exp => {
-        resumeParts.push(''); // Empty line before each experience
-        if (exp.title) resumeParts.push(exp.title);
-        if (exp.company) {
-          if (exp.employment_type) {
-            resumeParts.push(`${exp.company} · ${exp.employment_type}`);
-          } else {
-            resumeParts.push(exp.company);
+    // Build full resume text - use cleaner if available
+    if (window.cleanResumeText) {
+      // Build header
+      const header = [];
+      if (data.name) header.push(data.name);
+      if (data.headline) header.push(data.headline);
+      if (data.location) header.push(data.location);
+      
+      // Add about if available
+      const aboutSection = data.about ? `\nABOUT\n${data.about}\n` : '';
+      
+      // Get clean resume body
+      const resumeBody = window.cleanResumeText(data.experience, data.education, data.skills);
+      
+      // Combine all parts
+      data.full_text = header.join('\n') + aboutSection + '\n' + resumeBody;
+    } else {
+      // Fallback to old method
+      const resumeParts = [];
+      
+      // Add name and headline
+      if (data.name) resumeParts.push(data.name);
+      if (data.headline) resumeParts.push(data.headline);
+      if (data.location) resumeParts.push(data.location);
+      
+      // Add about section
+      if (data.about) {
+        resumeParts.push('\nABOUT');
+        resumeParts.push(data.about);
+      }
+      
+      // Add experience
+      if (data.experience.length > 0) {
+        resumeParts.push('\nEXPERIENCE');
+        data.experience.forEach(exp => {
+          resumeParts.push(''); // Empty line before each experience
+          if (exp.title) resumeParts.push(exp.title);
+          if (exp.company) {
+            if (exp.employment_type) {
+              resumeParts.push(`${exp.company} · ${exp.employment_type}`);
+            } else {
+              resumeParts.push(exp.company);
+            }
           }
-        }
-        if (exp.duration) resumeParts.push(exp.duration);
-        if (exp.location) resumeParts.push(exp.location);
-        if (exp.description) resumeParts.push(exp.description);
-      });
+          if (exp.duration) resumeParts.push(exp.duration);
+          if (exp.location) resumeParts.push(exp.location);
+          if (exp.description) resumeParts.push(exp.description);
+        });
+      }
+      
+      // Add education
+      if (data.education.length > 0) {
+        resumeParts.push('\nEDUCATION');
+        data.education.forEach(edu => {
+          if (edu.school) resumeParts.push(`\n${edu.school}`);
+          if (edu.degree) resumeParts.push(edu.degree);
+          if (edu.dates) resumeParts.push(edu.dates);
+        });
+      }
+      
+      // Add skills
+      if (data.skills.length > 0) {
+        resumeParts.push('\nSKILLS');
+        resumeParts.push(data.skills.join(', '));
+      }
+      
+      // Create full_text field
+      data.full_text = resumeParts.join('\n').trim();
     }
-    
-    // Add education
-    if (data.education.length > 0) {
-      resumeParts.push('\nEDUCATION');
-      data.education.forEach(edu => {
-        if (edu.school) resumeParts.push(`\n${edu.school}`);
-        if (edu.degree) resumeParts.push(edu.degree);
-        if (edu.dates) resumeParts.push(edu.dates);
-      });
-    }
-    
-    // Add skills
-    if (data.skills.length > 0) {
-      resumeParts.push('\nSKILLS');
-      resumeParts.push(data.skills.join(', '));
-    }
-    
-    // Create full_text field
-    data.full_text = resumeParts.join('\n').trim();
     
     // If we still don't have much text, try to get raw content from profile sections only
     if (data.full_text.length < 200) {

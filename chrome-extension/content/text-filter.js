@@ -37,7 +37,20 @@ window.filterLinkedInText = function(text) {
     
     // Clean up endorsements but keep the skill
     /Endorsed by \d+ colleagues[\s\S]*?(?=\n|$)/gi,
-    /\d+ endorsements?/gi
+    /\d+ endorsements?/gi,
+    
+    // Remove entire endorsement lines
+    /^.*Endorsed by.*$/gm,
+    /^.*\d+\s*endorsements.*$/gm,
+    
+    // Remove lines that are just follower counts
+    /^\d+(?:,\d+)*\s*followers?\s*$/gm,
+    
+    // Remove lines with "at" followed by endorsement info
+    /^at\s+\d+\s+endorsements?\s*$/gm,
+    
+    // Remove standalone company names with follower counts
+    /^[A-Za-z\s&]+\n\d+(?:,\d+)*\s*followers?\s*$/gm
   ];
   
   let cleanedText = text;
