@@ -5,7 +5,7 @@ import re
 from typing import List, Optional, Tuple, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -216,8 +216,9 @@ class SearchService:
             return suggestions
         
         query_lower = query.lower()
+        query_words = query_lower.split()
         
-        # Common technology suggestions
+        # Common technology suggestions with multi-word support
         tech_keywords = {
             "python": {"category": "language", "full": "Python Developer"},
             "java": {"category": "language", "full": "Java Developer"},
@@ -241,44 +242,92 @@ class SearchService:
             "lead": {"category": "level", "full": "Tech Lead"},
         }
         
-        # Find matching suggestions
+        # Additional multi-word combinations
+        level_modifiers = ["senior", "junior", "lead", "principal", "staff"]
+        role_keywords = ["developer", "engineer", "architect", "manager", "analyst"]
+        
+        # Build contextual suggestions based on query words
+        found_level = None
+        found_tech = None
+        found_role = None
+        
+        for word in query_words:
+            if word in level_modifiers:
+                found_level = word
+            elif word in tech_keywords:
+                found_tech = word
+            elif word in role_keywords:
+                found_role = word
+        
+        # Generate contextual suggestions
+        if found_level and found_tech:
+            # e.g., "senior python" -> "Senior Python Developer"
+            tech_info = tech_keywords.get(found_tech, {})
+            suggested_title = f"{found_level.title()} {tech_info.get('full', found_tech.title() + ' Developer')}"
+            
+            # Count actual resumes matching this combination
+            count_stmt = select(func.count(Resume.id)).where(
+                Resume.status == 'active',
+                or_(
+                    Resume.current_title.ilike(f"%{found_level}%{found_tech}%"),
+                    Resume.summary.ilike(f"%{found_level}%{found_tech}%")
+                )
+            )
+            count_result = await db.execute(count_stmt)
+            actual_count = count_result.scalar() or 0
+            
+            suggestions.append({
+                "query": suggested_title,
+                "count": actual_count,
+                "confidence": 0.95,
+                "category": "combined"
+            })
+        
+        # Find matching single keywords
         for keyword, info in tech_keywords.items():
-            if keyword.startswith(query_lower) or query_lower in keyword:
-                # Count resumes with this keyword
-                stmt = select(Resume).where(
+            if any(keyword.startswith(word) or word in keyword for word in query_words):
+                # Count actual resumes with this keyword
+                count_stmt = select(func.count(Resume.id)).where(
+                    Resume.status == 'active',
                     or_(
                         Resume.summary.ilike(f"%{keyword}%"),
                         Resume.current_title.ilike(f"%{keyword}%"),
-                        Resume.raw_text.ilike(f"%{keyword}%")
+                        Resume.skills.contains([keyword.title()])
                     )
-                ).limit(1)
+                )
+                count_result = await db.execute(count_stmt)
+                actual_count = count_result.scalar() or 0
                 
-                result = await db.execute(stmt)
-                if result.scalar():
+                if actual_count > 0:
                     suggestions.append({
                         "query": info["full"],
-                        "count": 1,  # Simplified for now
+                        "count": actual_count,
                         "confidence": 0.9 if keyword == query_lower else 0.7,
                         "category": info["category"]
                     })
         
-        # Get job titles from existing resumes
+        # Get job titles from existing resumes that match the full query
         if len(suggestions) < 5:
-            stmt = select(Resume.current_title).where(
-                Resume.current_title.ilike(f"%{query}%")
-            ).distinct().limit(5)
+            # First try exact phrase match
+            stmt = select(Resume.current_title, func.count(Resume.id)).where(
+                Resume.current_title.ilike(f"%{query}%"),
+                Resume.status == 'active'
+            ).group_by(Resume.current_title).limit(5)
             
             result = await db.execute(stmt)
-            titles = result.scalars().all()
+            title_counts = result.all()
             
-            for title in titles:
+            for title, count in title_counts:
                 if title and title not in [s["query"] for s in suggestions]:
                     suggestions.append({
                         "query": title,
-                        "count": 1,
-                        "confidence": 0.6,
+                        "count": count,
+                        "confidence": 0.8,
                         "category": "title"
                     })
+        
+        # Sort by confidence and count
+        suggestions.sort(key=lambda x: (x["confidence"], x["count"]), reverse=True)
         
         return suggestions[:10]  # Limit to 10 suggestions
     
