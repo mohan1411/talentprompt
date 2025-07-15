@@ -18,7 +18,7 @@ class ResumeParser:
     def __init__(self):
         """Initialize the resume parser."""
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-        self.model = "gpt-3.5-turbo-1106"  # Using gpt-3.5-turbo for cost efficiency
+        self.model = settings.OPENAI_MODEL  # Using gpt-4o-mini for better performance and cost efficiency
     
     async def parse_resume(self, text: str) -> Dict:
         """Parse resume text using OpenAI to extract structured data.
