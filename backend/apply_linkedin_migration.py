@@ -3,14 +3,37 @@
 
 import asyncio
 import os
-from sqlalchemy.ext.asyncio import create_async_engine
-from app.core.config import settings
+import sys
+
+# Add the app directory to the path
+sys.path.insert(0, '/app')
+
+try:
+    from sqlalchemy.ext.asyncio import create_async_engine
+    from app.core.config import settings
+except ImportError as e:
+    print(f"Import error: {e}")
+    print("Trying alternative import...")
+    from sqlalchemy.ext.asyncio import create_async_engine
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql+asyncpg://', 1)
+    elif DATABASE_URL and DATABASE_URL.startswith('postgresql://'):
+        DATABASE_URL = DATABASE_URL.replace('postgresql://', 'postgresql+asyncpg://', 1)
 
 async def apply_migration():
     """Apply the LinkedIn migration directly."""
     
+    # Get database URL
+    try:
+        db_url = str(settings.DATABASE_URL)
+    except:
+        db_url = DATABASE_URL
+        
+    print(f"Connecting to database...")
+    
     # Create engine
-    engine = create_async_engine(str(settings.DATABASE_URL))
+    engine = create_async_engine(db_url)
     
     async with engine.begin() as conn:
         print("Adding LinkedIn columns...")
