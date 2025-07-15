@@ -33,6 +33,8 @@ class LinkedInProfileImport(BaseModel):
     skills: Optional[list] = []
     full_text: Optional[str] = None  # Full resume text
     years_experience: Optional[int] = None  # Total years of experience
+    email: Optional[str] = None  # Email if available
+    phone: Optional[str] = None  # Phone if available
 
 
 class LinkedInImportResponse(BaseModel):
@@ -79,8 +81,8 @@ async def import_linkedin_profile(
             "user_id": current_user.id,
             "first_name": parsed_data.get("first_name", ""),
             "last_name": parsed_data.get("last_name", ""),
-            "email": parsed_data.get("email", ""),
-            "phone": parsed_data.get("phone", ""),
+            "email": profile_data.email or parsed_data.get("email", ""),
+            "phone": profile_data.phone or parsed_data.get("phone", ""),
             "location": parsed_data.get("location") or profile_data.location or "",
             "summary": parsed_data.get("summary") or profile_data.about or "",
             "current_title": parsed_data.get("current_title") or profile_data.headline or "",

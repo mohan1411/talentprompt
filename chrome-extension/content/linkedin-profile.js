@@ -178,9 +178,20 @@
         return;
       }
       
+      // Extract contact info first (if available)
+      let contactInfo = {};
+      if (window.extractContactInfo) {
+        console.log('Attempting to extract contact info...');
+        contactInfo = await window.extractContactInfo();
+      }
+      
       // Try advanced extraction first
       let profileData = extractProfileData();
       console.log('Advanced extraction result:', profileData);
+      
+      // Add contact info to profile data
+      if (contactInfo.email) profileData.email = contactInfo.email;
+      if (contactInfo.phone) profileData.phone = contactInfo.phone;
       
       // If we didn't get much data, try clean extraction
       if (!profileData.experience.length) {
@@ -219,10 +230,28 @@
         };
       }
       
-      // Clean the full_text to remove irrelevant content
-      if (profileData.full_text && window.filterLinkedInText) {
-        profileData.full_text = window.filterLinkedInText(profileData.full_text);
-        console.log('Filtered full_text to remove irrelevant content');
+      // Apply aggressive cleaning to profile data
+      if (window.aggressiveClean) {
+        console.log('Applying aggressive cleaning to profile data...');
+        profileData = window.aggressiveClean.cleanProfileData(profileData);
+        
+        // Rebuild full_text with only clean data
+        profileData.full_text = window.aggressiveClean.buildCleanText(
+          profileData.name,
+          profileData.headline,
+          profileData.location,
+          profileData.about,
+          profileData.experience,
+          profileData.education,
+          profileData.skills,
+          profileData.years_experience
+        );
+      } else {
+        // Fallback to old filtering
+        if (profileData.full_text && window.filterLinkedInText) {
+          profileData.full_text = window.filterLinkedInText(profileData.full_text);
+          console.log('Filtered full_text to remove irrelevant content');
+        }
       }
       
       // Calculate years of experience if not already set
@@ -291,7 +320,9 @@
       experience: [],
       education: [],
       skills: [],
-      years_experience: 0
+      years_experience: 0,
+      email: '',
+      phone: ''
     };
     
     // Extract name - updated selectors for 2025 LinkedIn
