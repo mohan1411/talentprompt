@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "force_migration.py"]
+CMD ["python", "apply_linkedin_migration.py"]
