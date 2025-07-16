@@ -158,6 +158,8 @@
   
   // Handle import button click
   async function handleImport() {
+    console.log('=== Import Handler v2 - Enhanced Email Extraction ===');
+    
     if (isProcessing) return;
     
     isProcessing = true;

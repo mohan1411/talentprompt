@@ -1,6 +1,6 @@
 // Extract contact information from LinkedIn profile
 window.extractContactInfo = async function() {
-  console.log('=== Starting Contact Info Extraction ===');
+  console.log('=== Starting Contact Info Extraction v2 ===');
   
   const contactInfo = {
     email: '',
