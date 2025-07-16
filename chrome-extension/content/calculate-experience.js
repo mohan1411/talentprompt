@@ -23,8 +23,11 @@ window.calculateTotalExperience = function(experiences) {
     const duration = exp.duration;
     let expMonths = 0;
     
+    // Clean the duration string first
+    const cleanDuration = duration.replace(/[·•]/g, ' ').trim();
+    
     // Method 1: Try to extract from LinkedIn's calculated duration (e.g., "11 yrs 7 mos")
-    const calcDurationMatch = duration.match(/(\d+)\s*yrs?\s*(\d+)?\s*mos?/i);
+    const calcDurationMatch = cleanDuration.match(/(\d+)\s*yrs?\s*(\d+)?\s*mos?/i);
     if (calcDurationMatch) {
       const years = parseInt(calcDurationMatch[1]) || 0;
       const months = parseInt(calcDurationMatch[2]) || 0;
@@ -32,10 +35,10 @@ window.calculateTotalExperience = function(experiences) {
       console.log(`- Parsed calculated duration: ${years} years + ${months} months = ${expMonths} months`);
     } else {
       // Method 2: Extract years and months separately
-      const yearsMatch = duration.match(/(\d+)\s*(?:yrs?|years?)/i);
+      const yearsMatch = cleanDuration.match(/(\d+)\s*(?:yrs?|years?)/i);
       const years = yearsMatch ? parseInt(yearsMatch[1]) : 0;
       
-      const monthsMatch = duration.match(/(\d+)\s*(?:mos?|months?)/i);
+      const monthsMatch = cleanDuration.match(/(\d+)\s*(?:mos?|months?)/i);
       const months = monthsMatch ? parseInt(monthsMatch[1]) : 0;
       
       expMonths = (years * 12) + months;

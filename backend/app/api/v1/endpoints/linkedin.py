@@ -34,6 +34,7 @@ class LinkedInProfileImport(BaseModel):
     skills: Optional[list] = []
     email: Optional[str] = None
     phone: Optional[str] = None
+    years_experience: Optional[int] = None
 
 
 class LinkedInCheckExistsRequest(BaseModel):
@@ -94,7 +95,7 @@ async def import_linkedin_profile(
             "location": profile_data.location or "",
             "summary": profile_data.about or "",
             "current_title": profile_data.headline or "",
-            "years_experience": parsed_data.get("years_experience", 0),
+            "years_experience": profile_data.years_experience or parsed_data.get("years_experience", 0),
             "skills": profile_data.skills or [],
             "keywords": parsed_data.get("keywords", []),
             "linkedin_url": profile_data.linkedin_url,

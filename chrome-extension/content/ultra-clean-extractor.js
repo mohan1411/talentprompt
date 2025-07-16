@@ -63,11 +63,45 @@ window.extractUltraCleanProfile = function() {
   // Extract about - clean it
   const aboutSection = document.querySelector('#about')?.closest('section');
   if (aboutSection) {
-    const aboutEl = aboutSection.querySelector('.inline-show-more-text span[aria-hidden="true"]') ||
-                   aboutSection.querySelector('span[aria-hidden="true"]');
-    if (aboutEl && !isIrrelevant(aboutEl.textContent)) {
-      data.about = aboutEl.textContent.trim();
+    console.log('Found about section, extracting...');
+    
+    // Try multiple selectors for about text
+    const aboutSelectors = [
+      '.inline-show-more-text span[aria-hidden="true"]',
+      '.display-flex.full-width span[aria-hidden="true"]',
+      '.pv-shared-text-with-see-more span[aria-hidden="true"]',
+      'div[class*="line-clamp"] span[aria-hidden="true"]',
+      'span[aria-hidden="true"]'
+    ];
+    
+    let aboutText = '';
+    for (const selector of aboutSelectors) {
+      const aboutEl = aboutSection.querySelector(selector);
+      if (aboutEl && aboutEl.textContent && aboutEl.textContent.trim().length > 20) {
+        aboutText = aboutEl.textContent.trim();
+        console.log(`Found about text with selector: ${selector}`);
+        break;
+      }
     }
+    
+    // If still no about text, try getting all visible text
+    if (!aboutText) {
+      const allSpans = aboutSection.querySelectorAll('span[aria-hidden="true"]');
+      allSpans.forEach(span => {
+        if (!span.closest('.visually-hidden') && span.textContent.trim().length > 50) {
+          aboutText = span.textContent.trim();
+        }
+      });
+    }
+    
+    if (aboutText && !isIrrelevant(aboutText)) {
+      data.about = aboutText;
+      console.log(`About section length: ${aboutText.length} chars`);
+    } else {
+      console.log('No valid about text found');
+    }
+  } else {
+    console.log('No about section found on profile');
   }
   
   // Extract experience - ultra clean with better selectors
@@ -223,8 +257,18 @@ window.extractUltraCleanProfile = function() {
   }
   
   // Calculate years of experience
+  console.log('\n=== Experience Calculation ===');
+  console.log(`Total experiences found: ${data.experience.length}`);
+  data.experience.forEach((exp, idx) => {
+    console.log(`Experience ${idx + 1}: ${exp.title} at ${exp.company}`);
+    console.log(`  Duration: ${exp.duration || 'NO DURATION'}`);
+  });
+  
   if (window.calculateTotalExperience) {
     data.years_experience = window.calculateTotalExperience(data.experience);
+    console.log(`Calculated total: ${data.years_experience} years`);
+  } else {
+    console.log('WARNING: calculateTotalExperience function not available');
   }
   
   // Build ultra clean full text
