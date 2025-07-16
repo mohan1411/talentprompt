@@ -309,6 +309,12 @@ window.extractUltraCleanProfile = function() {
           }
         });
         
+        // Use pre-filter to check if this should be skipped
+        if (window.shouldSkipExperienceItem && window.shouldSkipExperienceItem(texts, false)) {
+          console.log(`Item ${idx + 1}: Pre-filtered as company total`);
+          return;
+        }
+        
         if (texts.length >= 2) {
           processExperienceTexts(texts, idx, null);
         } else {
@@ -389,8 +395,11 @@ window.extractUltraCleanProfile = function() {
     console.log(`Filtered from ${originalCount} to ${data.experience.length} experiences`);
   }
   
-  // Try advanced calculator first, fall back to basic if not available
-  if (window.calculateTotalExperienceAdvanced) {
+  // Use the new calculation with validation if available
+  if (window.calculateExperienceWithValidation) {
+    data.years_experience = window.calculateExperienceWithValidation(data.experience);
+    console.log(`Calculated total (with validation): ${data.years_experience} years`);
+  } else if (window.calculateTotalExperienceAdvanced) {
     data.years_experience = window.calculateTotalExperienceAdvanced(data.experience);
     console.log(`Calculated total (advanced): ${data.years_experience} years`);
   } else if (window.calculateTotalExperience) {
