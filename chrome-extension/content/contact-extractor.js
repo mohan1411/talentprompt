@@ -75,34 +75,106 @@ window.extractContactInfo = async function() {
       if (contactModal) {
         console.log('Modal found, extracting contact info...');
         
+        // Log modal content for debugging
+        console.log('Modal content preview:', contactModal.innerHTML.substring(0, 500));
+        
         // Extract email - try multiple methods
         const emailSelectors = [
+          // Most common patterns
           'a[href^="mailto:"]',
+          'a[href*="mailto:"]',
+          
+          // Section-based selectors
+          'section:has(svg[type="email-icon"]) a',
+          'section:has(path[d*="M3 8l7"]) a', // Email icon path
+          'div:has(svg[aria-label*="Email"]) + div a',
+          
+          // Text-based selectors
+          'section:contains("Email") a',
+          'div:contains("Email") + div a',
+          
+          // Class-based selectors
+          '.pv-contact-info__contact-type a',
+          '.pv-contact-info__ci-container a',
           'section[class*="email"] a',
           '[data-field="email"] a',
-          '.pv-contact-info__contact-type:has(svg[data-test-icon="envelope"]) a',
           '.ci-email a'
         ];
         
+        let emailFound = false;
         for (const selector of emailSelectors) {
-          const emailElement = contactModal.querySelector(selector);
-          if (emailElement) {
-            if (emailElement.href && emailElement.href.startsWith('mailto:')) {
-              contactInfo.email = emailElement.href.replace('mailto:', '').trim();
-              console.log(`Found email with selector: ${selector}`);
-              break;
-            }
+          try {
+            const emailElements = contactModal.querySelectorAll(selector);
+            console.log(`Selector "${selector}" found ${emailElements.length} elements`);
+            
+            emailElements.forEach(element => {
+              if (element.href && element.href.includes('mailto:')) {
+                contactInfo.email = element.href.replace('mailto:', '').trim();
+                console.log(`Found email with selector: ${selector} - ${contactInfo.email}`);
+                emailFound = true;
+              }
+            });
+            
+            if (emailFound) break;
+          } catch (e) {
+            // Some selectors might fail
           }
         }
         
-        // If no email link found, try regex on modal text
+        // If no email link found, look for email in text content
         if (!contactInfo.email) {
-          const modalText = contactModal.textContent || '';
-          const emailMatch = modalText.match(/[\w.-]+@[\w.-]+\.\w+/);
-          if (emailMatch) {
-            contactInfo.email = emailMatch[0];
-            console.log('Found email via regex');
+          console.log('No email link found, searching text content...');
+          
+          // Look for sections that might contain email
+          const sections = contactModal.querySelectorAll('section');
+          sections.forEach((section, idx) => {
+            const text = section.textContent || '';
+            console.log(`Section ${idx} text:`, text.substring(0, 100));
+            
+            // Look for email pattern
+            const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+            if (emailMatch && !contactInfo.email) {
+              contactInfo.email = emailMatch[0];
+              console.log(`Found email in section ${idx} via regex: ${contactInfo.email}`);
+            }
+          });
+        }
+        
+        // Debug: Log all links in modal
+        if (!contactInfo.email) {
+          console.log('=== All links in modal ===');
+          const allLinks = contactModal.querySelectorAll('a');
+          allLinks.forEach((link, idx) => {
+            console.log(`Link ${idx}:`, {
+              href: link.href,
+              text: link.textContent.trim(),
+              parent: link.parentElement?.tagName
+            });
+          });
+          
+          // Use advanced email finder
+          if (window.findEmailInModal) {
+            window.findEmailInModal(contactModal);
           }
+        }
+        
+        // If still no email, it might be plain text (not a link)
+        if (!contactInfo.email) {
+          console.log('Checking for plain text email...');
+          
+          // Look for divs that contain email addresses
+          const allDivs = contactModal.querySelectorAll('div');
+          allDivs.forEach((div, idx) => {
+            const text = div.textContent || '';
+            const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
+            
+            if (emailMatch && div.children.length === 0) { // Only leaf nodes
+              console.log(`Found potential email in div ${idx}:`, emailMatch[0]);
+              if (!contactInfo.email) {
+                contactInfo.email = emailMatch[0];
+              }
+            }
+          });
         }
         
         // Extract phone
