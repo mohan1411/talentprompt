@@ -117,13 +117,13 @@ window.extractUltraCleanProfile = function() {
   }
   
   // Helper function to process experience texts - moved outside to fix scoping
-  const processExperienceTexts = (texts, itemId, overrideCompany) => {
+  const processExperienceTexts = (texts, itemId, overrideCompany, isGroupedRole = false) => {
     if (!texts || texts.length < 2) {
       console.log(`Experience ${itemId}: Insufficient texts`);
       return;
     }
     
-    console.log(`\n=== Experience Item ${itemId} ===`);
+    console.log(`\n=== Experience Item ${itemId} ${isGroupedRole ? '(Grouped Role)' : ''} ===`);
     console.log('All texts found:', texts);
     console.log('Text count:', texts.length);
     
@@ -142,13 +142,9 @@ window.extractUltraCleanProfile = function() {
       // Check if first text looks like a company name with total duration
       if (texts[0] && texts[0].match(/\s+at\s+\d+\s*yrs?/i)) {
         console.log('  -> Detected company with total duration format');
-        const parts = texts[0].split(' at ');
-        exp.company = parts[0].trim();
-        console.log(`  -> Company: ${exp.company} (ignoring total duration)`);
-        
-        if (texts[1]) {
-          exp.title = texts[1];
-        }
+        // This is a company-level total, skip this entire item
+        console.log('  -> SKIPPING: This appears to be a company total duration, not an individual role');
+        return;
       } else {
         // Standard format: title first, then company
         exp.title = texts[0];
@@ -279,7 +275,7 @@ window.extractUltraCleanProfile = function() {
             if (roleTexts.length >= 2) {
               console.log(`  Role ${roleIdx + 1} texts:`, roleTexts);
               // Process as a separate experience
-              processExperienceTexts(roleTexts, idx + '-' + roleIdx, companyName);
+              processExperienceTexts(roleTexts, idx + '-' + roleIdx, companyName, true);
             }
           });
           return; // Skip regular processing for this item

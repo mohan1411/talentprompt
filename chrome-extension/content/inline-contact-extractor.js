@@ -89,6 +89,43 @@ window.extractInlineContactInfo = function() {
     }
   }
   
+  // Method 4: Check the profile header for contact info badge
+  if (!contactInfo.email) {
+    const profileHeader = document.querySelector('.pv-top-card') || document.querySelector('section.pv-profile-section');
+    if (profileHeader) {
+      const links = profileHeader.querySelectorAll('a');
+      links.forEach(link => {
+        const href = link.href || '';
+        if (href.includes('mailto:')) {
+          contactInfo.email = href.replace('mailto:', '');
+          console.log('Found email in profile header link:', contactInfo.email);
+        }
+      });
+    }
+  }
+  
+  // Method 5: Look for email in any visible text that contains @ symbol
+  if (!contactInfo.email) {
+    const allElements = document.querySelectorAll('*');
+    for (const element of allElements) {
+      // Skip script and style elements
+      if (element.tagName === 'SCRIPT' || element.tagName === 'STYLE') continue;
+      
+      // Check only direct text nodes
+      const textNodes = Array.from(element.childNodes).filter(node => node.nodeType === 3);
+      for (const textNode of textNodes) {
+        const text = textNode.textContent || '';
+        const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+        if (emailMatch && !emailMatch[0].includes('linkedin.com')) {
+          contactInfo.email = emailMatch[0];
+          console.log('Found email in text node:', contactInfo.email);
+          break;
+        }
+      }
+      if (contactInfo.email) break;
+    }
+  }
+  
   console.log('Inline extraction result:', contactInfo);
   return contactInfo;
   

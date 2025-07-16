@@ -26,6 +26,12 @@ window.calculateTotalExperience = function(experiences) {
     // Clean the duration string first
     const cleanDuration = duration.replace(/[·•]/g, ' ').trim();
     
+    // Skip if this looks like a company total duration (e.g., "Company Name at 14 yrs 7 mos")
+    if (cleanDuration.match(/^[A-Za-z\s&]+\s+at\s+\d+\s*yrs?/i)) {
+      console.log(`- SKIPPING: This appears to be a company total duration: "${cleanDuration}"`);
+      return;
+    }
+    
     // Method 1: Try to extract from LinkedIn's calculated duration (e.g., "11 yrs 7 mos")
     const calcDurationMatch = cleanDuration.match(/(\d+)\s*yrs?\s*(\d+)?\s*mos?/i);
     if (calcDurationMatch) {
@@ -85,6 +91,11 @@ window.calculateTotalExperience = function(experiences) {
   // Calculate years with better rounding (round up if >= 0.5 years)
   const exactYears = totalMonths / 12;
   const totalYears = Math.round(exactYears);
+  
+  // Sanity check - if calculation seems way off, warn
+  if (totalYears > 50) {
+    console.warn(`WARNING: Calculated experience of ${totalYears} years seems unusually high. This might indicate duplicate counting.`);
+  }
   
   console.log(`\n=== Total Experience Summary ===`);
   console.log(`Processed ${processedCount} of ${experiences.length} experiences`);

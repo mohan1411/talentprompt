@@ -61,6 +61,15 @@ window.extractContactInfo = async function() {
         text: contactButton.textContent.trim()
       });
       
+      // Check if contact info is locked/premium
+      const isLocked = contactButton.querySelector('[data-test-icon="lock"]') || 
+                      contactButton.querySelector('.premium-icon') ||
+                      contactButton.textContent.toLowerCase().includes('unlock');
+      
+      if (isLocked) {
+        console.log('WARNING: Contact info appears to be locked/premium');
+      }
+      
       // First, close any messaging modals that might be open
       const messagingModals = document.querySelectorAll('.msg-overlay-conversation-bubble, [class*="msg-overlay"]');
       messagingModals.forEach(modal => {
@@ -459,8 +468,34 @@ window.extractContactInfo = async function() {
       }
     }
     
-  } catch (error) {
-    console.error('Error extracting contact info:', error);
+  // Method 4: Try finding email in specific profile sections
+  if (!contactInfo.email) {
+    console.log('Trying additional email extraction methods...');
+    
+    // Look in the entire profile for email-like patterns
+    const profileMain = document.querySelector('main') || document.body;
+    const allText = profileMain.innerText || profileMain.textContent || '';
+    
+    // More permissive email regex
+    const emailMatches = allText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+    if (emailMatches) {
+      console.log('Found email patterns in page:', emailMatches);
+      // Filter out common non-personal emails
+      const personalEmail = emailMatches.find(email => 
+        !email.includes('linkedin.com') && 
+        !email.includes('example.com') &&
+        !email.includes('support@') &&
+        !email.includes('noreply@') &&
+        !email.includes('@2x.png') && // Avoid image names
+        !email.includes('@3x.png') &&
+        email.length < 50
+      );
+      
+      if (personalEmail) {
+        contactInfo.email = personalEmail;
+        console.log('Found email via page text search:', personalEmail);
+      }
+    }
   }
   
   // Final summary

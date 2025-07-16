@@ -219,23 +219,51 @@
       // SECOND: Extract contact info (this may open/close modals)
       let contactInfo = {};
       
-      // Try inline extraction first (doesn't modify DOM)
-      if (window.extractInlineContactInfo) {
-        console.log('Trying inline contact extraction first...');
+      console.log('\n=== CONTACT EXTRACTION START ===');
+      console.log('Available extractors:');
+      console.log('- extractInlineContactInfo:', typeof window.extractInlineContactInfo);
+      console.log('- extractContactInfo:', typeof window.extractContactInfo);
+      
+      // Try enhanced email extraction first
+      if (window.extractEmailEnhanced) {
+        console.log('\nTrying enhanced email extraction...');
+        try {
+          const enhancedEmail = window.extractEmailEnhanced();
+          if (enhancedEmail) {
+            contactInfo.email = enhancedEmail;
+            console.log('Enhanced extraction found email:', enhancedEmail);
+          }
+        } catch (err) {
+          console.error('Error in enhanced email extraction:', err);
+        }
+      }
+      
+      // Try inline extraction if no email found yet
+      if (!contactInfo.email && window.extractInlineContactInfo) {
+        console.log('\nTrying inline contact extraction...');
         try {
           const inlineInfo = window.extractInlineContactInfo();
           console.log('Inline extraction returned:', JSON.stringify(inlineInfo));
-          if (inlineInfo && inlineInfo.email) {
+          console.log('Inline info type:', typeof inlineInfo);
+          console.log('Inline info is null?', inlineInfo === null);
+          console.log('Inline info is undefined?', inlineInfo === undefined);
+          
+          if (inlineInfo && typeof inlineInfo === 'object') {
             contactInfo = inlineInfo;
-            console.log('Inline extraction found email:', contactInfo.email);
+            if (inlineInfo.email) {
+              console.log('Inline extraction found email:', contactInfo.email);
+            } else {
+              console.log('Inline extraction returned object but no email');
+            }
           } else {
-            console.log('Inline extraction did not find email');
+            console.log('Inline extraction did not return valid object');
           }
         } catch (err) {
           console.error('Error in inline extraction:', err);
+          console.error('Stack:', err.stack);
         }
-      } else {
-        console.log('Inline contact extractor not available');
+      } else if (!window.extractInlineContactInfo) {
+        console.log('WARNING: Inline contact extractor not available');
       }
       
       // Only try modal extraction if inline didn't find email
@@ -273,6 +301,10 @@
       } else if (!window.extractContactInfo) {
         console.error('Contact extractor function not available!');
       }
+      
+      console.log('\n=== CONTACT EXTRACTION END ===');
+      console.log('Final contactInfo:', JSON.stringify(contactInfo));
+      console.log('Has email?', !!contactInfo.email);
       
       // Ensure email and phone fields exist in profile data
       if (!profileData.hasOwnProperty('email')) {
@@ -312,6 +344,19 @@
         experience_count: profileData.experience?.length || 0
       });
       
+      // Force recalculation of years if needed
+      if (window.calculateTotalExperience && profileData.experience && profileData.experience.length > 0) {
+        console.log('\n=== RECALCULATING EXPERIENCE ===');
+        const recalculated = window.calculateTotalExperience(profileData.experience);
+        console.log('Original years:', profileData.years_experience);
+        console.log('Recalculated years:', recalculated);
+        
+        if (recalculated !== profileData.years_experience) {
+          console.log('Experience calculation mismatch - using recalculated value');
+          profileData.years_experience = recalculated;
+        }
+      }
+      
       console.log('Profile data after adding contact info:', {
         email: profileData.email,
         phone: profileData.phone
@@ -345,6 +390,11 @@
         console.log('ContactInfo.email value:', contactInfo.email);
         console.log('ProfileData has email property:', profileData.hasOwnProperty('email'));
         console.log('ProfileData.email value:', profileData.email);
+      }
+      
+      // Validate and fix data before sending
+      if (window.validateProfileData) {
+        profileData = window.validateProfileData(profileData);
       }
       
       console.log('Final profile data to import:', profileData);
