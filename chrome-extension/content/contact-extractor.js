@@ -42,14 +42,82 @@ window.extractContactInfo = async function() {
     if (contactButton) {
       console.log('Contact info button found, attempting to click...');
       
-      // Check if contact modal is already open
-      let contactModal = document.querySelector('.pv-profile-modal__content') ||
-                        document.querySelector('[data-test-modal]') ||
-                        document.querySelector('.artdeco-modal__content') ||
-                        document.querySelector('[role="dialog"]');
+      // First, close any messaging modals that might be open
+      const messagingModals = document.querySelectorAll('.msg-overlay-conversation-bubble, [class*="msg-overlay"]');
+      messagingModals.forEach(modal => {
+        console.log('Closing messaging modal first');
+        const closeBtn = modal.querySelector('button[aria-label*="Close"]') || 
+                        modal.querySelector('button[data-control-name="overlay.close"]');
+        if (closeBtn) closeBtn.click();
+      });
+      
+      // Check if contact modal is already open - exclude messaging modals
+      let contactModal = null;
+      
+      // First try specific contact modal selectors
+      const modalSelectors = [
+        '.pv-profile-modal__content',
+        '.pv-overlay__content',
+        '[aria-label*="contact info" i]',
+        '[aria-label*="Contact information" i]',
+        '.artdeco-modal__content:has(.ci-vanity-url)',
+        '.artdeco-modal__content:has(section[class*="ci-email"])',
+        '[data-test-modal]:has(a[href^="mailto:"])'
+      ];
+      
+      for (const selector of modalSelectors) {
+        try {
+          const modal = document.querySelector(selector);
+          if (modal) {
+            // Verify it's not a messaging modal
+            const modalText = modal.textContent || '';
+            if (!modalText.includes('msg-overlay') && 
+                !modalText.includes('conversation-bubble')) {
+              contactModal = modal;
+              console.log(`Found contact modal with selector: ${selector}`);
+              break;
+            }
+          }
+        } catch (e) {
+          // Some selectors might fail
+        }
+      }
+      
+      // If still not found, check generic dialog but verify content
+      if (!contactModal) {
+        const dialogs = document.querySelectorAll('[role="dialog"]');
+        for (const dialog of dialogs) {
+          const dialogText = dialog.textContent || '';
+          // Check if it contains contact-related content
+          if ((dialogText.includes('@') || 
+               dialogText.toLowerCase().includes('email') ||
+               dialogText.toLowerCase().includes('phone') ||
+               dialogText.toLowerCase().includes('contact')) &&
+              !dialogText.includes('msg-overlay')) {
+            contactModal = dialog;
+            console.log('Found contact modal via dialog role');
+            break;
+          }
+        }
+      }
       
       if (!contactModal) {
         console.log('Modal not open, clicking button...');
+        
+        // Close all modals first to ensure clean state
+        const allModals = document.querySelectorAll('[role="dialog"], .artdeco-modal, .msg-overlay-container');
+        allModals.forEach(modal => {
+          const closeBtn = modal.querySelector('button[aria-label*="Close"]') || 
+                          modal.querySelector('button[aria-label*="Dismiss"]');
+          if (closeBtn) {
+            console.log('Closing existing modal before opening contact info');
+            closeBtn.click();
+          }
+        });
+        
+        // Wait a bit for modals to close
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         // Click the button to open modal
         contactButton.click();
         
@@ -57,14 +125,44 @@ window.extractContactInfo = async function() {
         for (let i = 0; i < 5; i++) {
           await new Promise(resolve => setTimeout(resolve, 500));
           
-          contactModal = document.querySelector('.pv-profile-modal__content') ||
-                        document.querySelector('[data-test-modal]') ||
-                        document.querySelector('.artdeco-modal__content') ||
-                        document.querySelector('[role="dialog"]') ||
-                        document.querySelector('.pv-overlay__content');
+          // Try specific contact modal selectors
+          for (const selector of modalSelectors) {
+            try {
+              const modal = document.querySelector(selector);
+              if (modal) {
+                const modalText = modal.textContent || '';
+                if (!modalText.includes('msg-overlay') && 
+                    !modalText.includes('conversation-bubble')) {
+                  contactModal = modal;
+                  console.log(`Modal appeared after ${i + 1} attempts with selector: ${selector}`);
+                  break;
+                }
+              }
+            } catch (e) {
+              // Continue
+            }
+          }
+          
+          if (contactModal) break;
+          
+          // Check generic dialogs
+          if (!contactModal) {
+            const dialogs = document.querySelectorAll('[role="dialog"]');
+            for (const dialog of dialogs) {
+              const dialogText = dialog.textContent || '';
+              if ((dialogText.includes('@') || 
+                   dialogText.toLowerCase().includes('email') ||
+                   dialogText.toLowerCase().includes('phone') ||
+                   dialogText.toLowerCase().includes('contact')) &&
+                  !dialogText.includes('msg-overlay')) {
+                contactModal = dialog;
+                console.log(`Modal appeared after ${i + 1} attempts via dialog role`);
+                break;
+              }
+            }
+          }
           
           if (contactModal) {
-            console.log(`Modal appeared after ${i + 1} attempts`);
             break;
           }
         }
@@ -254,13 +352,32 @@ window.extractContactInfo = async function() {
         }
         
         // Close modal
-        const closeButton = contactModal.querySelector('button[aria-label*="Dismiss"]') ||
-                          contactModal.querySelector('button[data-test-modal-close-btn]') ||
-                          contactModal.querySelector('button[aria-label*="Close"]') ||
-                          contactModal.querySelector('.artdeco-modal__dismiss');
+        const closeButtonSelectors = [
+          'button[aria-label*="Dismiss"]',
+          'button[data-test-modal-close-btn]',
+          'button[aria-label*="Close"]',
+          '.artdeco-modal__dismiss',
+          'button[type="cancel"]',
+          'button.artdeco-button--circle',
+          'button[data-control-name="overlay.close"]'
+        ];
+        
+        let closeButton = null;
+        for (const selector of closeButtonSelectors) {
+          closeButton = contactModal.querySelector(selector);
+          if (closeButton) {
+            console.log(`Found close button with selector: ${selector}`);
+            break;
+          }
+        }
+        
         if (closeButton) {
           console.log('Closing modal');
           closeButton.click();
+        } else {
+          console.log('Warning: Could not find close button for modal');
+          // Try clicking outside the modal or pressing Escape
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }));
         }
       } else {
         console.log('WARNING: Contact modal did not appear after clicking button');
