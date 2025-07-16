@@ -84,4 +84,4 @@ alembic revision --autogenerate -m "Description"
 Apply migrations:
 ```bash
 alembic upgrade head
-```
+```# Trigger Railway deployment
