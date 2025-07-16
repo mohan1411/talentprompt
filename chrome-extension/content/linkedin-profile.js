@@ -184,7 +184,22 @@
       let contactInfo = {};
       if (window.extractContactInfo) {
         console.log('Attempting to extract contact info...');
-        contactInfo = await window.extractContactInfo();
+        try {
+          contactInfo = await window.extractContactInfo();
+          console.log('Contact info extracted:', JSON.stringify(contactInfo));
+          console.log('Email found:', contactInfo.email || 'No email found');
+          
+          // Verify the extraction worked
+          if (typeof contactInfo !== 'object' || contactInfo === null) {
+            console.error('Contact extraction returned invalid data');
+            contactInfo = {};
+          }
+        } catch (err) {
+          console.error('Error during contact extraction:', err);
+          contactInfo = {};
+        }
+      } else {
+        console.log('WARNING: extractContactInfo function not available!');
       }
       
       // Use ultra clean extraction - no fallbacks, no unfiltered content
@@ -197,15 +212,38 @@
         profileData = extractProfileData();
       }
       
+      // Ensure email and phone fields exist in profile data
+      if (!profileData.hasOwnProperty('email')) {
+        profileData.email = '';
+      }
+      if (!profileData.hasOwnProperty('phone')) {
+        profileData.phone = '';
+      }
+      
       // Add contact info to profile data
+      console.log('Profile data before adding contact info:', {
+        email: profileData.email,
+        phone: profileData.phone
+      });
+      
       if (contactInfo.email) {
         profileData.email = contactInfo.email;
-        console.log('Added email to profile data');
+        console.log('Added email to profile data:', contactInfo.email);
+      } else {
+        console.log('No email in contact info to add');
       }
+      
       if (contactInfo.phone) {
         profileData.phone = contactInfo.phone;
-        console.log('Added phone to profile data');
+        console.log('Added phone to profile data:', contactInfo.phone);
+      } else {
+        console.log('No phone in contact info to add');
       }
+      
+      console.log('Profile data after adding contact info:', {
+        email: profileData.email,
+        phone: profileData.phone
+      });
       
       // Verify the data is clean
       if (window.verifyCleanData) {
@@ -215,7 +253,14 @@
         }
       }
       
+      // Final validation
+      if (!profileData.email && contactInfo && contactInfo.email) {
+        console.error('Email was lost! Recovering from contactInfo');
+        profileData.email = contactInfo.email;
+      }
+      
       console.log('Final profile data to import:', profileData);
+      console.log('Email in final data:', profileData.email || 'MISSING');
       
       console.log('Sending import request through background script...');
       console.log('Auth token:', authToken ? 'Present' : 'Missing');
