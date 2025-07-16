@@ -48,8 +48,8 @@ class LinkedInParser:
         parsed = {
             "first_name": "",
             "last_name": "",
-            "email": "",  # LinkedIn doesn't expose email
-            "phone": "",  # LinkedIn doesn't expose phone
+            "email": profile_data.get("email", ""),  # Use email from Chrome extension if provided
+            "phone": profile_data.get("phone", ""),  # Use phone from Chrome extension if provided
             "years_experience": 0,
             "keywords": [],
             "raw_text": "",
@@ -314,6 +314,8 @@ Additional structured data if available:
 Name: {profile_data.get('name', '')}
 Headline: {profile_data.get('headline', '')}
 Location: {profile_data.get('location', '')}
+Email: {profile_data.get('email', '') or 'Not provided'}
+Phone: {profile_data.get('phone', '') or 'Not provided'}
 About: {profile_data.get('about', '')[:500] if profile_data.get('about') else ''}
 Skills: {', '.join(profile_data.get('skills', [])[:20])}"""
         
@@ -335,11 +337,17 @@ Skills: {', '.join(profile_data.get('skills', [])[:20])}"""
             parsed["raw_text"] = profile_data.get("full_text", "")
             parsed["parsing_method"] = "ai"
             
-            # Ensure required fields exist
-            parsed.setdefault("email", "")
-            parsed.setdefault("phone", "")
+            # Ensure required fields exist and preserve email/phone from Chrome extension
+            parsed.setdefault("email", profile_data.get("email", ""))
+            parsed.setdefault("phone", profile_data.get("phone", ""))
             parsed.setdefault("certifications", [])
             parsed.setdefault("languages", [])
+            
+            # Override with Chrome extension data if AI didn't find them
+            if not parsed.get("email") and profile_data.get("email"):
+                parsed["email"] = profile_data.get("email")
+            if not parsed.get("phone") and profile_data.get("phone"):
+                parsed["phone"] = profile_data.get("phone")
             
             logger.info(f"Successfully parsed LinkedIn profile with AI: {parsed.get('first_name')} {parsed.get('last_name')}")
             return parsed

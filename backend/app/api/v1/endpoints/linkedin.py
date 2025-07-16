@@ -32,6 +32,8 @@ class LinkedInProfileImport(BaseModel):
     experience: Optional[list] = []
     education: Optional[list] = []
     skills: Optional[list] = []
+    email: Optional[str] = None
+    phone: Optional[str] = None
 
 
 class LinkedInCheckExistsRequest(BaseModel):
@@ -87,8 +89,8 @@ async def import_linkedin_profile(
             "user_id": current_user.id,
             "first_name": parsed_data.get("first_name", ""),
             "last_name": parsed_data.get("last_name", ""),
-            "email": parsed_data.get("email", ""),  # Will need to be updated manually
-            "phone": parsed_data.get("phone", ""),  # Will need to be updated manually
+            "email": profile_data.email or parsed_data.get("email", ""),  # Use email from Chrome extension if provided
+            "phone": profile_data.phone or parsed_data.get("phone", ""),  # Use phone from Chrome extension if provided
             "location": profile_data.location or "",
             "summary": profile_data.about or "",
             "current_title": profile_data.headline or "",
