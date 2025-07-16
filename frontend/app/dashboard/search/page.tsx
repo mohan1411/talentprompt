@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Filter, MapPin, Briefcase, X, Users } from 'lucide-react';
+import { Search, Filter, MapPin, Briefcase, X, Users, Linkedin } from 'lucide-react';
 import { searchApi } from '@/lib/api/client';
 import type { SearchResult } from '@/lib/api/client';
 import { searchHistory } from '@/lib/search-history';
@@ -446,6 +446,12 @@ export default function SearchPage() {
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                       {result.first_name} {result.last_name}
                     </h3>
+                    {result.linkedin_url && (
+                      <div className="flex items-center gap-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full">
+                        <Linkedin className="h-3 w-3" />
+                        <span>LinkedIn</span>
+                      </div>
+                    )}
                     <span className="badge bg-green-100 text-green-800">
                       {Math.round(result.score * 100)}% match
                     </span>

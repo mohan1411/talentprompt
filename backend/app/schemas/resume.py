@@ -66,6 +66,7 @@ class ResumeInDBBase(ResumeBase):
     view_count: int = 0
     search_appearance_count: int = 0
     job_position: Optional[str] = None
+    linkedin_url: Optional[str] = None
     
     @field_validator('id', 'user_id', mode='before')
     def convert_uuid_to_str(cls, v):
@@ -102,3 +103,4 @@ class ResumeSearchResult(BaseModel):
     highlights: List[str] = Field(default_factory=list)
     summary_snippet: Optional[str] = None
     job_position: Optional[str] = None
+    linkedin_url: Optional[str] = None

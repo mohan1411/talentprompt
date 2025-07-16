@@ -14,6 +14,7 @@ import {
   Download,
   Edit,
   Trash2,
+  Linkedin,
 } from 'lucide-react';
 import { resumeApi } from '@/lib/api/client';
 import type { Resume } from '@/lib/api/client';
@@ -117,9 +118,22 @@ export default function ResumeDetailPage() {
 
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              {resume.first_name} {resume.last_name}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {resume.first_name} {resume.last_name}
+              </h1>
+              {resume.linkedin_url && (
+                <a
+                  href={resume.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1.5 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors"
+                >
+                  <Linkedin className="h-4 w-4" />
+                  <span>LinkedIn Profile</span>
+                </a>
+              )}
+            </div>
             {resume.current_title && (
               <p className="text-xl text-gray-600 dark:text-gray-400 mt-1">
                 {resume.current_title}

@@ -271,6 +271,7 @@ export interface Resume {
   view_count: number;
   search_appearance_count: number;
   job_position?: string;
+  linkedin_url?: string;
 }
 
 export interface SearchResult {
@@ -285,6 +286,7 @@ export interface SearchResult {
   highlights: string[];
   summary_snippet?: string;
   job_position?: string;
+  linkedin_url?: string;
 }
 
 export interface SearchSuggestion {
