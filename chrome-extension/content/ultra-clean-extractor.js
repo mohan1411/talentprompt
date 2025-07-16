@@ -127,11 +127,23 @@ window.extractUltraCleanProfile = function() {
           
           // Find duration - look for date patterns
           for (let i = 2; i < texts.length; i++) {
-            if (texts[i].match(/\d{4}|Present|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
-              exp.duration = texts[i];
-              // Check if next item is location
-              if (i + 1 < texts.length && texts[i + 1].includes(',')) {
-                exp.location = texts[i + 1];
+            const text = texts[i];
+            // Check for duration patterns
+            if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
+              exp.duration = text;
+              
+              // LinkedIn sometimes shows duration on next line (e.g., "11 yrs 7 mos")
+              if (i + 1 < texts.length) {
+                const nextText = texts[i + 1];
+                if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
+                  exp.duration = text + ' · ' + nextText;
+                  console.log(`Combined duration: ${exp.duration}`);
+                  i++; // Skip the next item since we used it
+                }
+                // Check if next item is location
+                else if (nextText.includes(',')) {
+                  exp.location = nextText;
+                }
               }
               break;
             }
@@ -140,7 +152,11 @@ window.extractUltraCleanProfile = function() {
           // Verify this is a real experience
           if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
             data.experience.push(exp);
-            console.log(`Added experience ${data.experience.length}:`, exp.title, 'at', exp.company);
+            console.log(`Added experience ${data.experience.length}:`, {
+              title: exp.title,
+              company: exp.company,
+              duration: exp.duration || 'NO DURATION FOUND'
+            });
           } else {
             console.log(`Skipped item ${idx + 1} - title: "${texts[0]}" company: "${texts[1] || 'none'}"`);
           }
