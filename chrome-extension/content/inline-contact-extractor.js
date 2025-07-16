@@ -13,7 +13,8 @@ window.extractInlineContactInfo = function() {
   const pageText = document.body.innerText || document.body.textContent || '';
   console.log('Page text length:', pageText.length);
   
-  const emailRegex = /[\w.-]+@[\w.-]+\.\w+/g;
+  // More comprehensive email regex
+  const emailRegex = /[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}/g;
   const allEmails = pageText.match(emailRegex);
   
   if (allEmails && allEmails.length > 0) {
@@ -23,14 +24,21 @@ window.extractInlineContactInfo = function() {
       !email.includes('linkedin.com') && 
       !email.includes('example.com') &&
       !email.includes('support@') &&
-      !email.includes('help@')
+      !email.includes('help@') &&
+      !email.includes('noreply@') &&
+      !email.includes('no-reply@') &&
+      email.length < 50 // Avoid long malformed strings
     );
     
     if (personalEmail) {
       contactInfo.email = personalEmail;
       console.log('Selected personal email:', personalEmail);
       return contactInfo;
+    } else {
+      console.log('All emails were filtered out as non-personal');
     }
+  } else {
+    console.log('No email patterns found on page');
   }
   
   // Method 1: Check the intro card for any visible contact info

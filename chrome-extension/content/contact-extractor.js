@@ -33,16 +33,23 @@ window.extractContactInfo = async function() {
     ];
     
     let contactButton = null;
+    console.log('Searching for contact button...');
     for (const selector of contactButtonSelectors) {
       try {
         contactButton = document.querySelector(selector);
         if (contactButton) {
           console.log(`Found contact button with selector: ${selector}`);
+          console.log(`Button text: ${contactButton.textContent.trim()}`);
+          console.log(`Button visible: ${contactButton.offsetParent !== null}`);
           break;
         }
       } catch (e) {
         // Some selectors might not be valid, continue
       }
+    }
+    
+    if (!contactButton) {
+      console.log('No contact button found with any selector');
     }
     
     if (contactButton) {

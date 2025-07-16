@@ -233,12 +233,38 @@ window.extractUltraCleanProfile = function() {
         // Check if this is a grouped experience (multiple roles at same company)
         const groupedContainer = item.querySelector('ul.pvs-list');
         if (groupedContainer) {
-          console.log(`Item ${idx + 1} is a grouped experience (multiple roles at same company)`);
-          const companyName = item.querySelector('span[aria-hidden="true"]')?.textContent.trim();
-          console.log(`Company group: ${companyName}`);
+          console.log(`\nItem ${idx + 1} is a GROUPED EXPERIENCE (multiple roles at same company)`);
+          
+          // Get company name - it's usually the first span in the parent item
+          const companySpans = item.querySelectorAll('span[aria-hidden="true"]');
+          let companyName = '';
+          let foundCompanyTotal = false;
+          
+          for (const span of companySpans) {
+            const text = span.textContent.trim();
+            console.log(`  Checking span: "${text}"`);
+            
+            // Skip if this is the total duration
+            if (text.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
+              console.log(`  -> This is total duration, skipping: ${text}`);
+              foundCompanyTotal = true;
+              continue;
+            }
+            
+            // The company name is usually before the total duration
+            if (!foundCompanyTotal && text && !text.match(/\d{4}/) && text.length > 2) {
+              companyName = text;
+              console.log(`  -> Found company name: ${companyName}`);
+              break;
+            }
+          }
+          
+          console.log(`Company group final name: ${companyName}`);
           
           // Process each role within the company
           const roleItems = groupedContainer.querySelectorAll('li');
+          console.log(`Found ${roleItems.length} roles in this company`);
+          
           roleItems.forEach((roleItem, roleIdx) => {
             const roleTexts = [];
             roleItem.querySelectorAll('span[aria-hidden="true"]').forEach(span => {

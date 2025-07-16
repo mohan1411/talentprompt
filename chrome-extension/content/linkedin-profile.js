@@ -242,6 +242,16 @@
       if (!contactInfo.email && window.extractContactInfo) {
         console.log('No inline email found, attempting modal extraction...');
         console.log('Contact extractor available:', typeof window.extractContactInfo);
+        
+        // Check connection level
+        const connectionDegree = document.querySelector('.dist-value')?.textContent || 
+                                document.querySelector('.distance-badge')?.textContent || '';
+        console.log('Connection degree:', connectionDegree);
+        
+        if (connectionDegree.includes('3rd') || connectionDegree.includes('3°')) {
+          console.log('This is a 3rd degree connection - email likely not available');
+        }
+        
         try {
           const modalContactInfo = await window.extractContactInfo();
           console.log('Modal extraction raw result:', modalContactInfo);
@@ -254,6 +264,7 @@
             console.log('Modal extraction found email:', contactInfo.email);
           } else {
             console.log('Modal extraction did not find email');
+            console.log('Note: Email may not be available for non-1st degree connections');
           }
         } catch (err) {
           console.error('Error during modal contact extraction:', err);
