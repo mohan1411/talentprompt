@@ -367,11 +367,15 @@ window.extractUltraCleanProfile = function() {
     console.log(`  Duration: ${exp.duration || 'NO DURATION'}`);
   });
   
-  if (window.calculateTotalExperience) {
+  // Try advanced calculator first, fall back to basic if not available
+  if (window.calculateTotalExperienceAdvanced) {
+    data.years_experience = window.calculateTotalExperienceAdvanced(data.experience);
+    console.log(`Calculated total (advanced): ${data.years_experience} years`);
+  } else if (window.calculateTotalExperience) {
     data.years_experience = window.calculateTotalExperience(data.experience);
-    console.log(`Calculated total: ${data.years_experience} years`);
+    console.log(`Calculated total (basic): ${data.years_experience} years`);
   } else {
-    console.log('WARNING: calculateTotalExperience function not available');
+    console.log('WARNING: No experience calculation function available');
   }
   
   // Build ultra clean full text

@@ -345,15 +345,26 @@
       });
       
       // Force recalculation of years if needed
-      if (window.calculateTotalExperience && profileData.experience && profileData.experience.length > 0) {
+      if (profileData.experience && profileData.experience.length > 0) {
         console.log('\n=== RECALCULATING EXPERIENCE ===');
-        const recalculated = window.calculateTotalExperience(profileData.experience);
-        console.log('Original years:', profileData.years_experience);
-        console.log('Recalculated years:', recalculated);
+        let recalculated;
         
-        if (recalculated !== profileData.years_experience) {
-          console.log('Experience calculation mismatch - using recalculated value');
-          profileData.years_experience = recalculated;
+        if (window.calculateTotalExperienceAdvanced) {
+          recalculated = window.calculateTotalExperienceAdvanced(profileData.experience);
+          console.log('Using advanced calculator');
+        } else if (window.calculateTotalExperience) {
+          recalculated = window.calculateTotalExperience(profileData.experience);
+          console.log('Using basic calculator');
+        }
+        
+        if (recalculated !== undefined) {
+          console.log('Original years:', profileData.years_experience);
+          console.log('Recalculated years:', recalculated);
+          
+          if (recalculated !== profileData.years_experience) {
+            console.log('Experience calculation mismatch - using recalculated value');
+            profileData.years_experience = recalculated;
+          }
         }
       }
       

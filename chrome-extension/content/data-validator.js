@@ -17,8 +17,16 @@ window.validateProfileData = function(data) {
     });
     
     // Recalculate with filtered experiences
-    if (window.calculateTotalExperience) {
-      const recalculated = window.calculateTotalExperience(filteredExperiences);
+    let recalculated;
+    if (window.calculateTotalExperienceAdvanced) {
+      recalculated = window.calculateTotalExperienceAdvanced(filteredExperiences);
+      console.log('Using advanced calculator for recalculation');
+    } else if (window.calculateTotalExperience) {
+      recalculated = window.calculateTotalExperience(filteredExperiences);
+      console.log('Using basic calculator for recalculation');
+    }
+    
+    if (recalculated !== undefined) {
       console.log(`Recalculated from ${data.experience.length} to ${filteredExperiences.length} experiences: ${recalculated} years`);
       data.years_experience = recalculated;
       data.experience = filteredExperiences;
@@ -41,6 +49,43 @@ window.validateProfileData = function(data) {
         data.about = aboutText;
         console.log('Found professional summary:', aboutText.substring(0, 50) + '...');
       }
+    }
+  }
+  
+  // Additional validation checks
+  if (data.years_experience > 0) {
+    // Age-based validation (assuming work starts at 18)
+    const maxReasonableExperience = 50; // 68 years old with 50 years experience
+    if (data.years_experience > maxReasonableExperience) {
+      console.warn(`Experience of ${data.years_experience} years exceeds reasonable maximum of ${maxReasonableExperience}`);
+    }
+    
+    // Check if experience exceeds profile age hints
+    if (data.education && data.education.length > 0) {
+      // Try to estimate age from education dates
+      const graduationYears = data.education
+        .map(edu => {
+          const yearMatch = edu.dates?.match(/\d{4}/);
+          return yearMatch ? parseInt(yearMatch[0]) : null;
+        })
+        .filter(year => year !== null);
+      
+      if (graduationYears.length > 0) {
+        const earliestGraduation = Math.min(...graduationYears);
+        const currentYear = new Date().getFullYear();
+        const yearsSinceGraduation = currentYear - earliestGraduation;
+        
+        // If experience significantly exceeds years since earliest education
+        if (data.years_experience > yearsSinceGraduation + 5) {
+          console.warn(`Experience (${data.years_experience} years) seems high compared to education timeline (graduated ${earliestGraduation})`);
+        }
+      }
+    }
+    
+    // Check for common calculation errors
+    const avgYearsPerRole = data.years_experience / data.experience.length;
+    if (avgYearsPerRole > 15) {
+      console.warn(`Average of ${avgYearsPerRole.toFixed(1)} years per role seems unusually high`);
     }
   }
   
