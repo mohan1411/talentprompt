@@ -375,10 +375,13 @@ window.extractContactInfo = async function() {
         if (closeButton) {
           console.log('Closing modal');
           closeButton.click();
+          // Wait for modal to close
+          await new Promise(resolve => setTimeout(resolve, 300));
         } else {
           console.log('Warning: Could not find close button for modal');
           // Try clicking outside the modal or pressing Escape
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }));
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       } else {
         console.log('WARNING: Contact modal did not appear after clicking button');
@@ -447,7 +450,19 @@ window.extractContactInfo = async function() {
   console.log('Phone:', contactInfo.phone || 'Not found');
   console.log('Website:', contactInfo.website || 'Not found');
   console.log('Address:', contactInfo.address || 'Not found');
-  console.log('Full contact info:', contactInfo);
+  console.log('Full contact info:', JSON.stringify(contactInfo));
+  console.log('Contact info type:', typeof contactInfo);
+  console.log('Contact info keys:', Object.keys(contactInfo));
   
-  return contactInfo;
+  // Ensure we always return an object with email property
+  const result = {
+    email: contactInfo.email || '',
+    phone: contactInfo.phone || '',
+    linkedin: contactInfo.linkedin || window.location.href.split('?')[0],
+    website: contactInfo.website || '',
+    address: contactInfo.address || ''
+  };
+  
+  console.log('Returning contact info:', JSON.stringify(result));
+  return result;
 };

@@ -260,14 +260,31 @@
         }
       }
       
-      // Final validation
+      // Final validation and email preservation
       if (!profileData.email && contactInfo && contactInfo.email) {
         console.error('Email was lost! Recovering from contactInfo');
         profileData.email = contactInfo.email;
       }
       
+      // Double-check email field exists
+      if (!profileData.hasOwnProperty('email')) {
+        console.error('Email field missing from profileData! Adding it.');
+        profileData.email = '';
+      }
+      
+      // If we still don't have email, log what we tried
+      if (!profileData.email) {
+        console.log('=== Email Extraction Debug ===');
+        console.log('ContactInfo object:', JSON.stringify(contactInfo));
+        console.log('ContactInfo has email property:', contactInfo.hasOwnProperty('email'));
+        console.log('ContactInfo.email value:', contactInfo.email);
+        console.log('ProfileData has email property:', profileData.hasOwnProperty('email'));
+        console.log('ProfileData.email value:', profileData.email);
+      }
+      
       console.log('Final profile data to import:', profileData);
       console.log('Email in final data:', profileData.email || 'MISSING');
+      console.log('All profile data keys:', Object.keys(profileData));
       
       console.log('Sending import request through background script...');
       console.log('Auth token:', authToken ? 'Present' : 'Missing');
