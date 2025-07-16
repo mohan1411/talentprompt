@@ -41,7 +41,13 @@ window.extractContactInfo = async function() {
     }
     
     if (contactButton) {
-      console.log('Contact info button found, attempting to click...');
+      console.log('Contact info button found:', {
+        tagName: contactButton.tagName,
+        id: contactButton.id,
+        className: contactButton.className,
+        href: contactButton.href,
+        text: contactButton.textContent.trim()
+      });
       
       // First, close any messaging modals that might be open
       const messagingModals = document.querySelectorAll('.msg-overlay-conversation-bubble, [class*="msg-overlay"]');

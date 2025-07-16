@@ -20,7 +20,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.linkedin.com/*"],
-      "js": ["content/diagnostic.js", "content/direct-email-extractor.js", "content/email-finder.js", "content/final-verifier.js", "content/ultra-clean-extractor.js", "content/contact-extractor.js", "content/aggressive-filter.js", "content/resume-cleaner.js", "content/log-experience.js", "content/calculate-experience.js", "content/text-filter.js", "content/simple-extractor.js", "content/clean-extractor.js", "content/debug-helper.js", "content/experience-debug.js", "content/linkedin-profile.js", "content/linkedin-search.js"],
+      "js": ["content/diagnostic.js", "content/inline-contact-extractor.js", "content/direct-email-extractor.js", "content/email-finder.js", "content/final-verifier.js", "content/ultra-clean-extractor.js", "content/contact-extractor.js", "content/aggressive-filter.js", "content/resume-cleaner.js", "content/log-experience.js", "content/calculate-experience.js", "content/text-filter.js", "content/simple-extractor.js", "content/clean-extractor.js", "content/debug-helper.js", "content/experience-debug.js", "content/linkedin-profile.js", "content/linkedin-search.js"],
       "css": ["content/styles.css"],
       "run_at": "document_end"
     }

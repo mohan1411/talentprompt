@@ -191,13 +191,16 @@
         console.log('Contact extractor type:', typeof window.extractContactInfo);
         try {
           contactInfo = await window.extractContactInfo();
-          console.log('Contact info extracted:', JSON.stringify(contactInfo));
-          console.log('Email found:', contactInfo.email || 'No email found');
+          console.log('Raw contact info returned:', contactInfo);
+          console.log('Contact info stringified:', JSON.stringify(contactInfo));
+          console.log('Email found:', contactInfo?.email || 'No email found');
           
-          // Verify the extraction worked
-          if (typeof contactInfo !== 'object' || contactInfo === null) {
-            console.error('Contact extraction returned invalid data');
+          // Check if it's a valid object
+          if (!contactInfo || typeof contactInfo !== 'object') {
+            console.error('Contact extraction returned invalid data:', contactInfo);
             contactInfo = {};
+          } else if (Object.keys(contactInfo).length === 0) {
+            console.warn('Contact extraction returned empty object - modal may not have opened');
           }
         } catch (err) {
           console.error('Error during contact extraction:', err);
@@ -207,6 +210,17 @@
       } else {
         console.log('WARNING: extractContactInfo function not available!');
         console.log('Available functions:', Object.keys(window).filter(k => k.includes('extract')));
+      }
+      
+      // Fallback: Try inline extraction if modal extraction failed
+      if ((!contactInfo || !contactInfo.email) && window.extractInlineContactInfo) {
+        console.log('Trying inline contact extraction as fallback...');
+        const inlineInfo = window.extractInlineContactInfo();
+        if (inlineInfo && inlineInfo.email) {
+          contactInfo.email = inlineInfo.email;
+          contactInfo.phone = inlineInfo.phone || contactInfo.phone;
+          console.log('Inline extraction found email:', contactInfo.email);
+        }
       }
       
       // Use ultra clean extraction - no fallbacks, no unfiltered content
