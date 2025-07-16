@@ -182,8 +182,13 @@
       
       // Extract contact info first (if available)
       let contactInfo = {};
+      
+      // Add a small delay to ensure all scripts are loaded
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       if (window.extractContactInfo) {
         console.log('Attempting to extract contact info...');
+        console.log('Contact extractor type:', typeof window.extractContactInfo);
         try {
           contactInfo = await window.extractContactInfo();
           console.log('Contact info extracted:', JSON.stringify(contactInfo));
@@ -196,10 +201,12 @@
           }
         } catch (err) {
           console.error('Error during contact extraction:', err);
+          console.error('Error stack:', err.stack);
           contactInfo = {};
         }
       } else {
         console.log('WARNING: extractContactInfo function not available!');
+        console.log('Available functions:', Object.keys(window).filter(k => k.includes('extract')));
       }
       
       // Use ultra clean extraction - no fallbacks, no unfiltered content
