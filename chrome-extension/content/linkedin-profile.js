@@ -3,7 +3,14 @@
   'use strict';
   
   // Check if we're on a profile page
-  if (!window.location.pathname.includes('/in/')) {
+  const pathname = window.location.pathname;
+  if (!pathname.includes('/in/')) {
+    return;
+  }
+  
+  // Don't run on detail pages (experience, education, etc)
+  if (pathname.includes('/details/')) {
+    console.log('LinkedIn Import: Skipping details page. Navigate to main profile to import.');
     return;
   }
   
@@ -188,6 +195,20 @@
       if (window.extractUltraCleanProfile) {
         console.log('Using ultra clean extraction for profile data...');
         profileData = window.extractUltraCleanProfile();
+        
+        // Check if extraction returned an error
+        if (profileData.error === 'wrong_page') {
+          showStatus('Please navigate to the main profile page to import', 'error');
+          if (importButton) {
+            importButton.disabled = false;
+            const buttonText = importButton.querySelector('span');
+            if (buttonText) {
+              buttonText.textContent = 'Import to Promtitude';
+            }
+          }
+          return;
+        }
+        
         console.log('Profile extracted with', profileData.experience?.length || 0, 'experiences');
         console.log('Years of experience from profile:', profileData.years_experience);
       } else {

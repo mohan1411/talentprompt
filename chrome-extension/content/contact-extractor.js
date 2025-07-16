@@ -1,23 +1,22 @@
 // Extract contact information from LinkedIn profile
 window.extractContactInfo = async function() {
-  console.log('=== Starting Contact Info Extraction v3 ===');
-  console.log('Function called at:', new Date().toISOString());
-  console.log('Current URL:', window.location.href);
-  
-  const contactInfo = {
-    email: '',
-    phone: '',
-    linkedin: window.location.href.split('?')[0],
-    website: '',
-    address: ''
-  };
-  
-  // Quick DOM check
-  console.log('Profile name element exists:', !!document.querySelector('h1'));
-  console.log('Number of buttons on page:', document.querySelectorAll('button').length);
-  console.log('Number of links on page:', document.querySelectorAll('a').length);
-  
   try {
+    console.log('=== Starting Contact Info Extraction v3 ===');
+    console.log('Function called at:', new Date().toISOString());
+    console.log('Current URL:', window.location.href);
+    
+    const contactInfo = {
+      email: '',
+      phone: '',
+      linkedin: window.location.href.split('?')[0],
+      website: '',
+      address: ''
+    };
+    
+    // Quick DOM check
+    console.log('Profile name element exists:', !!document.querySelector('h1'));
+    console.log('Number of buttons on page:', document.querySelectorAll('button').length);
+    console.log('Number of links on page:', document.querySelectorAll('a').length);
     // Method 1: Look for Contact Info button with multiple selectors
     const contactButtonSelectors = [
       'a[id*="contact-info"]',
@@ -478,4 +477,18 @@ window.extractContactInfo = async function() {
   
   console.log('Returning contact info:', JSON.stringify(result));
   return result;
+  
+  } catch (error) {
+    console.error('Error in contact extraction:', error);
+    console.error('Stack:', error.stack);
+    
+    // Return empty contact info to prevent complete failure
+    return {
+      email: '',
+      phone: '',
+      linkedin: window.location.href.split('?')[0],
+      website: '',
+      address: ''
+    };
+  }
 };

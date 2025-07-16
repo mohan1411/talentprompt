@@ -2,6 +2,18 @@
 window.extractUltraCleanProfile = function() {
   console.log('=== Ultra Clean Extraction Starting ===');
   
+  // Validate we're on the main profile page, not a details page
+  const pathname = window.location.pathname;
+  if (pathname.includes('/details/')) {
+    console.log('WARNING: Cannot extract from details page. Please navigate to main profile page.');
+    return {
+      error: 'wrong_page',
+      message: 'Please navigate to the main LinkedIn profile page to import'
+    };
+  }
+  
+  try {
+  
   const data = {
     linkedin_url: window.location.href.split('?')[0],
     name: '',
@@ -104,6 +116,99 @@ window.extractUltraCleanProfile = function() {
     console.log('No about section found on profile');
   }
   
+  // Helper function to process experience texts - moved outside to fix scoping
+  const processExperienceTexts = (texts, itemId, overrideCompany) => {
+    if (!texts || texts.length < 2) {
+      console.log(`Experience ${itemId}: Insufficient texts`);
+      return;
+    }
+    
+    console.log(`\n=== Experience Item ${itemId} ===`);
+    console.log('All texts found:', texts);
+    console.log('Text count:', texts.length);
+    
+    const exp = {
+      title: '',
+      company: overrideCompany || '',
+      duration: '',
+      location: '',
+      description: ''
+    };
+    
+    // If we have an override company (from grouped experiences), title is first text
+    if (overrideCompany) {
+      exp.title = texts[0];
+    } else {
+      // Check if first text looks like a company name with total duration
+      if (texts[0] && texts[0].match(/\s+at\s+\d+\s*yrs?/i)) {
+        console.log('  -> Detected company with total duration format');
+        const parts = texts[0].split(' at ');
+        exp.company = parts[0].trim();
+        console.log(`  -> Company: ${exp.company} (ignoring total duration)`);
+        
+        if (texts[1]) {
+          exp.title = texts[1];
+        }
+      } else {
+        // Standard format: title first, then company
+        exp.title = texts[0];
+        
+        if (texts[1]) {
+          if (texts[1].includes('·')) {
+            const parts = texts[1].split('·').map(p => p.trim());
+            exp.company = parts[0];
+          } else {
+            exp.company = texts[1];
+          }
+        }
+      }
+    }
+    
+    // Find duration - look for date patterns
+    console.log('Looking for duration in all texts...');
+    for (let i = 1; i < texts.length; i++) {
+      const text = texts[i];
+      console.log(`  Checking text[${i}]: "${text}"`);
+      
+      if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
+        console.log(`  -> Matched date pattern!`);
+        exp.duration = text;
+        
+        if (i + 1 < texts.length) {
+          const nextText = texts[i + 1];
+          console.log(`  -> Next text: "${nextText}"`);
+          
+          if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
+            exp.duration = text + ' · ' + nextText;
+            console.log(`  -> Combined with calculated duration: ${exp.duration}`);
+            i++;
+          } else if (nextText.includes(',')) {
+            exp.location = nextText;
+            console.log(`  -> Next text is location: ${nextText}`);
+          }
+        }
+        console.log(`  -> Final duration: "${exp.duration}"`);
+        break;
+      }
+    }
+    
+    if (!exp.duration) {
+      console.log('  -> No duration found for this experience!');
+    }
+    
+    // Verify this is a real experience
+    if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
+      data.experience.push(exp);
+      console.log(`Added experience ${data.experience.length}:`, {
+        title: exp.title,
+        company: exp.company,
+        duration: exp.duration || 'NO DURATION FOUND'
+      });
+    } else {
+      console.log(`Skipped item ${itemId} - title: "${exp.title}" company: "${exp.company}"`);
+    }
+  };
+  
   // Extract experience - ultra clean with better selectors
   const expSection = document.querySelector('#experience')?.closest('section') || 
                     document.querySelector('#experience')?.parentElement?.parentElement;
@@ -118,96 +223,6 @@ window.extractUltraCleanProfile = function() {
     if (expList) {
       const items = expList.querySelectorAll('li') || expList.children;
       console.log(`Found ${items.length} potential experience items`);
-      
-      // Helper function to process experience texts
-      const processExperienceTexts = (texts, itemId, overrideCompany) => {
-        console.log(`\n=== Experience Item ${itemId} ===`);
-        console.log('All texts found:', texts);
-        console.log('Text count:', texts.length);
-        
-        if (texts.length < 2) return;
-        
-        const exp = {
-          title: '',
-          company: overrideCompany || '',
-          duration: '',
-          location: '',
-          description: ''
-        };
-        
-        // If we have an override company (from grouped experiences), title is first text
-        if (overrideCompany) {
-          exp.title = texts[0];
-        } else {
-          // Check if first text looks like a company name with total duration
-          if (texts[0] && texts[0].match(/\s+at\s+\d+\s*yrs?/i)) {
-            console.log('  -> Detected company with total duration format');
-            const parts = texts[0].split(' at ');
-            exp.company = parts[0].trim();
-            console.log(`  -> Company: ${exp.company} (ignoring total duration)`);
-            
-            if (texts[1]) {
-              exp.title = texts[1];
-            }
-          } else {
-            // Standard format: title first, then company
-            exp.title = texts[0];
-            
-            if (texts[1]) {
-              if (texts[1].includes('·')) {
-                const parts = texts[1].split('·').map(p => p.trim());
-                exp.company = parts[0];
-              } else {
-                exp.company = texts[1];
-              }
-            }
-          }
-        }
-        
-        // Find duration - look for date patterns
-        console.log('Looking for duration in all texts...');
-        for (let i = 1; i < texts.length; i++) {
-          const text = texts[i];
-          console.log(`  Checking text[${i}]: "${text}"`);
-          
-          if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
-            console.log(`  -> Matched date pattern!`);
-            exp.duration = text;
-            
-            if (i + 1 < texts.length) {
-              const nextText = texts[i + 1];
-              console.log(`  -> Next text: "${nextText}"`);
-              
-              if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
-                exp.duration = text + ' · ' + nextText;
-                console.log(`  -> Combined with calculated duration: ${exp.duration}`);
-                i++;
-              } else if (nextText.includes(',')) {
-                exp.location = nextText;
-                console.log(`  -> Next text is location: ${nextText}`);
-              }
-            }
-            console.log(`  -> Final duration: "${exp.duration}"`);
-            break;
-          }
-        }
-        
-        if (!exp.duration) {
-          console.log('  -> No duration found for this experience!');
-        }
-        
-        // Verify this is a real experience
-        if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
-          data.experience.push(exp);
-          console.log(`Added experience ${data.experience.length}:`, {
-            title: exp.title,
-            company: exp.company,
-            duration: exp.duration || 'NO DURATION FOUND'
-          });
-        } else {
-          console.log(`Skipped item ${itemId} - title: "${exp.title}" company: "${exp.company}"`);
-        }
-      };
       
       Array.from(items).forEach((item, idx) => {
         // Skip if not a list item
@@ -382,4 +397,26 @@ window.extractUltraCleanProfile = function() {
   console.log('No irrelevant content included');
   
   return data;
+  
+  } catch (error) {
+    console.error('Error in ultra clean extraction:', error);
+    console.error('Stack:', error.stack);
+    
+    // Return minimal data to prevent complete failure
+    return {
+      linkedin_url: window.location.href.split('?')[0],
+      name: '',
+      headline: '',
+      location: '',
+      about: '',
+      experience: [],
+      education: [],
+      skills: [],
+      years_experience: 0,
+      email: '',
+      phone: '',
+      full_text: '',
+      error: error.message
+    };
+  }
 };

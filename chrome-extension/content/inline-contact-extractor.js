@@ -1,6 +1,7 @@
 // Extract contact info that might be visible inline on the profile
 window.extractInlineContactInfo = function() {
-  console.log('=== Inline Contact Extraction ===');
+  try {
+    console.log('=== Inline Contact Extraction ===');
   
   const contactInfo = {
     email: '',
@@ -82,4 +83,13 @@ window.extractInlineContactInfo = function() {
   
   console.log('Inline extraction result:', contactInfo);
   return contactInfo;
+  
+  } catch (error) {
+    console.error('Error in inline contact extraction:', error);
+    return {
+      email: '',
+      phone: '',
+      linkedin: window.location.href.split('?')[0]
+    };
+  }
 };
