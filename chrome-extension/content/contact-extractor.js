@@ -78,6 +78,38 @@ window.extractContactInfo = async function() {
         // Log modal content for debugging
         console.log('Modal content preview:', contactModal.innerHTML.substring(0, 500));
         
+        // Enhanced modal debugging
+        console.log('=== MODAL CONTENT DEBUG ===');
+        console.log('Modal class:', contactModal.className);
+        console.log('Modal id:', contactModal.id);
+        
+        // Log all text content in modal
+        const allText = contactModal.innerText || contactModal.textContent || '';
+        console.log('Total modal text length:', allText.length);
+        console.log('Modal text preview:', allText.substring(0, 1000));
+        
+        // Check for email patterns in the entire modal
+        const emailPattern = /[\w.-]+@[\w.-]+\.\w+/g;
+        const allEmailMatches = allText.match(emailPattern);
+        if (allEmailMatches) {
+          console.log('All email patterns found in modal:', allEmailMatches);
+        } else {
+          console.log('NO EMAIL PATTERNS FOUND IN MODAL TEXT');
+        }
+        
+        // Log all sections in modal
+        const sections = contactModal.querySelectorAll('section');
+        console.log(`Found ${sections.length} sections in modal`);
+        sections.forEach((section, idx) => {
+          const sectionText = section.innerText || section.textContent || '';
+          console.log(`Section ${idx}:`, {
+            className: section.className,
+            textLength: sectionText.length,
+            preview: sectionText.substring(0, 200)
+          });
+        });
+        console.log('=== END MODAL DEBUG ===');
+        
         // Extract email - try multiple methods
         const emailSelectors = [
           // Most common patterns
@@ -175,6 +207,16 @@ window.extractContactInfo = async function() {
               }
             }
           });
+        }
+        
+        // Try the direct email extractor as a last resort
+        if (!contactInfo.email && window.extractEmailDirect) {
+          console.log('Trying direct email extraction method...');
+          const directEmail = window.extractEmailDirect(contactModal);
+          if (directEmail) {
+            contactInfo.email = directEmail;
+            console.log('Direct email extraction successful:', directEmail);
+          }
         }
         
         // Extract phone
