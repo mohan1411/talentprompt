@@ -180,57 +180,48 @@
         return;
       }
       
-      // Extract contact info first (if available)
-      let contactInfo = {};
-      
       // Add a small delay to ensure all scripts are loaded
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      if (window.extractContactInfo) {
-        console.log('Attempting to extract contact info...');
-        console.log('Contact extractor type:', typeof window.extractContactInfo);
-        try {
-          contactInfo = await window.extractContactInfo();
-          console.log('Raw contact info returned:', contactInfo);
-          console.log('Contact info stringified:', JSON.stringify(contactInfo));
-          console.log('Email found:', contactInfo?.email || 'No email found');
-          
-          // Check if it's a valid object
-          if (!contactInfo || typeof contactInfo !== 'object') {
-            console.error('Contact extraction returned invalid data:', contactInfo);
-            contactInfo = {};
-          } else if (Object.keys(contactInfo).length === 0) {
-            console.warn('Contact extraction returned empty object - modal may not have opened');
-          }
-        } catch (err) {
-          console.error('Error during contact extraction:', err);
-          console.error('Error stack:', err.stack);
-          contactInfo = {};
-        }
+      // FIRST: Extract profile data (including experience) BEFORE opening any modals
+      let profileData;
+      if (window.extractUltraCleanProfile) {
+        console.log('Using ultra clean extraction for profile data...');
+        profileData = window.extractUltraCleanProfile();
+        console.log('Profile extracted with', profileData.experience?.length || 0, 'experiences');
+        console.log('Years of experience from profile:', profileData.years_experience);
       } else {
-        console.log('WARNING: extractContactInfo function not available!');
-        console.log('Available functions:', Object.keys(window).filter(k => k.includes('extract')));
+        console.log('Ultra clean extractor not available, using standard extraction');
+        profileData = extractProfileData();
       }
       
-      // Fallback: Try inline extraction if modal extraction failed
-      if ((!contactInfo || !contactInfo.email) && window.extractInlineContactInfo) {
-        console.log('Trying inline contact extraction as fallback...');
+      // SECOND: Extract contact info (this may open/close modals)
+      let contactInfo = {};
+      
+      // Try inline extraction first (doesn't modify DOM)
+      if (window.extractInlineContactInfo) {
+        console.log('Trying inline contact extraction first...');
         const inlineInfo = window.extractInlineContactInfo();
         if (inlineInfo && inlineInfo.email) {
-          contactInfo.email = inlineInfo.email;
-          contactInfo.phone = inlineInfo.phone || contactInfo.phone;
+          contactInfo = inlineInfo;
           console.log('Inline extraction found email:', contactInfo.email);
         }
       }
       
-      // Use ultra clean extraction - no fallbacks, no unfiltered content
-      let profileData;
-      if (window.extractUltraCleanProfile) {
-        console.log('Using ultra clean extraction...');
-        profileData = window.extractUltraCleanProfile();
-      } else {
-        console.log('Ultra clean extractor not available, using standard extraction');
-        profileData = extractProfileData();
+      // Only try modal extraction if inline didn't find email
+      if (!contactInfo.email && window.extractContactInfo) {
+        console.log('No inline email found, attempting modal extraction...');
+        try {
+          const modalContactInfo = await window.extractContactInfo();
+          console.log('Modal contact info returned:', JSON.stringify(modalContactInfo));
+          
+          if (modalContactInfo && modalContactInfo.email) {
+            contactInfo = modalContactInfo;
+            console.log('Modal extraction found email:', contactInfo.email);
+          }
+        } catch (err) {
+          console.error('Error during modal contact extraction:', err);
+        }
       }
       
       // Ensure email and phone fields exist in profile data
@@ -244,7 +235,9 @@
       // Add contact info to profile data
       console.log('Profile data before adding contact info:', {
         email: profileData.email,
-        phone: profileData.phone
+        phone: profileData.phone,
+        years_experience: profileData.years_experience,
+        experience_count: profileData.experience?.length || 0
       });
       
       if (contactInfo.email) {
@@ -260,6 +253,14 @@
       } else {
         console.log('No phone in contact info to add');
       }
+      
+      // Verify experience data wasn't lost
+      console.log('Profile data after adding contact info:', {
+        email: profileData.email,
+        phone: profileData.phone,
+        years_experience: profileData.years_experience,
+        experience_count: profileData.experience?.length || 0
+      });
       
       console.log('Profile data after adding contact info:', {
         email: profileData.email,
