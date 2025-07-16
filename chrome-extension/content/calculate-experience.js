@@ -82,10 +82,25 @@ window.calculateTotalExperience = function(experiences) {
     }
   });
   
-  const totalYears = Math.round(totalMonths / 12);
+  // Calculate years with better rounding (round up if >= 0.5 years)
+  const exactYears = totalMonths / 12;
+  const totalYears = Math.round(exactYears);
+  
   console.log(`\n=== Total Experience Summary ===`);
   console.log(`Processed ${processedCount} of ${experiences.length} experiences`);
-  console.log(`Total: ${totalMonths} months = ${totalYears} years`);
+  console.log(`Total: ${totalMonths} months = ${exactYears.toFixed(1)} years (rounded to ${totalYears})`);
+  
+  // Log any experiences that couldn't be parsed
+  const unparsedCount = experiences.length - processedCount;
+  if (unparsedCount > 0) {
+    console.log(`WARNING: ${unparsedCount} experiences could not be parsed!`);
+    console.log('Unparsed experiences:');
+    experiences.forEach((exp, idx) => {
+      if (!exp.duration || exp.duration.trim() === '') {
+        console.log(`  - Experience ${idx + 1}: ${exp.title} at ${exp.company} (NO DURATION)`);
+      }
+    });
+  }
   
   return totalYears;
 };

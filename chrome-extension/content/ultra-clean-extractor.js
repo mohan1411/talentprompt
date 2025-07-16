@@ -138,7 +138,9 @@ window.extractUltraCleanProfile = function() {
           }
         });
         
-        console.log(`Item ${idx + 1} texts:`, texts);
+        console.log(`\n=== Experience Item ${idx + 1} ===`);
+        console.log('All texts found:', texts);
+        console.log('Text count:', texts.length);
         
         if (texts.length >= 2) {
           const exp = {
@@ -160,27 +162,40 @@ window.extractUltraCleanProfile = function() {
           }
           
           // Find duration - look for date patterns
-          for (let i = 2; i < texts.length; i++) {
+          console.log('Looking for duration in all texts...');
+          // Start from index 1 in case duration comes early
+          for (let i = 1; i < texts.length; i++) {
             const text = texts[i];
+            console.log(`  Checking text[${i}]: "${text}"`);
+            
             // Check for duration patterns
             if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
+              console.log(`  -> Matched date pattern!`);
               exp.duration = text;
               
               // LinkedIn sometimes shows duration on next line (e.g., "11 yrs 7 mos")
               if (i + 1 < texts.length) {
                 const nextText = texts[i + 1];
+                console.log(`  -> Next text: "${nextText}"`);
+                
                 if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
                   exp.duration = text + ' · ' + nextText;
-                  console.log(`Combined duration: ${exp.duration}`);
+                  console.log(`  -> Combined with calculated duration: ${exp.duration}`);
                   i++; // Skip the next item since we used it
                 }
                 // Check if next item is location
                 else if (nextText.includes(',')) {
                   exp.location = nextText;
+                  console.log(`  -> Next text is location: ${nextText}`);
                 }
               }
+              console.log(`  -> Final duration: "${exp.duration}"`);
               break;
             }
+          }
+          
+          if (!exp.duration) {
+            console.log('  -> No duration found for this experience!');
           }
           
           // Verify this is a real experience
