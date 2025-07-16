@@ -130,27 +130,46 @@ async function handleImportCurrent() {
         authToken: authToken
       });
     } catch (error) {
-      console.log('Content script not loaded, injecting it...');
-      // Inject the content script if it's not loaded
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ['content/linkedin-profile.js']
-      });
+      console.log('Content script not loaded, injecting scripts...');
+      
+      // Get all content scripts from manifest
+      const manifest = chrome.runtime.getManifest();
+      const contentScripts = manifest.content_scripts[0].js;
+      
+      // Inject all scripts in order
+      for (const script of contentScripts) {
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: [script]
+          });
+        } catch (injectError) {
+          console.error(`Failed to inject ${script}:`, injectError);
+        }
+      }
       
       // Also inject the CSS
-      await chrome.scripting.insertCSS({
-        target: { tabId: tab.id },
-        files: ['content/styles.css']
-      });
+      try {
+        await chrome.scripting.insertCSS({
+          target: { tabId: tab.id },
+          files: ['content/styles.css']
+        });
+      } catch (cssError) {
+        console.error('Failed to inject CSS:', cssError);
+      }
       
-      // Wait a bit for the script to initialize
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait a bit for scripts to initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Try sending the message again
-      response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'importProfile',
-        authToken: authToken
-      });
+      try {
+        response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'importProfile',
+          authToken: authToken
+        });
+      } catch (retryError) {
+        throw new Error('Failed to communicate with page. Please refresh the LinkedIn page and try again.');
+      }
     }
     
     console.log('Response from content script:', response);
@@ -182,10 +201,54 @@ async function handleBulkImport() {
     }
     
     // Send message to content script
-    const response = await chrome.tabs.sendMessage(tab.id, {
-      action: 'bulkImport',
-      authToken: authToken
-    });
+    let response;
+    try {
+      response = await chrome.tabs.sendMessage(tab.id, {
+        action: 'bulkImport',
+        authToken: authToken
+      });
+    } catch (error) {
+      console.log('Content script not loaded for bulk import, injecting scripts...');
+      
+      // Get all content scripts from manifest
+      const manifest = chrome.runtime.getManifest();
+      const contentScripts = manifest.content_scripts[0].js;
+      
+      // Inject all scripts in order
+      for (const script of contentScripts) {
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: [script]
+          });
+        } catch (injectError) {
+          console.error(`Failed to inject ${script}:`, injectError);
+        }
+      }
+      
+      // Also inject CSS
+      try {
+        await chrome.scripting.insertCSS({
+          target: { tabId: tab.id },
+          files: ['content/styles.css']
+        });
+      } catch (cssError) {
+        console.error('Failed to inject CSS:', cssError);
+      }
+      
+      // Wait for initialization
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Try again
+      try {
+        response = await chrome.tabs.sendMessage(tab.id, {
+          action: 'bulkImport',
+          authToken: authToken
+        });
+      } catch (retryError) {
+        throw new Error('Failed to communicate with page. Please refresh and try again.');
+      }
+    }
     
     if (response.success) {
       showSuccess(`Imported ${response.count} profiles`);

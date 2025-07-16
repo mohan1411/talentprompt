@@ -735,6 +735,18 @@
         chrome.storage.local.set({ authToken: request.authToken });
       }
       
+      // Check if we're on a profile page
+      if (!window.location.pathname.includes('/in/')) {
+        sendResponse({ success: false, error: 'Please navigate to a LinkedIn profile page' });
+        return true;
+      }
+      
+      // Check if we're on a details page
+      if (window.location.pathname.includes('/details/')) {
+        sendResponse({ success: false, error: 'Please navigate to the main profile page (not details page)' });
+        return true;
+      }
+      
       handleImport().then(() => {
         sendResponse({ success: true });
       }).catch(error => {
