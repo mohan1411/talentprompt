@@ -231,26 +231,40 @@ window.extractUltraCleanProfile = function() {
         if (groupedContainer) {
           console.log(`\nItem ${idx + 1} is a GROUPED EXPERIENCE (multiple roles at same company)`);
           
-          // Get company name - it's usually the first span in the parent item
-          const companySpans = item.querySelectorAll('span[aria-hidden="true"]');
+          // Get company name from the parent item
+          const companySpans = [];
+          
+          // Only look at spans that are direct children of the parent item, not in the sub-list
+          item.querySelectorAll('span[aria-hidden="true"]').forEach(span => {
+            // Make sure this span is not inside the grouped container
+            if (!span.closest('ul.pvs-list') || span.closest('ul.pvs-list') !== groupedContainer) {
+              companySpans.push(span);
+            }
+          });
+          
           let companyName = '';
-          let foundCompanyTotal = false;
+          console.log(`  Found ${companySpans.length} spans in parent item`);
           
           for (const span of companySpans) {
             const text = span.textContent.trim();
-            console.log(`  Checking span: "${text}"`);
+            console.log(`  Parent span: "${text}"`);
             
-            // Skip if this is the total duration
-            if (text.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
-              console.log(`  -> This is total duration, skipping: ${text}`);
-              foundCompanyTotal = true;
+            // Skip durations and years
+            if (text.match(/\d+\s*yrs?\s*\d*\s*mos?/i) || text.match(/^\d{4}$/)) {
+              console.log(`    -> Skipping (duration/year)`);
               continue;
             }
             
-            // The company name is usually before the total duration
-            if (!foundCompanyTotal && text && !text.match(/\d{4}/) && text.length > 2) {
+            // Skip employment types
+            if (text.match(/^(Full-time|Part-time|Contract|Freelance|Internship)$/i)) {
+              console.log(`    -> Skipping (employment type)`);
+              continue;
+            }
+            
+            // The company name is usually the first substantial text
+            if (text.length > 2) {
               companyName = text;
-              console.log(`  -> Found company name: ${companyName}`);
+              console.log(`    -> Using as company name: ${companyName}`);
               break;
             }
           }
@@ -366,6 +380,14 @@ window.extractUltraCleanProfile = function() {
     console.log(`Experience ${idx + 1}: ${exp.title} at ${exp.company}`);
     console.log(`  Duration: ${exp.duration || 'NO DURATION'}`);
   });
+  
+  // Filter out company totals before calculation
+  if (window.filterCompanyTotals) {
+    console.log('\n=== Filtering Company Totals ===');
+    const originalCount = data.experience.length;
+    data.experience = window.filterCompanyTotals(data.experience);
+    console.log(`Filtered from ${originalCount} to ${data.experience.length} experiences`);
+  }
   
   // Try advanced calculator first, fall back to basic if not available
   if (window.calculateTotalExperienceAdvanced) {

@@ -84,10 +84,14 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     
     const duration = exp.duration;
     
-    // Skip company totals
-    if (duration.match(/^[A-Za-z\s&.,]+\s+(at|@)\s+\d+\s*yrs?/i) ||
-        exp.company?.match(/\s+(at|@)\s+\d+\s*yrs?/i)) {
+    // Skip company totals - enhanced detection
+    if (duration.match(/^[A-Za-z\s&.,]+\s+(at|@|·)\s+\d+\s*yrs?/i) ||
+        exp.company?.match(/\s+(at|@|·)\s+\d+\s*yrs?/i) ||
+        exp.title?.match(/^[A-Z][A-Za-z\s&.,]+\s+(at|@|·)\s+\d+\s*yrs?/i)) {
       console.log(`- SKIPPING: Company total duration detected`);
+      console.log(`  Title: "${exp.title}"`);
+      console.log(`  Company: "${exp.company}"`);
+      console.log(`  Duration: "${exp.duration}"`);
       skippedCount++;
       return;
     }
@@ -131,6 +135,13 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     if (!calculatedMonths && duration.toLowerCase().includes('less than')) {
       calculatedMonths = 6; // Assume 6 months for "less than a year"
       console.log('- Special case: "less than a year" = 6 months');
+    }
+    
+    // Additional check: if title equals company name and has duration, likely a total
+    if (exp.title === exp.company && calculatedMonths > 0) {
+      console.log(`- SKIPPING: Title equals company (likely a total)`);
+      skippedCount++;
+      return;
     }
     
     if (calculatedMonths && calculatedMonths > 0) {

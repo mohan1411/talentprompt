@@ -125,5 +125,16 @@ if (window.location.href.includes('anil-narasimhappa-64000518')) {
   console.log('%cDETECTED PROBLEMATIC PROFILE - Running debugger', 'color: orange; font-weight: bold');
   setTimeout(() => {
     window.debugExperienceCalculation();
+    
+    // Also run a specific check for ANZ experiences
+    console.log('\n%cANZ SPECIFIC DEBUG', 'color: purple; font-weight: bold');
+    const allText = document.body.innerText || '';
+    const anzMatches = allText.match(/ANZ[^\\n]*\\d+\\s*yrs?[^\\n]*/gi);
+    if (anzMatches) {
+      console.log('Found ANZ-related text with durations:');
+      anzMatches.forEach((match, idx) => {
+        console.log(`  ${idx + 1}: "${match}"`);
+      });
+    }
   }, 3000);
 }
