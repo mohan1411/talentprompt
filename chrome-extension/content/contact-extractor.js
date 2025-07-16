@@ -2,6 +2,7 @@
 window.extractContactInfo = async function() {
   console.log('=== Starting Contact Info Extraction v3 ===');
   console.log('Function called at:', new Date().toISOString());
+  console.log('Current URL:', window.location.href);
   
   const contactInfo = {
     email: '',
@@ -10,6 +11,11 @@ window.extractContactInfo = async function() {
     website: '',
     address: ''
   };
+  
+  // Quick DOM check
+  console.log('Profile name element exists:', !!document.querySelector('h1'));
+  console.log('Number of buttons on page:', document.querySelectorAll('button').length);
+  console.log('Number of links on page:', document.querySelectorAll('a').length);
   
   try {
     // Method 1: Look for Contact Info button with multiple selectors
@@ -394,6 +400,7 @@ window.extractContactInfo = async function() {
       }
     } else {
       console.log('WARNING: No contact info button found on profile');
+      console.log('Searched selectors:', contactButtonSelectors);
       
       // Debug: Look for all links and buttons that might be contact info
       console.log('=== Debugging Contact Button Search ===');

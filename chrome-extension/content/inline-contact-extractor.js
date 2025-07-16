@@ -8,6 +8,30 @@ window.extractInlineContactInfo = function() {
     linkedin: window.location.href.split('?')[0]
   };
   
+  // First, search the entire page for email patterns
+  const pageText = document.body.innerText || document.body.textContent || '';
+  console.log('Page text length:', pageText.length);
+  
+  const emailRegex = /[\w.-]+@[\w.-]+\.\w+/g;
+  const allEmails = pageText.match(emailRegex);
+  
+  if (allEmails && allEmails.length > 0) {
+    console.log('Found emails on page:', allEmails);
+    // Filter out common non-personal emails
+    const personalEmail = allEmails.find(email => 
+      !email.includes('linkedin.com') && 
+      !email.includes('example.com') &&
+      !email.includes('support@') &&
+      !email.includes('help@')
+    );
+    
+    if (personalEmail) {
+      contactInfo.email = personalEmail;
+      console.log('Selected personal email:', personalEmail);
+      return contactInfo;
+    }
+  }
+  
   // Method 1: Check the intro card for any visible contact info
   const introCard = document.querySelector('.pv-top-card') || 
                     document.querySelector('.pv-text-details__left-panel');

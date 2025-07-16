@@ -201,27 +201,45 @@
       // Try inline extraction first (doesn't modify DOM)
       if (window.extractInlineContactInfo) {
         console.log('Trying inline contact extraction first...');
-        const inlineInfo = window.extractInlineContactInfo();
-        if (inlineInfo && inlineInfo.email) {
-          contactInfo = inlineInfo;
-          console.log('Inline extraction found email:', contactInfo.email);
+        try {
+          const inlineInfo = window.extractInlineContactInfo();
+          console.log('Inline extraction returned:', JSON.stringify(inlineInfo));
+          if (inlineInfo && inlineInfo.email) {
+            contactInfo = inlineInfo;
+            console.log('Inline extraction found email:', contactInfo.email);
+          } else {
+            console.log('Inline extraction did not find email');
+          }
+        } catch (err) {
+          console.error('Error in inline extraction:', err);
         }
+      } else {
+        console.log('Inline contact extractor not available');
       }
       
       // Only try modal extraction if inline didn't find email
       if (!contactInfo.email && window.extractContactInfo) {
         console.log('No inline email found, attempting modal extraction...');
+        console.log('Contact extractor available:', typeof window.extractContactInfo);
         try {
           const modalContactInfo = await window.extractContactInfo();
-          console.log('Modal contact info returned:', JSON.stringify(modalContactInfo));
+          console.log('Modal extraction raw result:', modalContactInfo);
+          console.log('Modal contact info stringified:', JSON.stringify(modalContactInfo));
+          console.log('Modal result type:', typeof modalContactInfo);
+          console.log('Modal result keys:', modalContactInfo ? Object.keys(modalContactInfo) : 'null');
           
           if (modalContactInfo && modalContactInfo.email) {
             contactInfo = modalContactInfo;
             console.log('Modal extraction found email:', contactInfo.email);
+          } else {
+            console.log('Modal extraction did not find email');
           }
         } catch (err) {
           console.error('Error during modal contact extraction:', err);
+          console.error('Error stack:', err.stack);
         }
+      } else if (!window.extractContactInfo) {
+        console.error('Contact extractor function not available!');
       }
       
       // Ensure email and phone fields exist in profile data
