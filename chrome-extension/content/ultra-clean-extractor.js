@@ -119,12 +119,132 @@ window.extractUltraCleanProfile = function() {
       const items = expList.querySelectorAll('li') || expList.children;
       console.log(`Found ${items.length} potential experience items`);
       
+      // Helper function to process experience texts
+      const processExperienceTexts = (texts, itemId, overrideCompany) => {
+        console.log(`\n=== Experience Item ${itemId} ===`);
+        console.log('All texts found:', texts);
+        console.log('Text count:', texts.length);
+        
+        if (texts.length < 2) return;
+        
+        const exp = {
+          title: '',
+          company: overrideCompany || '',
+          duration: '',
+          location: '',
+          description: ''
+        };
+        
+        // If we have an override company (from grouped experiences), title is first text
+        if (overrideCompany) {
+          exp.title = texts[0];
+        } else {
+          // Check if first text looks like a company name with total duration
+          if (texts[0] && texts[0].match(/\s+at\s+\d+\s*yrs?/i)) {
+            console.log('  -> Detected company with total duration format');
+            const parts = texts[0].split(' at ');
+            exp.company = parts[0].trim();
+            console.log(`  -> Company: ${exp.company} (ignoring total duration)`);
+            
+            if (texts[1]) {
+              exp.title = texts[1];
+            }
+          } else {
+            // Standard format: title first, then company
+            exp.title = texts[0];
+            
+            if (texts[1]) {
+              if (texts[1].includes('·')) {
+                const parts = texts[1].split('·').map(p => p.trim());
+                exp.company = parts[0];
+              } else {
+                exp.company = texts[1];
+              }
+            }
+          }
+        }
+        
+        // Find duration - look for date patterns
+        console.log('Looking for duration in all texts...');
+        for (let i = 1; i < texts.length; i++) {
+          const text = texts[i];
+          console.log(`  Checking text[${i}]: "${text}"`);
+          
+          if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
+            console.log(`  -> Matched date pattern!`);
+            exp.duration = text;
+            
+            if (i + 1 < texts.length) {
+              const nextText = texts[i + 1];
+              console.log(`  -> Next text: "${nextText}"`);
+              
+              if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
+                exp.duration = text + ' · ' + nextText;
+                console.log(`  -> Combined with calculated duration: ${exp.duration}`);
+                i++;
+              } else if (nextText.includes(',')) {
+                exp.location = nextText;
+                console.log(`  -> Next text is location: ${nextText}`);
+              }
+            }
+            console.log(`  -> Final duration: "${exp.duration}"`);
+            break;
+          }
+        }
+        
+        if (!exp.duration) {
+          console.log('  -> No duration found for this experience!');
+        }
+        
+        // Verify this is a real experience
+        if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
+          data.experience.push(exp);
+          console.log(`Added experience ${data.experience.length}:`, {
+            title: exp.title,
+            company: exp.company,
+            duration: exp.duration || 'NO DURATION FOUND'
+          });
+        } else {
+          console.log(`Skipped item ${itemId} - title: "${exp.title}" company: "${exp.company}"`);
+        }
+      };
+      
       Array.from(items).forEach((item, idx) => {
         // Skip if not a list item
         if (item.tagName !== 'LI' && !item.classList.contains('pvs-entity')) {
           return;
         }
         
+        // Check if this is a grouped experience (multiple roles at same company)
+        const groupedContainer = item.querySelector('ul.pvs-list');
+        if (groupedContainer) {
+          console.log(`Item ${idx + 1} is a grouped experience (multiple roles at same company)`);
+          const companyName = item.querySelector('span[aria-hidden="true"]')?.textContent.trim();
+          console.log(`Company group: ${companyName}`);
+          
+          // Process each role within the company
+          const roleItems = groupedContainer.querySelectorAll('li');
+          roleItems.forEach((roleItem, roleIdx) => {
+            const roleTexts = [];
+            roleItem.querySelectorAll('span[aria-hidden="true"]').forEach(span => {
+              if (!span.closest('.visually-hidden')) {
+                const text = span.textContent.trim();
+                if (text && !isIrrelevant(text) && text.length > 2 && !roleTexts.includes(text)) {
+                  roleTexts.push(text);
+                }
+              }
+            });
+            
+            if (roleTexts.length >= 2) {
+              console.log(`  Role ${roleIdx + 1} texts:`, roleTexts);
+              // Process as a separate experience
+              processExperienceTexts(roleTexts, idx + '-' + roleIdx, companyName);
+            }
+          });
+          return; // Skip regular processing for this item
+        }
+        
+        // Regular single experience processing
         const texts = [];
         // Get all visible text - LinkedIn uses aria-hidden="true" for visible text
         const spans = item.querySelectorAll('span[aria-hidden="true"]');
@@ -138,77 +258,8 @@ window.extractUltraCleanProfile = function() {
           }
         });
         
-        console.log(`\n=== Experience Item ${idx + 1} ===`);
-        console.log('All texts found:', texts);
-        console.log('Text count:', texts.length);
-        
         if (texts.length >= 2) {
-          const exp = {
-            title: texts[0],
-            company: '',
-            duration: '',
-            location: '',
-            description: ''
-          };
-          
-          // Parse company - handle various formats
-          if (texts[1]) {
-            if (texts[1].includes('·')) {
-              const parts = texts[1].split('·').map(p => p.trim());
-              exp.company = parts[0];
-            } else {
-              exp.company = texts[1];
-            }
-          }
-          
-          // Find duration - look for date patterns
-          console.log('Looking for duration in all texts...');
-          // Start from index 1 in case duration comes early
-          for (let i = 1; i < texts.length; i++) {
-            const text = texts[i];
-            console.log(`  Checking text[${i}]: "${text}"`);
-            
-            // Check for duration patterns
-            if (text.match(/\d{4}|Present|Current|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|\d+\s*yr|\d+\s*mo/i)) {
-              console.log(`  -> Matched date pattern!`);
-              exp.duration = text;
-              
-              // LinkedIn sometimes shows duration on next line (e.g., "11 yrs 7 mos")
-              if (i + 1 < texts.length) {
-                const nextText = texts[i + 1];
-                console.log(`  -> Next text: "${nextText}"`);
-                
-                if (nextText.match(/\d+\s*yrs?\s*\d*\s*mos?/i)) {
-                  exp.duration = text + ' · ' + nextText;
-                  console.log(`  -> Combined with calculated duration: ${exp.duration}`);
-                  i++; // Skip the next item since we used it
-                }
-                // Check if next item is location
-                else if (nextText.includes(',')) {
-                  exp.location = nextText;
-                  console.log(`  -> Next text is location: ${nextText}`);
-                }
-              }
-              console.log(`  -> Final duration: "${exp.duration}"`);
-              break;
-            }
-          }
-          
-          if (!exp.duration) {
-            console.log('  -> No duration found for this experience!');
-          }
-          
-          // Verify this is a real experience
-          if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
-            data.experience.push(exp);
-            console.log(`Added experience ${data.experience.length}:`, {
-              title: exp.title,
-              company: exp.company,
-              duration: exp.duration || 'NO DURATION FOUND'
-            });
-          } else {
-            console.log(`Skipped item ${idx + 1} - title: "${texts[0]}" company: "${texts[1] || 'none'}"`);
-          }
+          processExperienceTexts(texts, idx, null);
         } else {
           console.log(`Item ${idx + 1} has insufficient text (${texts.length} items)`);
         }
