@@ -1,9 +1,12 @@
 """Enhanced skill search functionality to handle case variations and partial matches."""
 
+import logging
 import re
 from typing import List, Set
 from sqlalchemy import or_, func, String, text
 from sqlalchemy.sql.expression import cast
+
+logger = logging.getLogger(__name__)
 
 def create_skill_search_conditions(skill_query: str, resume_model):
     """Create search conditions for skills that handle case variations and common formats.
@@ -15,6 +18,7 @@ def create_skill_search_conditions(skill_query: str, resume_model):
     Returns:
         List of SQLAlchemy conditions to use with OR
     """
+    logger.info(f"\n--- Creating skill search conditions for: '{skill_query}' ---")
     conditions = []
     
     # Normalize the skill query
@@ -39,12 +43,15 @@ def create_skill_search_conditions(skill_query: str, resume_model):
     
     # Remove duplicates
     variations = list(set(variations))
+    logger.info(f"Skill variations to search: {variations}")
     
     # Check skills JSON array for each variation
     for variation in variations:
         # Exact match in JSON array
+        condition_str = f'%"{variation}"%'
+        logger.info(f"Adding JSON skill search: {condition_str}")
         conditions.append(
-            cast(resume_model.skills, String).ilike(f'%"{variation}"%')
+            cast(resume_model.skills, String).ilike(condition_str)
         )
         
         # Match with common suffixes/prefixes
@@ -62,15 +69,16 @@ def create_skill_search_conditions(skill_query: str, resume_model):
     
     # PostgreSQL specific: Use JSON operators for more precise matching
     # This checks if any element in the skills array contains the search term
-    conditions.append(
-        text(f"""
+    jsonb_query = f"""
         EXISTS (
             SELECT 1 FROM jsonb_array_elements_text(skills::jsonb) AS skill
             WHERE skill ILIKE '%{skill_query}%'
         )
-        """)
-    )
+        """
+    logger.info(f"Adding JSONB array search for partial matches")
+    conditions.append(text(jsonb_query))
     
+    logger.info(f"Total conditions created: {len(conditions)}")
     return conditions
 
 

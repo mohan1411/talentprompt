@@ -1,5 +1,6 @@
 """Search endpoints for natural language queries."""
 
+import logging
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -12,6 +13,7 @@ from app.schemas.resume import ResumeSearchResult
 from app.services.search import search_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 class SearchQuery(BaseModel):
@@ -64,6 +66,12 @@ async def search_resumes(
     if search_query.filters:
         filters_dict = search_query.filters.dict(exclude_none=True)
     
+    # Debug logging
+    logger.info(f"=== SEARCH DEBUG: Starting search ===")
+    logger.info(f"Query: '{search_query.query}'")
+    logger.info(f"Limit: {search_query.limit}")
+    logger.info(f"Filters: {filters_dict}")
+    
     # Perform search
     results = await search_service.search_resumes(
         db,
@@ -71,6 +79,8 @@ async def search_resumes(
         limit=search_query.limit,
         filters=filters_dict
     )
+    
+    logger.info(f"Search returned {len(results)} results")
     
     # Convert to response format
     search_results = []
@@ -196,3 +206,125 @@ async def get_popular_tags(
     """
     tags = await search_service.get_popular_tags(db, limit)
     return tags
+
+
+class DebugSearchResponse(BaseModel):
+    """Debug search response with detailed information."""
+    query: str
+    total_resumes: int
+    resumes_with_skills: int
+    skill_samples: List[dict]
+    search_sql: str
+    results_found: int
+    sample_results: List[dict]
+
+
+@router.get("/debug/search", response_model=DebugSearchResponse)
+async def debug_search(
+    q: str = Query(..., description="Search query to debug"),
+    db: AsyncSession = Depends(deps.get_db),
+    current_user = Depends(deps.get_current_active_user),
+) -> DebugSearchResponse:
+    """
+    Debug endpoint to diagnose search issues.
+    
+    Returns detailed information about:
+    - Total resumes in database
+    - How many have skills
+    - Sample of skills data
+    - SQL query being executed
+    - Results found
+    """
+    from sqlalchemy import select, func
+    from app.models.resume import Resume
+    
+    # Count total resumes
+    total_stmt = select(func.count(Resume.id)).where(
+        Resume.status == 'active',
+        Resume.parse_status == 'completed'
+    )
+    total_result = await db.execute(total_stmt)
+    total_resumes = total_result.scalar() or 0
+    
+    # Count resumes with skills
+    skills_stmt = select(func.count(Resume.id)).where(
+        Resume.status == 'active',
+        Resume.parse_status == 'completed',
+        Resume.skills.isnot(None)
+    )
+    skills_result = await db.execute(skills_stmt)
+    resumes_with_skills = skills_result.scalar() or 0
+    
+    # Get sample of skills data
+    sample_stmt = select(
+        Resume.id,
+        Resume.first_name,
+        Resume.last_name,
+        Resume.skills,
+        Resume.current_title
+    ).where(
+        Resume.skills.isnot(None)
+    ).limit(5)
+    
+    sample_result = await db.execute(sample_stmt)
+    skill_samples = []
+    for row in sample_result:
+        skill_samples.append({
+            "id": str(row.id),
+            "name": f"{row.first_name} {row.last_name}",
+            "title": row.current_title,
+            "skills": row.skills,
+            "skills_type": type(row.skills).__name__,
+            "skills_count": len(row.skills) if row.skills else 0
+        })
+    
+    # Search for WebSphere specifically
+    websphere_searches = [
+        f'%"{q}"%',
+        f'%{q}%',
+        f'%{q.lower()}%',
+        f'%{q.upper()}%',
+        f'%{q.title()}%'
+    ]
+    
+    # Try different search approaches
+    search_results = []
+    for search_pattern in websphere_searches:
+        search_stmt = select(
+            Resume.id,
+            Resume.first_name,
+            Resume.last_name,
+            Resume.skills,
+            func.cast(Resume.skills, String).label('skills_text')
+        ).where(
+            Resume.status == 'active',
+            func.cast(Resume.skills, String).ilike(search_pattern)
+        ).limit(3)
+        
+        result = await db.execute(search_stmt)
+        for row in result:
+            search_results.append({
+                "pattern": search_pattern,
+                "id": str(row.id),
+                "name": f"{row.first_name} {row.last_name}",
+                "skills": row.skills,
+                "skills_as_text": row.skills_text,
+                "found": True
+            })
+    
+    # Also check raw text
+    raw_text_stmt = select(func.count(Resume.id)).where(
+        Resume.raw_text.ilike(f'%{q}%')
+    )
+    raw_text_result = await db.execute(raw_text_stmt)
+    raw_text_count = raw_text_result.scalar() or 0
+    
+    return DebugSearchResponse(
+        query=q,
+        total_resumes=total_resumes,
+        resumes_with_skills=resumes_with_skills,
+        skill_samples=skill_samples,
+        search_sql=f"CAST(skills AS TEXT) ILIKE '%{q}%'",
+        results_found=len(search_results),
+        sample_results=search_results + [{"raw_text_matches": raw_text_count}]
+    )

@@ -369,18 +369,61 @@ window.extractUltraCleanProfile = function() {
   }
   
   // Extract skills - ultra clean and normalized
+  console.log('\n=== Extracting Skills ===');
   const skillsSection = document.querySelector('#skills')?.closest('section');
   if (skillsSection) {
-    skillsSection.querySelectorAll('.mr1.t-bold span[aria-hidden="true"]').forEach(skill => {
-      const skillText = skill.textContent.trim();
-      if (skillText && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
-        // Normalize skill name if normalizer is available
-        const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
-        data.skills.push(normalizedSkill);
+    // Try multiple selectors for skills
+    let skillElements = skillsSection.querySelectorAll('.mr1.t-bold span[aria-hidden="true"]');
+    
+    if (!skillElements || skillElements.length === 0) {
+      console.log('Trying alternate skill selector...');
+      skillElements = skillsSection.querySelectorAll('[data-field="skill_name"]');
+    }
+    
+    if (!skillElements || skillElements.length === 0) {
+      console.log('Trying another skill selector...');
+      skillElements = skillsSection.querySelectorAll('div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]');
+    }
+    
+    if (skillElements && skillElements.length > 0) {
+      skillElements.forEach(skill => {
+        const skillText = skill.textContent.trim();
+        if (skillText && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
+          // Normalize skill name if normalizer is available
+          const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+          if (!data.skills.includes(normalizedSkill)) {
+            data.skills.push(normalizedSkill);
+            console.log(`Found skill: ${normalizedSkill}`);
+          }
+        }
+      });
+    } else {
+      console.log('No skill elements found with any selector');
+    }
+    
+    console.log(`Total skills extracted: ${data.skills.length}`);
+  } else {
+    console.log('Skills section not found, trying fallback method...');
+    
+    // Fallback: Try to find skills anywhere on the page
+    const allSkillElements = document.querySelectorAll('span[aria-hidden="true"]');
+    allSkillElements.forEach(element => {
+      const parent = element.closest('[data-field="skill_card_skill_topic"]') || 
+                     element.closest('.pvs-entity');
+      if (parent && parent.textContent.includes('Skill')) {
+        const skillText = element.textContent.trim();
+        if (skillText && !isIrrelevant(skillText) && !skillText.match(/^\d+$/) && skillText.length > 1) {
+          const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+          if (!data.skills.includes(normalizedSkill)) {
+            data.skills.push(normalizedSkill);
+            console.log(`Found skill (fallback): ${normalizedSkill}`);
+          }
+        }
       }
     });
+    console.log(`Total skills after fallback: ${data.skills.length}`);
   }
-  
+
   // Calculate years of experience
   console.log('\n=== Experience Calculation ===');
   console.log(`Total experiences found: ${data.experience.length}`);

@@ -40,13 +40,22 @@ class SearchService:
         Returns:
             List of tuples (resume_data, similarity_score)
         """
+        logger.info(f"\n{'='*60}")
+        logger.info(f"SEARCH SERVICE DEBUG - Starting search")
+        logger.info(f"Query: '{query}'")
+        logger.info(f"Limit: {limit}")
+        logger.info(f"Filters: {filters}")
+        logger.info(f"{'='*60}\n")
+        
         try:
             # First, try vector search with Qdrant
+            logger.info("Attempting vector search with Qdrant...")
             vector_results = await vector_search.search_similar(
                 query=query,
                 limit=limit * 2,  # Get more results to filter
                 filters=filters
             )
+            logger.info(f"Vector search returned {len(vector_results) if vector_results else 0} results")
             
             if vector_results:
                 # Get resume IDs from vector search
@@ -84,6 +93,7 @@ class SearchService:
                 
         except Exception as e:
             logger.error(f"Error in vector search: {e}")
+            logger.info("Falling back to keyword search...")
             # Fall back to keyword search
         
         # Fallback: Keyword-based search using PostgreSQL
@@ -97,6 +107,9 @@ class SearchService:
         filters: Optional[dict] = None
     ) -> List[Tuple[dict, float]]:
         """Fallback keyword search using PostgreSQL."""
+        logger.info("\n--- Keyword Search Debug ---")
+        logger.info(f"Query: '{query}'")
+        
         # Build query
         stmt = select(Resume).where(
             Resume.status == 'active',
@@ -105,13 +118,17 @@ class SearchService:
         
         # Add keyword search with enhanced skill matching
         search_terms = query.lower().split()
+        logger.info(f"Search terms: {search_terms}")
+        
         if search_terms:
             search_conditions = []
             
             # Check if the query might be a skill search
             query_variations = enhance_search_query_for_skills(query)
+            logger.info(f"Query variations for skill search: {query_variations}")
             
             for term in search_terms:
+                logger.info(f"\nProcessing term: '{term}'")
                 term_pattern = f"%{term}%"
                 
                 # Basic text search conditions
@@ -123,9 +140,12 @@ class SearchService:
                 
                 # If this term might be a skill, add skill-specific conditions
                 if any(term.lower() in var.lower() for var in query_variations):
+                    logger.info(f"Term '{term}' identified as potential skill")
                     skill_conditions = create_skill_search_conditions(term, Resume)
+                    logger.info(f"Created {len(skill_conditions)} skill-specific conditions")
                     search_conditions.append(or_(*basic_conditions, *skill_conditions))
                 else:
+                    logger.info(f"Term '{term}' using basic text search only")
                     search_conditions.append(or_(*basic_conditions))
             
             stmt = stmt.where(or_(*search_conditions))
@@ -150,9 +170,14 @@ class SearchService:
                         func.cast(Resume.skills, String).ilike(f'%"{skill}"%')
                     )
         
+        # Log the final SQL conditions (simplified)
+        logger.info(f"\nTotal search conditions: {len(search_conditions) if search_terms else 0}")
+        
         # Execute query
+        logger.info("Executing database query...")
         result = await db.execute(stmt.limit(limit))
         resumes = result.scalars().all()
+        logger.info(f"Query returned {len(resumes)} resumes")
         
         # Format results with basic scoring
         search_results = []
@@ -186,6 +211,14 @@ class SearchService:
         
         # Sort by score
         search_results.sort(key=lambda x: x[1], reverse=True)
+        
+        logger.info(f"\nReturning {len(search_results)} results")
+        if search_results:
+            logger.info("Top 3 results:")
+            for i, (resume_data, score) in enumerate(search_results[:3]):
+                logger.info(f"  {i+1}. {resume_data['first_name']} {resume_data['last_name']} - Score: {score}")
+                logger.info(f"     Title: {resume_data.get('current_title', 'N/A')}")
+                logger.info(f"     Skills: {resume_data.get('skills', [])[:5]}...")
         
         return search_results
     
