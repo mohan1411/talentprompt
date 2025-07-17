@@ -183,23 +183,153 @@ async def test_suggestions(
     
     suggestions = await search_service.get_search_suggestions(db, query)
     
-    # Also do a manual count for WebSphere
+    # Manual count for the query in different fields
     manual_counts = {}
-    if 'websphere' in query.lower():
-        for variant in ['WebSphere', 'websphere', 'Websphere', 'web sphere']:
-            count_result = await db.execute(
-                select(func.count(Resume.id)).where(
-                    or_(
-                        cast(Resume.skills, String).ilike(f'%{variant}%'),
-                        Resume.raw_text.ilike(f'%{variant}%'),
-                        Resume.current_title.ilike(f'%{variant}%')
-                    )
-                )
-            )
-            manual_counts[variant] = count_result.scalar()
+    
+    # Count in skills array
+    skills_count = await db.execute(
+        select(func.count(Resume.id)).where(
+            cast(Resume.skills, String).ilike(f'%{query}%')
+        )
+    )
+    manual_counts['in_skills'] = skills_count.scalar()
+    
+    # Count in raw text
+    text_count = await db.execute(
+        select(func.count(Resume.id)).where(
+            Resume.raw_text.ilike(f'%{query}%')
+        )
+    )
+    manual_counts['in_raw_text'] = text_count.scalar()
+    
+    # Count in title
+    title_count = await db.execute(
+        select(func.count(Resume.id)).where(
+            Resume.current_title.ilike(f'%{query}%')
+        )
+    )
+    manual_counts['in_title'] = title_count.scalar()
+    
+    # Try to find matching skills directly using JSON extraction
+    matching_skills = []
+    try:
+        skills_result = await db.execute(
+            text("""
+                SELECT DISTINCT skill, COUNT(*) as count
+                FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
+                WHERE LOWER(skill) LIKE LOWER(:query)
+                GROUP BY skill
+                ORDER BY count DESC
+                LIMIT 10
+            """),
+            {"query": f"%{query}%"}
+        )
+        matching_skills = [{"skill": s[0], "count": s[1]} for s in skills_result.all()]
+    except Exception as e:
+        logger.error(f"Error extracting skills: {e}")
+        matching_skills = [{"error": str(e)}]
+    
+    # Get sample of actual skills data to see format
+    sample_skills = await db.execute(
+        select(Resume.skills)
+        .where(Resume.skills.isnot(None))
+        .limit(5)
+    )
+    sample_data = [s[0] for s in sample_skills.all()]
     
     return {
         "query": query,
         "suggestions": suggestions,
-        "manual_websphere_counts": manual_counts if manual_counts else None
+        "manual_counts": manual_counts,
+        "matching_skills_in_db": matching_skills,
+        "sample_skills_format": sample_data[:3]  # Show format of skills in DB
     }
+
+
+@router.get("/verify-skills-format")
+async def verify_skills_format(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Dict[str, Any]:
+    """Verify the format of skills data in the database."""
+    
+    # Get different types of skills data
+    results = {}
+    
+    # 1. Check if skills column is JSON/JSONB
+    try:
+        type_check = await db.execute(
+            text("""
+                SELECT column_name, data_type, udt_name
+                FROM information_schema.columns
+                WHERE table_name = 'resumes' AND column_name = 'skills'
+            """)
+        )
+        column_info = type_check.first()
+        results["column_type"] = dict(column_info) if column_info else None
+    except Exception as e:
+        results["column_type_error"] = str(e)
+    
+    # 2. Get sample of raw skills data
+    try:
+        raw_sample = await db.execute(
+            text("SELECT id, skills::text FROM resumes WHERE skills IS NOT NULL LIMIT 5")
+        )
+        results["raw_samples"] = [
+            {"id": str(r[0]), "skills_text": r[1][:200]} 
+            for r in raw_sample.all()
+        ]
+    except Exception as e:
+        results["raw_samples_error"] = str(e)
+    
+    # 3. Test JSON extraction
+    try:
+        json_test = await db.execute(
+            text("""
+                SELECT COUNT(*)
+                FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
+                WHERE skills IS NOT NULL
+            """)
+        )
+        results["json_extraction_works"] = True
+        results["total_skills_extracted"] = json_test.scalar()
+    except Exception as e:
+        results["json_extraction_works"] = False
+        results["json_extraction_error"] = str(e)
+    
+    # 4. Find all unique skills
+    try:
+        unique_skills = await db.execute(
+            text("""
+                SELECT DISTINCT skill
+                FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
+                ORDER BY skill
+                LIMIT 50
+            """)
+        )
+        results["unique_skills_sample"] = [s[0] for s in unique_skills.all()]
+    except Exception as e:
+        results["unique_skills_error"] = str(e)
+    
+    # 5. Check for specific skills
+    test_skills = ["people development", "workshops", "WebSphere"]
+    results["specific_skill_checks"] = {}
+    
+    for skill in test_skills:
+        try:
+            count = await db.execute(
+                text("""
+                    SELECT COUNT(DISTINCT resume_id)
+                    FROM (
+                        SELECT id as resume_id
+                        FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
+                        WHERE LOWER(skill) LIKE LOWER(:pattern)
+                    ) as matches
+                """),
+                {"pattern": f"%{skill}%"}
+            )
+            results["specific_skill_checks"][skill] = count.scalar()
+        except Exception as e:
+            results["specific_skill_checks"][skill] = f"Error: {e}"
+    
+    return results

@@ -5,7 +5,7 @@ import re
 from typing import List, Optional, Tuple, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import select, or_, and_, func, String
+from sqlalchemy import select, or_, and_, func, String, cast, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -412,8 +412,72 @@ class SearchService:
                         "category": info["category"]
                     })
         
+        # Search for skills in the database that match the query
+        if len(suggestions) < 10:
+            # Query to find skills that match
+            skill_stmt = text("""
+                SELECT DISTINCT skill, COUNT(*) as count
+                FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
+                WHERE status = 'active' 
+                AND LOWER(skill) LIKE LOWER(:query)
+                GROUP BY skill
+                ORDER BY count DESC
+                LIMIT 10
+            """)
+            
+            try:
+                logger.info(f"Searching for skills matching '{query}'")
+                result = await db.execute(skill_stmt, {"query": f"%{query}%"})
+                skill_matches = result.all()
+                logger.info(f"Found {len(skill_matches)} matching skills in database")
+                
+                for skill, count in skill_matches:
+                    if skill and skill not in [s["query"] for s in suggestions]:
+                        suggestions.append({
+                            "query": skill,
+                            "count": count,
+                            "confidence": 0.85,
+                            "category": "skill"
+                        })
+                        logger.info(f"Added skill suggestion: '{skill}' with {count} matches")
+            except Exception as e:
+                logger.error(f"Error searching skills: {e}", exc_info=True)
+                
+                # Fallback: Try a simpler approach
+                try:
+                    logger.info("Trying fallback skill search method")
+                    fallback_stmt = select(Resume.skills).where(
+                        Resume.skills.isnot(None),
+                        cast(Resume.skills, String).ilike(f'%{query}%')
+                    ).limit(20)
+                    
+                    fallback_result = await db.execute(fallback_stmt)
+                    all_skills_lists = fallback_result.scalars().all()
+                    
+                    # Count occurrences of matching skills
+                    skill_counts = {}
+                    for skills_list in all_skills_lists:
+                        if skills_list:
+                            for skill in skills_list:
+                                if skill and query.lower() in skill.lower():
+                                    skill_counts[skill] = skill_counts.get(skill, 0) + 1
+                    
+                    # Add top matching skills
+                    for skill, count in sorted(skill_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
+                        if skill not in [s["query"] for s in suggestions]:
+                            suggestions.append({
+                                "query": skill,
+                                "count": count,
+                                "confidence": 0.8,
+                                "category": "skill"
+                            })
+                            logger.info(f"Added fallback skill: '{skill}' with {count} matches")
+                            
+                except Exception as fallback_error:
+                    logger.error(f"Fallback skill search also failed: {fallback_error}")
+        
         # Get job titles from existing resumes that match the full query
-        if len(suggestions) < 5:
+        if len(suggestions) < 10:
             # First try exact phrase match
             stmt = select(Resume.current_title, func.count(Resume.id)).where(
                 Resume.current_title.ilike(f"%{query}%"),
@@ -434,6 +498,11 @@ class SearchService:
         
         # Sort by confidence and count
         suggestions.sort(key=lambda x: (x["confidence"], x["count"]), reverse=True)
+        
+        # Debug logging
+        logger.info(f"Search suggestions for '{query}': {len(suggestions)} found")
+        for s in suggestions[:5]:
+            logger.info(f"  - {s['query']} ({s['category']}): {s['count']} matches")
         
         return suggestions[:10]  # Limit to 10 suggestions
     
