@@ -200,9 +200,15 @@ class SearchService:
         
         # Execute query
         logger.info("Executing database query...")
-        result = await db.execute(stmt.limit(limit))
+        result = await db.execute(stmt.limit(limit * 2))  # Get more to ensure we catch all matches
         resumes = result.scalars().all()
         logger.info(f"Query returned {len(resumes)} resumes")
+        
+        # Debug: Log all found resumes
+        if query.lower() == "websphere":
+            logger.info("WebSphere search - all found resumes:")
+            for r in resumes:
+                logger.info(f"  - {r.first_name} {r.last_name}: skills={r.skills}")
         
         # Format results with basic scoring
         search_results = []
@@ -216,6 +222,17 @@ class SearchService:
                     score += 0.1
                 if term in (resume.current_title or "").lower():
                     score += 0.2
+                
+                # CRITICAL: Boost score significantly for skill matches
+                if resume.skills:
+                    # Check for exact skill match (highest priority)
+                    if any(term.lower() == skill.lower() for skill in resume.skills if skill):
+                        score += 0.5
+                        logger.info(f"Exact skill match for '{term}' in {resume.first_name} {resume.last_name}")
+                    # Check for partial skill match
+                    elif any(term.lower() in skill.lower() for skill in resume.skills if skill):
+                        score += 0.3
+                        logger.info(f"Partial skill match for '{term}' in {resume.first_name} {resume.last_name}")
             
             resume_data = {
                 "id": str(resume.id),
@@ -232,10 +249,29 @@ class SearchService:
                 "created_at": resume.created_at,
                 "view_count": resume.view_count or 0
             }
+            
+            # Check for exact skill match (similar to vector search logic)
+            has_exact_skill = False
+            if resume.skills:
+                query_lower = query.lower()
+                has_exact_skill = any(
+                    query_lower in skill.lower() 
+                    for skill in resume.skills if skill
+                )
+                if has_exact_skill:
+                    # Significant boost for exact skill matches
+                    score = min(1.0, score * 1.5)
+                    resume_data["_has_exact_skill"] = True
+                    logger.info(f"Boosted score for {resume.first_name} {resume.last_name} to {score} (exact skill match in keyword search)")
+            
             search_results.append((resume_data, min(score, 1.0)))
         
-        # Sort by score
-        search_results.sort(key=lambda x: x[1], reverse=True)
+        # Sort by score AND prioritize exact skill matches (same as vector search)
+        search_results.sort(key=lambda x: (x[0].get("_has_exact_skill", False), x[1]), reverse=True)
+        
+        # Remove the temporary flag
+        for result, _ in search_results:
+            result.pop("_has_exact_skill", None)
         
         logger.info(f"\nReturning {len(search_results)} results")
         if search_results:
