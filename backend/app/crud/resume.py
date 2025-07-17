@@ -1,7 +1,7 @@
 """Resume CRUD operations."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Union, Dict, Any
 from uuid import UUID
 
 from sqlalchemy import select, update
@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.base import CRUDBase
 from app.models.resume import Resume
 from app.schemas.resume import ResumeCreate, ResumeUpdate
+from app.services.reindex_service import reindex_service
 
 
 class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
@@ -73,13 +74,17 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
             "updated_at": datetime.utcnow()
         }
         
+        needs_reindex = False
+        
         if parsed_data:
             update_data["parsed_data"] = parsed_data
             # Extract skills and keywords if present
             if "skills" in parsed_data:
                 update_data["skills"] = parsed_data["skills"]
+                needs_reindex = True
             if "keywords" in parsed_data:
                 update_data["keywords"] = parsed_data["keywords"]
+                needs_reindex = True
         
         await db.execute(
             update(Resume)
@@ -88,6 +93,11 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
         )
         await db.commit()
         await db.refresh(db_obj)
+        
+        # Re-index if skills or keywords were updated
+        if needs_reindex:
+            await reindex_service.reindex_resume(db, db_obj)
+        
         return db_obj
     
     async def increment_view_count(
@@ -112,6 +122,38 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
                 .values(search_appearance_count=Resume.search_appearance_count + 1)
             )
             await db.commit()
+    
+    async def update(
+        self,
+        db: AsyncSession,
+        *,
+        db_obj: Resume,
+        obj_in: Union[ResumeUpdate, Dict[str, Any]]
+    ) -> Resume:
+        """Update a resume and re-index in vector search."""
+        # Check if skills are being updated
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.model_dump(exclude_unset=True)
+        
+        # Track if we need to re-index
+        needs_reindex = False
+        reindex_fields = ['skills', 'summary', 'current_title', 'keywords', 'location']
+        
+        for field in reindex_fields:
+            if field in update_data:
+                needs_reindex = True
+                break
+        
+        # Perform the update using parent class method
+        updated_resume = await super().update(db, db_obj=db_obj, obj_in=obj_in)
+        
+        # Re-index in vector search if needed
+        if needs_reindex:
+            await reindex_service.reindex_resume(db, updated_resume)
+        
+        return updated_resume
 
 
 resume = CRUDResume(Resume)
