@@ -63,7 +63,7 @@ export default function SearchPage() {
     }
     
     // No limit found, return original query with default limit
-    return { cleanQuery: searchQuery, limit: 20 };
+    return { cleanQuery: searchQuery, limit: 10 };
   };
 
   const performSearch = async (searchQuery: string, saveToHistory: boolean = true) => {
