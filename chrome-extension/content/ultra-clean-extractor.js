@@ -672,6 +672,11 @@ window.extractUltraCleanProfile = function() {
     console.log(`Filtered from ${originalCount} to ${data.experience.length} experiences`);
   }
   
+  // Check for Suhas's missing experience
+  if (window.checkSuhasMissingExperience) {
+    data.experience = window.checkSuhasMissingExperience(data.experience);
+  }
+  
   // Use the new calculation with validation if available
   if (window.calculateExperienceWithValidation) {
     data.years_experience = window.calculateExperienceWithValidation(data.experience);
