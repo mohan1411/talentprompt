@@ -4,11 +4,13 @@ import logging
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, cast, String, or_
 
 from app.api import deps
 from app.schemas.resume import ResumeSearchResult
 from app.services.search import search_service
 from app.models.user import User
+from app.models.resume import Resume
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,21 @@ async def debug_websphere_search(
     """
     logger.info("=== DEBUG WEBSPHERE SEARCH ===")
     
+    # First, let's check who actually has WebSphere in their skills
+    websphere_check = select(Resume).where(
+        Resume.status == 'active',
+        or_(
+            cast(Resume.skills, String).ilike('%websphere%'),
+            cast(Resume.skills, String).ilike('%WebSphere%')
+        )
+    )
+    check_result = await db.execute(websphere_check)
+    profiles_with_websphere = check_result.scalars().all()
+    
+    logger.info(f"Profiles with WebSphere skills: {len(profiles_with_websphere)}")
+    for p in profiles_with_websphere:
+        logger.info(f"  - {p.first_name} {p.last_name}: {p.skills}")
+    
     # Perform the exact same search as the main search endpoint
     results = await search_service.search_resumes(
         db=db,
@@ -38,7 +55,7 @@ async def debug_websphere_search(
     for i, (resume_data, score) in enumerate(results):
         logger.info(f"{i+1}. {resume_data['first_name']} {resume_data['last_name']} - Score: {score}")
         logger.info(f"   Skills: {resume_data.get('skills', [])}")
-        logger.info(f"   Has WebSphere in skills: {any('websphere' in str(s).lower() for s in resume_data.get('skills', []))}")
+        logger.info(f"   Has WebSphere in skills: {any('websphere' in str(s).lower() for s in resume_data.get('skills', []))}") 
     
     # Format for API response
     search_results = []
@@ -109,7 +126,27 @@ async def compare_search_methods(
     # 3. Direct keyword search
     keyword_results = await search_service._keyword_search(db, "WebSphere", limit=5)
     
+    # 4. Direct database query for WebSphere skills
+    direct_stmt = select(Resume).where(
+        Resume.status == 'active',
+        or_(
+            cast(Resume.skills, String).ilike('%websphere%'),
+            cast(Resume.skills, String).ilike('%WebSphere%'),
+            cast(Resume.skills, String).ilike('%"WebSphere"%')
+        )
+    )
+    direct_result = await db.execute(direct_stmt)
+    direct_matches = direct_result.scalars().all()
+    
     return {
+        "direct_database_matches": [
+            {
+                "name": f"{r.first_name} {r.last_name}",
+                "skills": r.skills,
+                "id": str(r.id)
+            }
+            for r in direct_matches
+        ],
         "main_search_results": [
             {
                 "name": f"{r[0]['first_name']} {r[0]['last_name']}",
