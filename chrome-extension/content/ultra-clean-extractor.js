@@ -579,6 +579,58 @@ window.extractUltraCleanProfile = function() {
     });
     console.log(`Total skills after fallback: ${data.skills.length}`);
   }
+  
+  // ALWAYS check for "Top skills" section anywhere on the page
+  console.log('\n=== Searching for Top skills section anywhere on page ===');
+  
+  // Search the entire page for Top skills
+  const pageText = document.body.innerText || document.body.textContent || '';
+  const topSkillsMatch = pageText.match(/Top skills[\s\n]*([^\n]*?(?:Kaizen|Strategy|Employee Training|Project Management)[^\n]*)/i);
+  
+  if (topSkillsMatch) {
+    console.log('Found Top skills text:', topSkillsMatch[1]);
+    
+    // Also try to find the actual element
+    const allElements = document.querySelectorAll('*');
+    for (let el of allElements) {
+      const text = el.textContent || '';
+      // Look for element that has "Kaizen • Strategy • Employee Training • Project Management"
+      if (text.includes('Kaizen') && text.includes('•') && 
+          text.includes('Strategy') && text.includes('Employee Training') && 
+          text.includes('Project Management') &&
+          !text.includes('experiences across')) {  // Avoid the wrong section
+        
+        console.log('Found Top skills element!');
+        
+        // Extract just the skills part
+        let skillsText = text;
+        
+        // Remove "Top skills" prefix if present
+        skillsText = skillsText.replace(/Top skills[\s\n]*/gi, '');
+        
+        // Split by bullet
+        const topSkills = skillsText.split(/[•·]/)
+          .map(s => s.trim())
+          .filter(s => s.length > 2 && s.length < 50);
+        
+        topSkills.forEach(skill => {
+          // Extra validation
+          if (['Kaizen', 'Strategy', 'Employee Training', 'Project Management'].some(known => 
+              skill.includes(known))) {
+            const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skill) : skill;
+            if (!data.skills.includes(normalizedSkill)) {
+              data.skills.push(normalizedSkill);
+              console.log(`Added Top skill: ${normalizedSkill}`);
+            }
+          }
+        });
+        
+        break;  // Stop after finding the right element
+      }
+    }
+  } else {
+    console.log('Top skills section not found on page');
+  }
 
   // Calculate years of experience
   console.log('\n=== Experience Calculation ===');
