@@ -87,7 +87,32 @@ class SearchService:
                             "created_at": resume.created_at,
                             "view_count": resume.view_count or 0
                         }
-                        search_results.append((resume_data, vr["score"]))
+                        
+                        # Boost score if exact skill match
+                        original_score = vr["score"]
+                        if resume.skills:
+                            query_lower = query.lower()
+                            has_exact_skill = any(
+                                query_lower in skill.lower() 
+                                for skill in resume.skills if skill
+                            )
+                            if has_exact_skill:
+                                # Boost score for exact skill matches
+                                resume_data["_has_exact_skill"] = True
+                                boosted_score = min(1.0, original_score * 1.5)
+                                search_results.append((resume_data, boosted_score))
+                                logger.info(f"Boosted score for {resume.first_name} {resume.last_name} from {original_score} to {boosted_score} (exact skill match)")
+                            else:
+                                search_results.append((resume_data, original_score))
+                        else:
+                            search_results.append((resume_data, original_score))
+                
+                # Sort by score (highest first) and prioritize exact skill matches
+                search_results.sort(key=lambda x: (x[0].get("_has_exact_skill", False), x[1]), reverse=True)
+                
+                # Remove the temporary flag
+                for result, _ in search_results:
+                    result.pop("_has_exact_skill", None)
                 
                 return search_results[:limit]
                 
