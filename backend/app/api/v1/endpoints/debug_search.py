@@ -333,3 +333,85 @@ async def verify_skills_format(
             results["specific_skill_checks"][skill] = f"Error: {e}"
     
     return results
+
+
+@router.get("/check-profile/{linkedin_username}")
+async def check_profile(
+    linkedin_username: str,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Dict[str, Any]:
+    """Check a specific profile by LinkedIn username."""
+    
+    # Search for the profile
+    profile_result = await db.execute(
+        select(Resume)
+        .where(Resume.linkedin_url.like(f'%{linkedin_username}%'))
+        .limit(1)
+    )
+    profile = profile_result.scalar_one_or_none()
+    
+    if not profile:
+        return {
+            "found": False,
+            "linkedin_username": linkedin_username,
+            "message": "Profile not found in database"
+        }
+    
+    # Extract skills if they exist
+    skills_list = []
+    if profile.skills:
+        if isinstance(profile.skills, list):
+            skills_list = profile.skills
+        elif isinstance(profile.skills, str):
+            try:
+                import json
+                skills_list = json.loads(profile.skills)
+            except:
+                skills_list = [profile.skills]
+    
+    # Check for specific skills
+    expected_skills = ["Kaizen", "Strategy", "Employee Training", "Project Management"]
+    found_skills = {}
+    missing_skills = []
+    
+    for expected_skill in expected_skills:
+        found = False
+        for skill in skills_list:
+            if expected_skill.lower() in skill.lower():
+                found = True
+                found_skills[expected_skill] = skill
+                break
+        if not found:
+            missing_skills.append(expected_skill)
+    
+    # Also check in raw_text
+    raw_text_checks = {}
+    if profile.raw_text:
+        for skill in expected_skills:
+            raw_text_checks[skill] = skill.lower() in profile.raw_text.lower()
+    
+    return {
+        "found": True,
+        "profile": {
+            "id": str(profile.id),
+            "name": f"{profile.first_name} {profile.last_name}",
+            "linkedin_url": profile.linkedin_url,
+            "current_title": profile.current_title,
+            "skills_count": len(skills_list),
+            "skills": skills_list,
+            "created_at": profile.created_at.isoformat() if profile.created_at else None,
+            "updated_at": profile.updated_at.isoformat() if profile.updated_at else None
+        },
+        "skill_analysis": {
+            "expected_skills": expected_skills,
+            "found_skills": found_skills,
+            "missing_skills": missing_skills,
+            "skills_in_raw_text": raw_text_checks
+        },
+        "raw_data": {
+            "skills_type": type(profile.skills).__name__,
+            "skills_raw": str(profile.skills)[:500] if profile.skills else None,
+            "has_raw_text": profile.raw_text is not None
+        }
+    }

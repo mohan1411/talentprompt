@@ -116,6 +116,43 @@ async def check_skills_data():
         else:
             print("Anil's profile not found!")
         
+        # 5b. Check Suhas's profile specifically
+        print("\n\n=== Checking Suhas's Profile ===")
+        result = await session.execute(
+            select(Resume)
+            .where(Resume.linkedin_url.like('%shudgur%'))
+            .limit(1)
+        )
+        suhas = result.scalar_one_or_none()
+        
+        if suhas:
+            print(f"Found Suhas's profile (ID: {suhas.id})")
+            print(f"Name: {suhas.first_name} {suhas.last_name}")
+            print(f"LinkedIn URL: {suhas.linkedin_url}")
+            print(f"Skills: {suhas.skills}")
+            print(f"Skills data type: {type(suhas.skills)}")
+            if suhas.skills:
+                print(f"Number of skills: {len(suhas.skills)}")
+                # Check for expected skills
+                expected_skills = ["Kaizen", "Strategy", "Employee Training", "Project Management"]
+                for expected in expected_skills:
+                    found = any(expected.lower() in s.lower() for s in suhas.skills if s)
+                    print(f"  {expected}: {'✓' if found else '✗'}")
+            else:
+                print("  No skills stored!")
+            
+            # Check raw_text
+            if suhas.raw_text:
+                print(f"\nChecking raw_text for skills:")
+                expected_skills = ["Kaizen", "Strategy", "Employee Training", "Project Management"]
+                for skill in expected_skills:
+                    if skill.lower() in suhas.raw_text.lower():
+                        print(f"  {skill}: ✓ (found in raw_text)")
+                    else:
+                        print(f"  {skill}: ✗ (NOT in raw_text)")
+        else:
+            print("Suhas's profile not found!")
+        
         # 6. Raw SQL query to check JSON data
         print("\n\n=== Raw SQL Query Test ===")
         raw_query = text("""

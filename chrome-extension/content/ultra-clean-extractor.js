@@ -372,33 +372,81 @@ window.extractUltraCleanProfile = function() {
   console.log('\n=== Extracting Skills ===');
   const skillsSection = document.querySelector('#skills')?.closest('section');
   if (skillsSection) {
+    // Log what we found
+    console.log('Skills section found, trying multiple selectors...');
+    
     // Try multiple selectors for skills
-    let skillElements = skillsSection.querySelectorAll('.mr1.t-bold span[aria-hidden="true"]');
+    const selectors = [
+      // Primary selectors
+      '.mr1.t-bold span[aria-hidden="true"]',
+      '.pvs-entity__supplementary-info span[aria-hidden="true"]',
+      // Secondary selectors
+      '[data-field="skill_name"] span',
+      '[data-field="skill_name"]',
+      // Skill card selectors
+      'div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]',
+      '.skill-card-skill-topic',
+      // Generic skill item selectors
+      '.pvs-list__item--three-column span[aria-hidden="true"]',
+      '.pvs-entity .mr1.hoverable-link-text span[aria-hidden="true"]',
+      // Top skills specific
+      'ul[aria-label*="skills"] li span[aria-hidden="true"]',
+      '.pv-skill-category-entity__name span'
+    ];
     
-    if (!skillElements || skillElements.length === 0) {
-      console.log('Trying alternate skill selector...');
-      skillElements = skillsSection.querySelectorAll('[data-field="skill_name"]');
+    let allSkillElements = [];
+    
+    // Try each selector and collect all matching elements
+    for (const selector of selectors) {
+      try {
+        const elements = skillsSection.querySelectorAll(selector);
+        if (elements.length > 0) {
+          console.log(`Selector '${selector}' found ${elements.length} elements`);
+          allSkillElements.push(...Array.from(elements));
+        }
+      } catch (e) {
+        console.log(`Selector '${selector}' failed: ${e.message}`);
+      }
     }
     
-    if (!skillElements || skillElements.length === 0) {
-      console.log('Trying another skill selector...');
-      skillElements = skillsSection.querySelectorAll('div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]');
-    }
+    // De-duplicate and extract skills
+    const seenSkills = new Set();
+    allSkillElements.forEach(element => {
+      const skillText = element.textContent.trim();
+      if (skillText && !seenSkills.has(skillText) && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
+        // Normalize skill name if normalizer is available
+        const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+        if (!data.skills.includes(normalizedSkill)) {
+          data.skills.push(normalizedSkill);
+          seenSkills.add(skillText);
+          console.log(`Found skill: ${normalizedSkill}`);
+        }
+      }
+    });
     
-    if (skillElements && skillElements.length > 0) {
-      skillElements.forEach(skill => {
-        const skillText = skill.textContent.trim();
-        if (skillText && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
-          // Normalize skill name if normalizer is available
-          const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+    // If we still have few skills, try a broader approach
+    if (data.skills.length < 3) {
+      console.log('Few skills found, trying broader search...');
+      const allTexts = skillsSection.querySelectorAll('.t-bold, .t-normal');
+      allTexts.forEach(element => {
+        const text = element.textContent.trim();
+        // Check if this looks like a skill (not a number, not too long, not navigation)
+        if (text && 
+            !seenSkills.has(text) && 
+            !text.match(/^\d+$/) && 
+            text.length > 2 && 
+            text.length < 50 &&
+            !text.includes('Show all') &&
+            !text.includes('skills') &&
+            !isIrrelevant(text)) {
+          const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(text) : text;
           if (!data.skills.includes(normalizedSkill)) {
             data.skills.push(normalizedSkill);
-            console.log(`Found skill: ${normalizedSkill}`);
+            seenSkills.add(text);
+            console.log(`Found skill (broad): ${normalizedSkill}`);
           }
         }
       });
-    } else {
-      console.log('No skill elements found with any selector');
     }
     
     console.log(`Total skills extracted: ${data.skills.length}`);
