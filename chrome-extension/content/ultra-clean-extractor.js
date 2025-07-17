@@ -496,8 +496,22 @@ window.extractUltraCleanProfile = function() {
   
   console.log('=== Ultra Clean Extraction Complete ===');
   console.log('Experience items:', data.experience.length);
+  console.log('Skills extracted:', data.skills.length, data.skills);
   console.log('Clean text length:', data.full_text.length);
   console.log('No irrelevant content included');
+  
+  // Extra debug for skills
+  if (data.skills.length === 0) {
+    console.error('WARNING: No skills extracted! Debugging info:');
+    console.log('Skills section exists?', document.querySelector('#skills') !== null);
+    console.log('Skills section with closest?', document.querySelector('#skills')?.closest('section') !== null);
+    
+    // Try to log what we can find
+    const skillsSection = document.querySelector('#skills')?.closest('section');
+    if (skillsSection) {
+      console.log('Skills section HTML:', skillsSection.innerHTML.substring(0, 500));
+    }
+  }
   
   return data;
   

@@ -23,6 +23,12 @@ async def check_skills_data(
 ) -> Dict[str, Any]:
     """Check skills data in the database."""
     
+    # Count total resumes
+    total_result = await db.execute(
+        select(func.count(Resume.id))
+    )
+    total_resumes = total_result.scalar()
+    
     # Count resumes with skills
     count_result = await db.execute(
         select(func.count(Resume.id)).where(
@@ -71,7 +77,16 @@ async def check_skills_data(
     )
     raw_count = raw_result.scalar()
     
+    # Also get ALL LinkedIn imported resumes
+    linkedin_result = await db.execute(
+        select(Resume.id, Resume.first_name, Resume.last_name, Resume.skills, Resume.linkedin_url)
+        .where(Resume.linkedin_url.isnot(None))
+        .limit(20)
+    )
+    linkedin_resumes = linkedin_result.all()
+    
     return {
+        "total_resumes": total_resumes,
         "total_resumes_with_skills": total_with_skills,
         "sample_resumes": [
             {
@@ -81,6 +96,15 @@ async def check_skills_data(
                 "linkedin_url": s.linkedin_url
             }
             for s in samples
+        ],
+        "linkedin_imported_resumes": [
+            {
+                "id": str(l.id),
+                "name": f"{l.first_name} {l.last_name}",
+                "skills": l.skills,
+                "linkedin_url": l.linkedin_url
+            }
+            for l in linkedin_resumes
         ],
         "websphere_counts": websphere_results,
         "anil_profile": {
