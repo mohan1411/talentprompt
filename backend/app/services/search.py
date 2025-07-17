@@ -60,16 +60,18 @@ class SearchService:
             if vector_results:
                 # Get resume IDs from vector search
                 resume_ids = [r["resume_id"] for r in vector_results]
+                logger.info(f"Vector search returned IDs: {resume_ids[:5]}...")  # Log first 5
                 
                 # Fetch full resume data from PostgreSQL
                 stmt = select(Resume).where(Resume.id.in_(resume_ids))
                 result = await db.execute(stmt)
                 resumes = {str(r.id): r for r in result.scalars().all()}
+                logger.info(f"Found {len(resumes)} resumes in PostgreSQL matching vector IDs")
                 
                 # Combine results with scores
                 search_results = []
                 for vr in vector_results:
-                    resume_id = vr["resume_id"]
+                    resume_id = str(vr["resume_id"])  # Ensure it's a string
                     if resume_id in resumes:
                         resume = resumes[resume_id]
                         resume_data = {
@@ -114,7 +116,12 @@ class SearchService:
                 for result, _ in search_results:
                     result.pop("_has_exact_skill", None)
                 
-                return search_results[:limit]
+                # If we have results, return them
+                if search_results:
+                    return search_results[:limit]
+                else:
+                    logger.warning("Vector search returned IDs but no matching resumes found in PostgreSQL")
+                    # Fall through to keyword search
                 
         except Exception as e:
             logger.error(f"Error in vector search: {e}")
