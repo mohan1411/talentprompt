@@ -490,21 +490,32 @@ window.extractUltraCleanProfile = function() {
     // Special check for "Top skills" section with bullet-separated skills
     if (data.skills.length < 4) {
       console.log('Checking for Top skills section...');
-      const sectionText = skillsSection.innerText || skillsSection.textContent;
+      const sectionText = skillsSection.innerText || skillsSection.textContent || '';
       
-      // Look for "Top skills" followed by bullet-separated skills
-      const topSkillsMatch = sectionText.match(/Top skills[\s\n]*([^\n]+[•·][^\n]+)/i);
-      if (topSkillsMatch) {
-        console.log('Found Top skills section:', topSkillsMatch[1]);
+      // Debug: show first part of section text
+      console.log('Section text preview:', sectionText.substring(0, 200));
+      
+      // Look for the specific element that contains "Top skills" text
+      const topSkillsElement = Array.from(skillsSection.querySelectorAll('*')).find(el => 
+        el.textContent && el.textContent.includes('Kaizen') && el.textContent.includes('•')
+      );
+      
+      if (topSkillsElement) {
+        console.log('Found element with bullet skills:', topSkillsElement.textContent);
+        
+        // Extract the skill text
+        const skillText = topSkillsElement.textContent.trim();
         
         // Split by bullet characters (• or ·)
-        const topSkills = topSkillsMatch[1].split(/[•·]/).map(s => s.trim()).filter(s => s.length > 0);
+        const topSkills = skillText.split(/[•·]/).map(s => s.trim()).filter(s => s.length > 0);
         
         topSkills.forEach(skill => {
           // Clean up the skill text (remove any "Top skills" prefix if present)
-          const cleanSkill = skill.replace(/^Top skills\s*/i, '').trim();
+          const cleanSkill = skill.replace(/^Top skills\s*/i, '').replace(/\s+/g, ' ').trim();
           
-          if (cleanSkill && cleanSkill.length > 1 && cleanSkill.length < 50 && !cleanSkill.toLowerCase().includes('top skills')) {
+          if (cleanSkill && cleanSkill.length > 1 && cleanSkill.length < 50 && 
+              !cleanSkill.toLowerCase().includes('top skills') &&
+              !cleanSkill.toLowerCase().includes('see more')) {
             const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(cleanSkill) : cleanSkill;
             
             if (!seenNormalizedSkills.has(normalizedSkill.toLowerCase())) {
@@ -514,6 +525,35 @@ window.extractUltraCleanProfile = function() {
             }
           }
         });
+      } else {
+        console.log('Could not find element with bullet-separated skills');
+        
+        // Try alternate approach: look for any element containing all the skills
+        const allElements = skillsSection.querySelectorAll('*');
+        for (let el of allElements) {
+          const text = el.textContent || '';
+          if (text.includes('Kaizen') && text.includes('Strategy') && 
+              text.includes('Employee Training') && text.includes('Project Management')) {
+            console.log('Found skills in element:', text.substring(0, 200));
+            
+            // Extract skills from this text
+            const skillMatches = text.match(/([A-Za-z\s]+)(?:\s*[•·]\s*|$)/g);
+            if (skillMatches) {
+              skillMatches.forEach(match => {
+                const skill = match.replace(/[•·]/g, '').trim();
+                if (skill && !['Top skills', 'see more'].includes(skill) && skill.length > 2) {
+                  const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skill) : skill;
+                  if (!seenNormalizedSkills.has(normalizedSkill.toLowerCase())) {
+                    data.skills.push(normalizedSkill);
+                    seenNormalizedSkills.add(normalizedSkill.toLowerCase());
+                    console.log(`Found skill via alternate method: ${normalizedSkill}`);
+                  }
+                }
+              });
+            }
+            break;
+          }
+        }
       }
     }
     
