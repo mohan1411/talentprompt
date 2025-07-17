@@ -1,4 +1,12 @@
 // Check for experiences that might only be visible on the details page
+(function() {
+  // Prevent multiple loads
+  if (window._experienceDetailsCheckerLoaded) {
+    console.log('Experience details checker already loaded, skipping...');
+    return;
+  }
+  window._experienceDetailsCheckerLoaded = true;
+
 window.checkForMissingExperiences = async function() {
   console.log('=== CHECKING FOR MISSING EXPERIENCES ===');
   
@@ -119,7 +127,10 @@ window.extractAllExperiencesIncludingHidden = function(experiences) {
 };
 
 // Override the calculator to add missing experiences
-const originalCalcWithValidation = window.calculateExperienceWithValidation;
+let originalCalcWithValidation;
+if (!window._experienceCalcOverrideSet) {
+  window._experienceCalcOverrideSet = true;
+  originalCalcWithValidation = window.calculateExperienceWithValidation;
 window.calculateExperienceWithValidation = function(experiences) {
   console.log('Checking for missing experiences before calculation...');
   
@@ -146,3 +157,6 @@ if (window.manualExperienceOverrides) {
     reason: 'Manual override - Includes Designer role (3 yrs 4 mos) from details page + individual ANZ roles'
   };
 }
+} // Close the if block
+
+})(); // Close the IIFE
