@@ -1,6 +1,7 @@
 """Resume CRUD operations."""
 
 from datetime import datetime
+import logging
 from typing import List, Optional, Union, Dict, Any
 from uuid import UUID
 
@@ -11,6 +12,8 @@ from app.crud.base import CRUDBase
 from app.models.resume import Resume
 from app.schemas.resume import ResumeCreate, ResumeUpdate
 from app.services.reindex_service import reindex_service
+
+logger = logging.getLogger(__name__)
 
 
 class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
@@ -154,6 +157,25 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
             await reindex_service.reindex_resume(db, updated_resume)
         
         return updated_resume
+    
+    async def remove(self, db: AsyncSession, *, id: UUID) -> Resume:
+        """Remove a resume and its vector embeddings."""
+        # First get the resume to ensure it exists
+        resume = await self.get(db, id=id)
+        if not resume:
+            return None
+        
+        # Delete from vector search
+        try:
+            from app.services.vector_search import vector_search
+            await vector_search.delete_resume(str(id))
+            logger.info(f"Deleted vector embeddings for resume {id}")
+        except Exception as e:
+            logger.error(f"Failed to delete vector embeddings for resume {id}: {e}")
+            # Continue with database deletion even if vector deletion fails
+        
+        # Delete from database using parent method
+        return await super().remove(db, id=id)
 
 
 resume = CRUDResume(Resume)
