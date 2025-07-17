@@ -66,8 +66,26 @@ window.debugSkillsExtraction = function() {
     if (parent) {
       console.log('Top Skills parent HTML:');
       console.log(parent.innerHTML.substring(0, 1000));
+      
+      // Look for bullet points or list items near Top Skills
+      const listItems = parent.querySelectorAll('li, .pvs-list__item, .pv2');
+      console.log(`\nFound ${listItems.length} list items near Top Skills:`);
+      listItems.forEach((item, idx) => {
+        console.log(`${idx + 1}. "${item.textContent.trim()}"`);
+      });
     }
   }
+  
+  // Look for skills with bullet separators
+  console.log('\n=== Looking for skills with bullet separators ===');
+  const bulletTexts = Array.from(skillsSection.querySelectorAll('*')).filter(el => 
+    el.textContent.includes('•') || el.textContent.includes('·')
+  );
+  bulletTexts.forEach((el, idx) => {
+    if (idx < 5) {
+      console.log(`Bullet text ${idx}: "${el.textContent.trim()}"`);
+    }
+  });
 };
 
 console.log('Skills debugger loaded. Run window.debugSkillsExtraction() to debug');

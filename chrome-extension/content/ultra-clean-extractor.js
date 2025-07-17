@@ -487,6 +487,36 @@ window.extractUltraCleanProfile = function() {
       });
     }
     
+    // Special check for "Top skills" section with bullet-separated skills
+    if (data.skills.length < 4) {
+      console.log('Checking for Top skills section...');
+      const sectionText = skillsSection.innerText || skillsSection.textContent;
+      
+      // Look for "Top skills" followed by bullet-separated skills
+      const topSkillsMatch = sectionText.match(/Top skills[\s\n]*([^\n]+[•·][^\n]+)/i);
+      if (topSkillsMatch) {
+        console.log('Found Top skills section:', topSkillsMatch[1]);
+        
+        // Split by bullet characters (• or ·)
+        const topSkills = topSkillsMatch[1].split(/[•·]/).map(s => s.trim()).filter(s => s.length > 0);
+        
+        topSkills.forEach(skill => {
+          // Clean up the skill text (remove any "Top skills" prefix if present)
+          const cleanSkill = skill.replace(/^Top skills\s*/i, '').trim();
+          
+          if (cleanSkill && cleanSkill.length > 1 && cleanSkill.length < 50 && !cleanSkill.toLowerCase().includes('top skills')) {
+            const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(cleanSkill) : cleanSkill;
+            
+            if (!seenNormalizedSkills.has(normalizedSkill.toLowerCase())) {
+              data.skills.push(normalizedSkill);
+              seenNormalizedSkills.add(normalizedSkill.toLowerCase());
+              console.log(`Found Top skill: ${normalizedSkill}`);
+            }
+          }
+        });
+      }
+    }
+    
     console.log(`Total skills extracted: ${data.skills.length}`);
   } else {
     console.log('Skills section not found, trying fallback method...');
