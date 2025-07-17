@@ -73,6 +73,66 @@ async def fix_anil_skills(
     }
 
 
+@router.post("/reindex-anil", response_model=Dict[str, Any])
+async def reindex_anil(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Dict[str, Any]:
+    """Re-index Anil's profile in vector search."""
+    
+    # Import here to avoid circular dependency
+    from app.services.vector_search import vector_search
+    
+    # Find Anil's profile
+    stmt = select(Resume).where(
+        Resume.first_name == "Anil",
+        Resume.last_name == "Narasimhappa"
+    )
+    result = await db.execute(stmt)
+    anil = result.scalar_one_or_none()
+    
+    if not anil:
+        raise HTTPException(status_code=404, detail="Anil Narasimhappa not found")
+    
+    # Create search text from profile
+    search_text = f"{anil.current_title or ''} {anil.summary or ''} {' '.join(anil.skills or [])}"
+    
+    # Re-index in vector search
+    try:
+        embedding = await vector_search.index_resume(
+            resume_id=str(anil.id),
+            text=search_text,
+            metadata={
+                "name": f"{anil.first_name} {anil.last_name}",
+                "title": anil.current_title,
+                "location": anil.location,
+                "skills": anil.skills or []
+            }
+        )
+        
+        # Update embedding in database
+        if embedding:
+            anil.embedding = embedding
+            await db.commit()
+        
+        return {
+            "success": True,
+            "message": "Successfully re-indexed Anil's profile",
+            "profile": {
+                "id": str(anil.id),
+                "name": f"{anil.first_name} {anil.last_name}",
+                "skills": anil.skills,
+                "indexed_text_preview": search_text[:200] + "..."
+            }
+        }
+    except Exception as e:
+        logger.error(f"Failed to re-index: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+
 @router.get("/verify-fix", response_model=Dict[str, Any])
 async def verify_fix(
     db: AsyncSession = Depends(deps.get_db),
