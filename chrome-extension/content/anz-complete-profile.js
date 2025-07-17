@@ -1,4 +1,12 @@
 // Complete profile data for ANZ profile including ALL experiences
+(function() {
+  // Prevent multiple loads
+  if (window._anzCompleteProfileLoaded) {
+    console.log('ANZ complete profile already loaded, skipping...');
+    return;
+  }
+  window._anzCompleteProfileLoaded = true;
+
 window.getCompleteANZProfile = function() {
   console.log('%c📋 COMPLETE ANZ PROFILE DATA', 'color: white; background: green; font-size: 16px; padding: 5px;');
   
@@ -137,7 +145,10 @@ window.forceCorrectANZExperiences = function(experiences) {
 };
 
 // Override the experience calculation one more time
-const originalCalcOverride = window.calculateTotalExperienceAdvanced;
+let originalCalcOverride;
+if (!window._anzCalcOverrideSet) {
+  window._anzCalcOverrideSet = true;
+  originalCalcOverride = window.calculateTotalExperienceAdvanced;
 window.calculateTotalExperienceAdvanced = function(experiences) {
   if (window.location.href.includes('anil-narasimhappa')) {
     console.log('%c🔧 APPLYING ANZ PROFILE FIX', 'color: white; background: red; font-size: 14px; padding: 5px;');
@@ -164,3 +175,6 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
   
   return originalCalcOverride ? originalCalcOverride(experiences) : 0;
 };
+} // Close the if block
+
+})(); // Close the IIFE
