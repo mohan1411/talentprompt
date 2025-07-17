@@ -198,9 +198,14 @@ class SearchService:
         # Log the final SQL conditions (simplified)
         logger.info(f"\nTotal search conditions: {len(search_conditions) if search_terms else 0}")
         
-        # Execute query
+        # Execute query - for skill searches, get more results to ensure we don't miss exact matches
         logger.info("Executing database query...")
-        result = await db.execute(stmt.limit(limit * 2))  # Get more to ensure we catch all matches
+        # If searching for a potential skill, get more results to ensure exact matches aren't missed
+        is_skill_search = any(term.lower() in enhance_search_query_for_skills(query) for term in search_terms)
+        fetch_limit = limit * 5 if is_skill_search else limit * 2
+        logger.info(f"Fetching up to {fetch_limit} results (skill search: {is_skill_search})")
+        
+        result = await db.execute(stmt.limit(fetch_limit))
         resumes = result.scalars().all()
         logger.info(f"Query returned {len(resumes)} resumes")
         
@@ -209,6 +214,35 @@ class SearchService:
             logger.info("WebSphere search - all found resumes:")
             for r in resumes:
                 logger.info(f"  - {r.first_name} {r.last_name}: skills={r.skills}")
+        
+        # CRITICAL FIX: Also explicitly search for exact skill matches to ensure they're included
+        if is_skill_search and len(resumes) < fetch_limit:
+            logger.info("Adding explicit exact skill match search...")
+            # Search for resumes with exact skill match that might have been missed
+            exact_skill_stmt = select(Resume).where(
+                Resume.status == 'active',
+                Resume.parse_status == 'completed'
+            )
+            
+            # Add exact skill conditions
+            skill_conditions = []
+            for term in search_terms:
+                for variation in enhance_search_query_for_skills(term):
+                    skill_conditions.append(
+                        cast(Resume.skills, String).ilike(f'%"{variation}"%')
+                    )
+            
+            if skill_conditions:
+                exact_skill_stmt = exact_skill_stmt.where(or_(*skill_conditions))
+                exact_result = await db.execute(exact_skill_stmt.limit(50))
+                exact_matches = exact_result.scalars().all()
+                
+                # Add any missing exact matches
+                existing_ids = {r.id for r in resumes}
+                for resume in exact_matches:
+                    if resume.id not in existing_ids:
+                        resumes.append(resume)
+                        logger.info(f"Added exact skill match: {resume.first_name} {resume.last_name}")
         
         # Format results with basic scoring
         search_results = []
@@ -272,6 +306,9 @@ class SearchService:
         # Remove the temporary flag
         for result, _ in search_results:
             result.pop("_has_exact_skill", None)
+        
+        # Limit results after sorting to ensure best matches are included
+        search_results = search_results[:limit]
         
         logger.info(f"\nReturning {len(search_results)} results")
         if search_results:
