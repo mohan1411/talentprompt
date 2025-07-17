@@ -170,3 +170,36 @@ async def test_search(
             for r in simple_results
         ]
     }
+
+
+@router.get("/test-suggestions")
+async def test_suggestions(
+    query: str = Query(..., description="Search query for suggestions"),
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Dict[str, Any]:
+    """Test search suggestions functionality."""
+    from app.services.search import search_service
+    
+    suggestions = await search_service.get_search_suggestions(db, query)
+    
+    # Also do a manual count for WebSphere
+    manual_counts = {}
+    if 'websphere' in query.lower():
+        for variant in ['WebSphere', 'websphere', 'Websphere', 'web sphere']:
+            count_result = await db.execute(
+                select(func.count(Resume.id)).where(
+                    or_(
+                        cast(Resume.skills, String).ilike(f'%{variant}%'),
+                        Resume.raw_text.ilike(f'%{variant}%'),
+                        Resume.current_title.ilike(f'%{variant}%')
+                    )
+                )
+            )
+            manual_counts[variant] = count_result.scalar()
+    
+    return {
+        "query": query,
+        "suggestions": suggestions,
+        "manual_websphere_counts": manual_counts if manual_counts else None
+    }

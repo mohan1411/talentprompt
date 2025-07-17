@@ -282,6 +282,11 @@ class SearchService:
             "azure": {"category": "cloud", "full": "Azure Cloud Engineer"},
             "docker": {"category": "tool", "full": "Docker/DevOps Engineer"},
             "kubernetes": {"category": "tool", "full": "Kubernetes Engineer"},
+            "websphere": {"category": "tool", "full": "WebSphere Developer"},
+            "websphere message broker": {"category": "tool", "full": "WebSphere Message Broker Developer"},
+            "wmb": {"category": "tool", "full": "WebSphere Message Broker Developer"},
+            "websphere mq": {"category": "tool", "full": "WebSphere MQ Developer"},
+            "ibm mq": {"category": "tool", "full": "IBM MQ Developer"},
             "machine learning": {"category": "field", "full": "Machine Learning Engineer"},
             "data science": {"category": "field", "full": "Data Scientist"},
             "frontend": {"category": "role", "full": "Frontend Developer"},
@@ -380,14 +385,22 @@ class SearchService:
         for keyword, info in tech_keywords.items():
             if any(keyword.startswith(word) or word in keyword for word in query_words):
                 # Count actual resumes with this keyword
-                count_stmt = select(func.count(Resume.id)).where(
-                    Resume.status == 'active',
-                    or_(
-                        Resume.summary.ilike(f"%{keyword}%"),
-                        Resume.current_title.ilike(f"%{keyword}%"),
-                        func.cast(Resume.skills, String).ilike(f'%"{keyword}"%')
+                # Use enhanced skill search for better matching
+                if keyword.lower() in ['websphere', 'websphere message broker', 'websphere mq', 'wmb', 'ibm mq']:
+                    skill_conditions = create_skill_search_conditions(keyword, Resume)
+                    count_stmt = select(func.count(Resume.id)).where(
+                        Resume.status == 'active',
+                        or_(*skill_conditions)
                     )
-                )
+                else:
+                    count_stmt = select(func.count(Resume.id)).where(
+                        Resume.status == 'active',
+                        or_(
+                            Resume.summary.ilike(f"%{keyword}%"),
+                            Resume.current_title.ilike(f"%{keyword}%"),
+                            func.cast(Resume.skills, String).ilike(f'%"{keyword}"%')
+                        )
+                    )
                 count_result = await db.execute(count_stmt)
                 actual_count = count_result.scalar() or 0
                 
