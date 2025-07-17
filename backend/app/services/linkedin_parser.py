@@ -10,6 +10,19 @@ from openai import AsyncOpenAI
 
 from app.core.config import settings
 
+try:
+    from app.services.search_skill_fix import (
+        normalize_skill_for_storage,
+        extract_skills_from_text
+    )
+except ImportError:
+    # Fallback if module not available
+    def normalize_skill_for_storage(skill):
+        return skill.strip()
+    
+    def extract_skills_from_text(text):
+        return []
+
 logger = logging.getLogger(__name__)
 
 
@@ -76,6 +89,10 @@ class LinkedInParser:
         # Parse education
         if profile_data.get("education"):
             parsed["education"] = self._parse_education(profile_data["education"])
+        
+        # Normalize skills in profile data
+        if profile_data.get("skills"):
+            profile_data["skills"] = [normalize_skill_for_storage(skill) for skill in profile_data["skills"]]
         
         # Extract keywords
         parsed["keywords"] = self._extract_keywords(profile_data)
@@ -168,9 +185,10 @@ class LinkedInParser:
         """Extract keywords from profile data."""
         keywords = []
         
-        # Add skills as keywords
+        # Add skills as keywords (normalized)
         if profile_data.get("skills"):
-            keywords.extend(profile_data["skills"])
+            normalized_skills = [normalize_skill_for_storage(skill) for skill in profile_data["skills"]]
+            keywords.extend(normalized_skills)
         
         # Extract keywords from headline
         if profile_data.get("headline"):
@@ -232,9 +250,10 @@ class LinkedInParser:
                 edu_text = f"{edu.get('degree', '')} {edu.get('field', '')} from {edu.get('school', '')}"
                 text_parts.append(edu_text)
         
-        # Add skills
+        # Add skills (normalized)
         if profile_data.get("skills"):
-            text_parts.append(" ".join(profile_data["skills"]))
+            normalized_skills = [normalize_skill_for_storage(skill) for skill in profile_data["skills"]]
+            text_parts.append(" ".join(normalized_skills))
         
         return "\n\n".join(text_parts)
     
@@ -275,7 +294,7 @@ Return a JSON object with the following structure:
     "summary": "string (about section)",
     "years_experience": number (calculate total years from ALL experience durations),
     "keywords": ["list", "of", "relevant", "keywords"],
-    "skills": ["list", "of", "skills"],
+    "skills": ["list", "of", "skills", "(normalize: websphere -> WebSphere, etc.)"],
     "experience": [
         {
             "title": "Job Title",
@@ -317,7 +336,7 @@ Location: {profile_data.get('location', '')}
 Email: {profile_data.get('email', '') or 'Not provided'}
 Phone: {profile_data.get('phone', '') or 'Not provided'}
 About: {profile_data.get('about', '')[:500] if profile_data.get('about') else ''}
-Skills: {', '.join(profile_data.get('skills', [])[:20])}"""
+Skills: {', '.join([normalize_skill_for_storage(s) for s in profile_data.get('skills', [])[:20]])}"""
         
         try:
             response = await self.client.chat.completions.create(
@@ -331,6 +350,10 @@ Skills: {', '.join(profile_data.get('skills', [])[:20])}"""
             )
             
             parsed = json.loads(response.choices[0].message.content)
+            
+            # Normalize skills
+            if parsed.get("skills"):
+                parsed["skills"] = [normalize_skill_for_storage(skill) for skill in parsed["skills"]]
             
             # Add metadata
             parsed["parsed_at"] = datetime.utcnow().isoformat()

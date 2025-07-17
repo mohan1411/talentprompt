@@ -16,6 +16,7 @@ from app.models.resume import Resume
 from app.crud import resume as crud_resume
 from app.services.linkedin_parser import LinkedInParser
 from app.services.vector_search import vector_search
+from app.services.search_skill_fix import normalize_skill_for_storage
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ async def import_linkedin_profile(
             "summary": profile_data.about or "",
             "current_title": profile_data.headline or "",
             "years_experience": profile_data.years_experience or parsed_data.get("years_experience", 0),
-            "skills": profile_data.skills or [],
+            "skills": [normalize_skill_for_storage(skill) for skill in (profile_data.skills or [])],
             "keywords": parsed_data.get("keywords", []),
             "linkedin_url": profile_data.linkedin_url,
             "linkedin_data": profile_data.dict(),
@@ -122,7 +123,7 @@ async def import_linkedin_profile(
                     "name": f"{parsed_data.get('first_name', '')} {parsed_data.get('last_name', '')}",
                     "title": profile_data.headline,
                     "location": profile_data.location,
-                    "skills": profile_data.skills
+                    "skills": [normalize_skill_for_storage(skill) for skill in (profile_data.skills or [])]
                 }
             )
             if embedding:

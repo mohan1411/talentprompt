@@ -368,13 +368,15 @@ window.extractUltraCleanProfile = function() {
     }
   }
   
-  // Extract skills - ultra clean
+  // Extract skills - ultra clean and normalized
   const skillsSection = document.querySelector('#skills')?.closest('section');
   if (skillsSection) {
     skillsSection.querySelectorAll('.mr1.t-bold span[aria-hidden="true"]').forEach(skill => {
       const skillText = skill.textContent.trim();
       if (skillText && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
-        data.skills.push(skillText);
+        // Normalize skill name if normalizer is available
+        const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+        data.skills.push(normalizedSkill);
       }
     });
   }
@@ -444,6 +446,7 @@ window.extractUltraCleanProfile = function() {
   
   if (data.skills.length > 0) {
     parts.push('\nSKILLS\n' + data.skills.join(', '));
+    console.log('Normalized skills:', data.skills);
   }
   
   data.full_text = parts.join('\n');

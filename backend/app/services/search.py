@@ -11,6 +11,10 @@ from sqlalchemy.orm import selectinload
 
 from app.models.resume import Resume
 from app.services.vector_search import vector_search
+from app.services.search_skill_fix import (
+    create_skill_search_conditions,
+    enhance_search_query_for_skills
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,19 +103,31 @@ class SearchService:
             Resume.parse_status == 'completed'
         )
         
-        # Add keyword search
+        # Add keyword search with enhanced skill matching
         search_terms = query.lower().split()
         if search_terms:
             search_conditions = []
+            
+            # Check if the query might be a skill search
+            query_variations = enhance_search_query_for_skills(query)
+            
             for term in search_terms:
                 term_pattern = f"%{term}%"
-                search_conditions.append(
-                    or_(
-                        Resume.summary.ilike(term_pattern),
-                        Resume.current_title.ilike(term_pattern),
-                        Resume.raw_text.ilike(term_pattern)
-                    )
-                )
+                
+                # Basic text search conditions
+                basic_conditions = [
+                    Resume.summary.ilike(term_pattern),
+                    Resume.current_title.ilike(term_pattern),
+                    Resume.raw_text.ilike(term_pattern)
+                ]
+                
+                # If this term might be a skill, add skill-specific conditions
+                if any(term.lower() in var.lower() for var in query_variations):
+                    skill_conditions = create_skill_search_conditions(term, Resume)
+                    search_conditions.append(or_(*basic_conditions, *skill_conditions))
+                else:
+                    search_conditions.append(or_(*basic_conditions))
+            
             stmt = stmt.where(or_(*search_conditions))
         
         # Add filters
