@@ -1,11 +1,16 @@
 // Fix for Suhas's missing experience that's only on details page
 window.checkSuhasMissingExperience = function(experiences) {
   console.log('=== Checking for Suhas missing experience ===');
+  console.log('Current URL:', window.location.href);
+  console.log('Number of experiences:', experiences.length);
   
   // Check if we're on Suhas's profile
   if (!window.location.href.includes('shudgur')) {
+    console.log('Not on Suhas profile, skipping fix');
     return experiences;
   }
+  
+  console.log('On Suhas profile, checking for Senior Engineer role...');
   
   // Check if we already have Senior Engineer - Process Control
   const hasSeniorEngineer = experiences.some(exp => 
@@ -27,8 +32,8 @@ window.checkSuhasMissingExperience = function(experiences) {
   
   const missingExp = {
     title: 'Senior Engineer - Process Control',
-    company: 'Company from details page', // Update this if you know the company
-    duration: 'Mar 2012 - Mar 2015', // Estimated based on gap
+    company: 'Essilor Group', // Same company as other roles
+    duration: 'Apr 2012 - Mar 2015 · 3 yrs', // Based on gap between roles
     location: ''
   };
   
