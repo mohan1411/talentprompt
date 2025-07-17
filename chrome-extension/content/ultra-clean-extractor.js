@@ -608,22 +608,46 @@ window.extractUltraCleanProfile = function() {
         // Remove "Top skills" prefix if present
         skillsText = skillsText.replace(/Top skills[\s\n]*/gi, '');
         
-        // Split by bullet
-        const topSkills = skillsText.split(/[•·]/)
-          .map(s => s.trim())
-          .filter(s => s.length > 2 && s.length < 50);
-        
-        topSkills.forEach(skill => {
-          // Extra validation
-          if (['Kaizen', 'Strategy', 'Employee Training', 'Project Management'].some(known => 
-              skill.includes(known))) {
-            const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skill) : skill;
-            if (!data.skills.includes(normalizedSkill)) {
-              data.skills.push(normalizedSkill);
-              console.log(`Added Top skill: ${normalizedSkill}`);
+        // Split by bullet - be more careful about extracting
+        const skillMatches = skillsText.match(/([^•·]+)/g);
+        if (skillMatches) {
+          const knownTopSkills = ['Kaizen', 'Strategy', 'Employee Training', 'Project Management'];
+          
+          skillMatches.forEach(match => {
+            let skill = match.trim();
+            
+            // Check if multiple skills are concatenated (e.g., "Project ManagementKaizen")
+            knownTopSkills.forEach(known => {
+              if (skill.includes(known) && skill.length > known.length + 3) {
+                // Split concatenated skills
+                const parts = skill.split(new RegExp(`(${knownTopSkills.join('|')})`, 'g'))
+                  .filter(p => p && knownTopSkills.includes(p.trim()));
+                
+                parts.forEach(part => {
+                  const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(part.trim()) : part.trim();
+                  if (!data.skills.includes(normalizedSkill)) {
+                    data.skills.push(normalizedSkill);
+                    console.log(`Added Top skill (from split): ${normalizedSkill}`);
+                  }
+                });
+                return; // Skip the normal processing for this match
+              }
+            });
+            
+            // Normal processing for non-concatenated skills
+            const matchedSkill = knownTopSkills.find(known => 
+              skill === known || (skill.includes(known) && skill.trim() === known)
+            );
+            
+            if (matchedSkill) {
+              const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(matchedSkill) : matchedSkill;
+              if (!data.skills.includes(normalizedSkill)) {
+                data.skills.push(normalizedSkill);
+                console.log(`Added Top skill: ${normalizedSkill}`);
+              }
             }
-          }
-        });
+          });
+        }
         
         break;  // Stop after finding the right element
       }
@@ -705,6 +729,7 @@ window.extractUltraCleanProfile = function() {
   console.log('=== Ultra Clean Extraction Complete ===');
   console.log('Experience items:', data.experience.length);
   console.log('Skills extracted:', data.skills.length, data.skills);
+  console.log('Final skills array:', JSON.stringify(data.skills));
   console.log('Clean text length:', data.full_text.length);
   console.log('No irrelevant content included');
   
