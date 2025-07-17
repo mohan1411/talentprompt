@@ -411,16 +411,42 @@ window.extractUltraCleanProfile = function() {
     
     // De-duplicate and extract skills
     const seenSkills = new Set();
+    const seenNormalizedSkills = new Set();
+    
     allSkillElements.forEach(element => {
-      const skillText = element.textContent.trim();
-      if (skillText && !seenSkills.has(skillText) && !isIrrelevant(skillText) && !skillText.match(/^\d+$/)) {
-        // Normalize skill name if normalizer is available
-        const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
-        if (!data.skills.includes(normalizedSkill)) {
-          data.skills.push(normalizedSkill);
-          seenSkills.add(skillText);
-          console.log(`Found skill: ${normalizedSkill}`);
+      let skillText = element.textContent.trim();
+      
+      // Skip if empty or irrelevant
+      if (!skillText || isIrrelevant(skillText) || skillText.match(/^\d+$/)) {
+        return;
+      }
+      
+      // Check for duplicated text pattern (e.g., "People DevelopmentPeople Development")
+      // This happens when LinkedIn duplicates text for accessibility
+      if (skillText.length > 10) {
+        const halfLength = Math.floor(skillText.length / 2);
+        const firstHalf = skillText.substring(0, halfLength);
+        const secondHalf = skillText.substring(halfLength);
+        if (firstHalf === secondHalf) {
+          skillText = firstHalf;
+          console.log(`Fixed duplicated skill text: "${skillText}"`);
         }
+      }
+      
+      // Skip if we've already seen this exact text
+      if (seenSkills.has(skillText)) {
+        return;
+      }
+      seenSkills.add(skillText);
+      
+      // Normalize skill name if normalizer is available
+      const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(skillText) : skillText;
+      
+      // Skip if we've already added this normalized skill
+      if (!seenNormalizedSkills.has(normalizedSkill.toLowerCase())) {
+        data.skills.push(normalizedSkill);
+        seenNormalizedSkills.add(normalizedSkill.toLowerCase());
+        console.log(`Found skill: ${normalizedSkill}`);
       }
     });
     
@@ -429,7 +455,18 @@ window.extractUltraCleanProfile = function() {
       console.log('Few skills found, trying broader search...');
       const allTexts = skillsSection.querySelectorAll('.t-bold, .t-normal');
       allTexts.forEach(element => {
-        const text = element.textContent.trim();
+        let text = element.textContent.trim();
+        
+        // Fix duplicated text if present
+        if (text.length > 10) {
+          const halfLength = Math.floor(text.length / 2);
+          const firstHalf = text.substring(0, halfLength);
+          const secondHalf = text.substring(halfLength);
+          if (firstHalf === secondHalf) {
+            text = firstHalf;
+          }
+        }
+        
         // Check if this looks like a skill (not a number, not too long, not navigation)
         if (text && 
             !seenSkills.has(text) && 
@@ -439,10 +476,11 @@ window.extractUltraCleanProfile = function() {
             !text.includes('Show all') &&
             !text.includes('skills') &&
             !isIrrelevant(text)) {
+          seenSkills.add(text);
           const normalizedSkill = window.normalizeSkill ? window.normalizeSkill(text) : text;
-          if (!data.skills.includes(normalizedSkill)) {
+          if (!seenNormalizedSkills.has(normalizedSkill.toLowerCase())) {
             data.skills.push(normalizedSkill);
-            seenSkills.add(text);
+            seenNormalizedSkills.add(normalizedSkill.toLowerCase());
             console.log(`Found skill (broad): ${normalizedSkill}`);
           }
         }
