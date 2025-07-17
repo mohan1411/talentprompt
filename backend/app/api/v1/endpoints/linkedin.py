@@ -109,6 +109,9 @@ async def import_linkedin_profile(
             "parsed_data": parsed_data
         }
         
+        # Debug log the skills being stored
+        logger.info(f"Storing skills for {resume_data['first_name']} {resume_data['last_name']}: {resume_data['skills']}")
+        
         resume = Resume(**resume_data)
         db.add(resume)
         await db.flush()
