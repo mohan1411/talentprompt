@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug
 
 api_router = APIRouter()
 
@@ -18,3 +18,4 @@ api_router.include_router(linkedin.router, prefix="/linkedin", tags=["linkedin"]
 api_router.include_router(websocket.router, tags=["websocket"])
 api_router.include_router(debug_search.router, prefix="/debug", tags=["debug"])
 api_router.include_router(debug_profiles.router, prefix="/debug-profiles", tags=["debug"])
+api_router.include_router(search_debug.router, prefix="/search-debug", tags=["search-debug"])
