@@ -429,6 +429,15 @@
           if (recalculated !== profileData.years_experience) {
             console.log('Experience calculation mismatch - using recalculated value');
             profileData.years_experience = recalculated;
+            
+            // Apply manual override after recalculation
+            if (window.applyManualOverride) {
+              const overrideYears = window.applyManualOverride(profileData.linkedin_url, profileData.years_experience);
+              if (overrideYears !== profileData.years_experience) {
+                console.log(`Manual override RE-APPLIED after recalculation: ${profileData.years_experience} -> ${overrideYears} years`);
+                profileData.years_experience = overrideYears;
+              }
+            }
           }
         }
       }
