@@ -581,6 +581,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Keep the message channel open for async response
   }
   
+  if (request.action === 'extractAndImportCurrentProfile') {
+    // Extract full profile data from current tab and import
+    handleExtractAndImportCurrentProfile(request.authToken, sender.tab?.id)
+      .then(result => sendResponse({ success: true, data: result }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
+  
   if (request.action === 'importFromQueue') {
     // Import profile from queue (used by queue processor)
     handleImportProfile(request.data, request.authToken)
@@ -835,6 +843,39 @@ async function handleAddToQueue(profiles) {
     };
   } catch (error) {
     console.error('Error adding to queue:', error);
+    throw error;
+  }
+}
+
+// Extract and import current profile
+async function handleExtractAndImportCurrentProfile(authToken, tabId) {
+  try {
+    console.log('Extracting and importing current profile');
+    
+    // Get the active tab if not provided
+    if (!tabId) {
+      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!activeTab) {
+        throw new Error('No active tab found');
+      }
+      tabId = activeTab.id;
+    }
+    
+    // Extract profile data using the same method as queue processor
+    const queueProcessor = new QueueProcessor();
+    const profileData = await queueProcessor.extractProfileData(tabId);
+    
+    if (!profileData) {
+      throw new Error('Failed to extract profile data');
+    }
+    
+    console.log('Extracted profile data for import:', profileData);
+    
+    // Import the profile
+    const result = await handleImportProfile(profileData, authToken);
+    return result;
+  } catch (error) {
+    console.error('Failed to extract and import profile:', error);
     throw error;
   }
 }

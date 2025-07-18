@@ -49,36 +49,15 @@
     }
   });
   
-  // Simple import function for popup
+  // Simple import function for popup - now using full extraction
   async function handleSimpleImport(authToken) {
-    console.log('Handling simple import from popup');
+    console.log('Handling import from popup - requesting full extraction');
     
-    // Extract basic profile data
-    const profileData = {
-      linkedin_url: window.location.href.split('?')[0],
-      name: document.querySelector('h1')?.textContent?.trim() || '',
-      headline: document.querySelector('.text-body-medium.break-words')?.textContent?.trim() || '',
-      location: document.querySelector('.text-body-small.inline.t-black--light.break-words')?.textContent?.trim() || '',
-      about: '',
-      experience: [],
-      education: [],
-      skills: []
-    };
-    
-    // Extract about
-    const aboutSection = Array.from(document.querySelectorAll('section')).find(s => 
-      s.querySelector('h2')?.textContent.includes('About')
-    );
-    if (aboutSection) {
-      const aboutText = aboutSection.querySelector('.inline-show-more-text__text, [class*="line-clamp"]');
-      if (aboutText) profileData.about = aboutText.textContent.trim();
-    }
-    
-    // Send to background for import
+    // Request the background script to do a full extraction
     const response = await chrome.runtime.sendMessage({
-      action: 'importProfile',
-      data: profileData,
-      authToken: authToken
+      action: 'extractAndImportCurrentProfile',
+      authToken: authToken,
+      tabId: null // Will use current tab
     });
     
     if (!response.success) {
