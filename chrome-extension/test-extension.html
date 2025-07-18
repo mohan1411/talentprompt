@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #0a66c2;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0858a8;
+        }
+        .log {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            background: white;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chrome Extension Test Page</h1>
+    
+    <div class="section">
+        <h2>Extension Status</h2>
+        <p>Extension ID: <span id="extension-id">Not detected</span></p>
+        <p>Chrome APIs Available: <span id="chrome-apis">Checking...</span></p>
+        <button onclick="testStorage()">Test Storage</button>
+        <button onclick="testMessaging()">Test Messaging</button>
+        <button onclick="checkQueue()">Check Queue</button>
+        <button onclick="addTestProfiles()">Add Test Profiles</button>
+    </div>
+    
+    <div class="section">
+        <h2>Test Log</h2>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.style.color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.insertBefore(entry, logDiv.firstChild);
+        }
+
+        // Check Chrome APIs
+        if (typeof chrome !== 'undefined' && chrome.runtime) {
+            document.getElementById('chrome-apis').textContent = 'Available';
+            document.getElementById('chrome-apis').style.color = 'green';
+            
+            if (chrome.runtime.id) {
+                document.getElementById('extension-id').textContent = chrome.runtime.id;
+            }
+        } else {
+            document.getElementById('chrome-apis').textContent = 'Not Available';
+            document.getElementById('chrome-apis').style.color = 'red';
+            log('Chrome APIs not available. Make sure this page is opened from the extension.', 'error');
+        }
+
+        async function testStorage() {
+            try {
+                // Write test data
+                await chrome.storage.local.set({ testData: 'Hello from test page!' });
+                log('Successfully wrote to storage', 'success');
+                
+                // Read test data
+                const result = await chrome.storage.local.get('testData');
+                log(`Read from storage: ${result.testData}`, 'success');
+                
+                // Clean up
+                await chrome.storage.local.remove('testData');
+                log('Cleaned up test data', 'success');
+            } catch (error) {
+                log(`Storage test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMessaging() {
+            try {
+                const response = await chrome.runtime.sendMessage({ 
+                    action: 'test',
+                    message: 'Hello from test page' 
+                });
+                log(`Message response: ${JSON.stringify(response)}`, 'success');
+            } catch (error) {
+                log(`Messaging test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkQueue() {
+            try {
+                const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
+                log(`Queue has ${linkedinImportQueue.length} items`, 'info');
+                
+                const pending = linkedinImportQueue.filter(item => item.status === 'pending').length;
+                const completed = linkedinImportQueue.filter(item => item.status === 'completed').length;
+                const failed = linkedinImportQueue.filter(item => item.status === 'failed').length;
+                
+                log(`Pending: ${pending}, Completed: ${completed}, Failed: ${failed}`, 'info');
+                
+                if (linkedinImportQueue.length > 0) {
+                    log('First item: ' + JSON.stringify(linkedinImportQueue[0]), 'info');
+                }
+            } catch (error) {
+                log(`Queue check failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function addTestProfiles() {
+            try {
+                const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
+                
+                const testProfiles = [
+                    { name: 'John Doe', url: 'https://www.linkedin.com/in/johndoe' },
+                    { name: 'Jane Smith', url: 'https://www.linkedin.com/in/janesmith' },
+                    { name: 'Bob Johnson', url: 'https://www.linkedin.com/in/bobjohnson' }
+                ];
+                
+                let added = 0;
+                testProfiles.forEach(profile => {
+                    if (!linkedinImportQueue.some(item => item.profileUrl === profile.url)) {
+                        linkedinImportQueue.push({
+                            id: Date.now() + '_' + Math.random(),
+                            profileUrl: profile.url,
+                            profileName: profile.name,
+                            status: 'pending',
+                            addedAt: new Date().toISOString()
+                        });
+                        added++;
+                    }
+                });
+                
+                await chrome.storage.local.set({ linkedinImportQueue });
+                
+                // Update badge
+                chrome.runtime.sendMessage({
+                    action: 'updateQueueBadge',
+                    count: linkedinImportQueue.filter(item => item.status === 'pending').length
+                });
+                
+                log(`Added ${added} test profiles to queue`, 'success');
+            } catch (error) {
+                log(`Failed to add test profiles: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>
