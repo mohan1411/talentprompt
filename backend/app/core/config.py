@@ -69,7 +69,7 @@ class Settings(BaseSettings):
     
     # AI Services
     OPENAI_API_KEY: Optional[str] = None
-    OPENAI_MODEL: str = "gpt-4o-mini"
+    OPENAI_MODEL: str = "gpt-4.1-mini-2025-04-14"
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: str = "claude-3-sonnet-20240229"
     EMBEDDING_MODEL: str = "text-embedding-ada-002"

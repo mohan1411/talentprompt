@@ -15,10 +15,12 @@ logger = logging.getLogger(__name__)
 class OpenAIService:
     """Service for interacting with OpenAI API.
     
-    Currently using GPT-4o-mini as the primary model for:
-    - 98% cost reduction compared to GPT-4-turbo
-    - Excellent performance for recruitment tasks
-    - Low latency for real-time operations
+    Currently using GPT-4.1-mini as the primary model for:
+    - Superior performance matching GPT-4o in many benchmarks
+    - 1 million token context window (8x larger than GPT-4o-mini)
+    - 50% lower latency compared to GPT-4o
+    - Enhanced coding and instruction following capabilities
+    - Knowledge cutoff: June 2024
     """
     
     def __init__(self):
