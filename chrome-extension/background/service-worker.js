@@ -291,26 +291,39 @@ class QueueProcessor {
                     }
                   }
                   
-                  // Dates and Duration
+                  // Dates and Duration - Look for both date range and duration
                   const dateSelectors = [
                     '.t-14.t-normal.t-black--light span[aria-hidden="true"]',
                     '.pvs-entity__caption-wrapper span[aria-hidden="true"]',
                     'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
                     '.pvs-list__item--no-padding-in-columns .t-14.t-normal span[aria-hidden="true"]'
                   ];
+                  
+                  // Collect all date-like texts
+                  const dateTexts = [];
                   for (const sel of dateSelectors) {
-                    const el = item.querySelector(sel);
-                    if (el) {
+                    item.querySelectorAll(sel).forEach(el => {
                       const text = el.textContent.trim();
-                      if (text.includes(' - ') || text.includes(' – ')) {
-                        exp.dates = text;
-                        break;
+                      if (text && (text.includes(' - ') || text.includes(' – ') || text.includes(' yr') || text.includes(' mo'))) {
+                        dateTexts.push(text);
                       }
+                    });
+                  }
+                  
+                  // Find the most complete date string (with duration)
+                  exp.dates = dateTexts.find(t => t.includes('·')) || dateTexts[0] || '';
+                  
+                  // Also try to find duration separately if not in dates
+                  if (!exp.dates.includes('·')) {
+                    const durationText = dateTexts.find(t => t.match(/\d+\s*yr|\d+\s*mo/));
+                    if (durationText && exp.dates) {
+                      exp.dates = exp.dates + ' · ' + durationText;
                     }
                   }
                   
                   if (exp.title || exp.company) {
                     data.experience.push(exp);
+                    console.log(`Extracted experience: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
                   }
                 });
                 break;
@@ -388,17 +401,27 @@ class QueueProcessor {
                   const years = duration.match(/(\d+)\s*yr/);
                   const months = duration.match(/(\d+)\s*mo/);
                   
+                  let expMonths = 0;
                   if (years) {
-                    totalMonths += parseInt(years[1]) * 12;
+                    expMonths += parseInt(years[1]) * 12;
                     calculatedFromDuration = true;
                   }
                   if (months) {
-                    totalMonths += parseInt(months[1]);
+                    expMonths += parseInt(months[1]);
                     calculatedFromDuration = true;
+                  }
+                  
+                  if (expMonths > 0) {
+                    totalMonths += expMonths;
+                    console.log(`Experience: ${exp.title} at ${exp.company} - Duration: ${duration} = ${expMonths} months`);
                   }
                 }
               }
             });
+            
+            if (calculatedFromDuration) {
+              console.log(`Total experience calculated from durations: ${totalMonths} months = ${Math.round(totalMonths / 12)} years`);
+            }
             
             // If we couldn't calculate from duration, try date parsing
             if (!calculatedFromDuration && totalMonths === 0) {
@@ -447,6 +470,18 @@ class QueueProcessor {
             }
           }
           
+          // Additional experience extraction for grouped experiences
+          // LinkedIn sometimes shows total company duration separately
+          const allExpTexts = experienceSection ? Array.from(experienceSection.querySelectorAll('span[aria-hidden="true"]')).map(s => s.textContent.trim()) : [];
+          const additionalDurations = allExpTexts.filter(text => 
+            text.match(/^\d+\s*yrs?\s*\d*\s*mos?$/) && 
+            !data.experience.some(exp => exp.dates && exp.dates.includes(text))
+          );
+          
+          if (additionalDurations.length > 0) {
+            console.log('Found additional duration texts that might be totals:', additionalDurations);
+          }
+          
           // Log extraction results for debugging
           console.log('Extracted profile data:', {
             name: data.name,
@@ -455,6 +490,7 @@ class QueueProcessor {
             'skills_count': data.skills.length,
             'skills': data.skills,
             'experience_count': data.experience.length,
+            'experience_details': data.experience.map(e => ({ title: e.title, company: e.company, dates: e.dates })),
             'years_experience': data.years_experience,
             'linkedin_url': data.linkedin_url
           });
