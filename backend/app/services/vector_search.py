@@ -81,14 +81,16 @@ class VectorSearchService:
             # Continue anyway - will fail on actual operations if Qdrant is not available
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    def get_embedding(self, text: str) -> List[float]:
+    async def get_embedding(self, text: str) -> List[float]:
         """Get embedding for text using OpenAI."""
         if not settings.OPENAI_API_KEY:
             logger.warning("OpenAI API key not configured - returning empty embedding")
             return [0.0] * 1536
         
         try:
-            response = openai.embeddings.create(
+            # Use async OpenAI client
+            client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+            response = await client.embeddings.create(
                 model=settings.EMBEDDING_MODEL,
                 input=text
             )
@@ -101,7 +103,7 @@ class VectorSearchService:
         """Index a resume in Qdrant."""
         try:
             # Get embedding
-            embedding = self.get_embedding(text)
+            embedding = await self.get_embedding(text)
             
             # Create point
             point = PointStruct(
@@ -136,7 +138,7 @@ class VectorSearchService:
         """Search for similar resumes using vector similarity."""
         try:
             # Get query embedding
-            query_embedding = self.get_embedding(query)
+            query_embedding = await self.get_embedding(query)
             
             # Build filter if provided
             qdrant_filter = None
