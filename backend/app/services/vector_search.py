@@ -14,7 +14,7 @@ from qdrant_client.models import (
     MatchValue,
     SearchRequest
 )
-import openai
+from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.core.config import settings
@@ -49,9 +49,10 @@ class VectorSearchService:
         # Collection name
         self.collection_name = settings.QDRANT_COLLECTION_NAME
         
-        # Initialize OpenAI
+        # Initialize async OpenAI client
+        self.openai_client = None
         if settings.OPENAI_API_KEY:
-            openai.api_key = settings.OPENAI_API_KEY
+            self.openai_client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         
         # Ensure collection exists
         self._ensure_collection()
@@ -83,21 +84,20 @@ class VectorSearchService:
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def get_embedding(self, text: str) -> List[float]:
         """Get embedding for text using OpenAI."""
-        if not settings.OPENAI_API_KEY:
+        if not self.openai_client:
             logger.warning("OpenAI API key not configured - returning empty embedding")
             return [0.0] * 1536
         
         try:
-            # Use async OpenAI client
-            client = openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-            response = await client.embeddings.create(
+            response = await self.openai_client.embeddings.create(
                 model=settings.EMBEDDING_MODEL,
                 input=text
             )
             return response.data[0].embedding
         except Exception as e:
             logger.error(f"Error getting embedding: {e}")
-            raise
+            # Return empty embedding on error to allow the app to continue
+            return [0.0] * 1536
     
     async def index_resume(self, resume_id: str, text: str, metadata: Dict[str, Any]):
         """Index a resume in Qdrant."""
