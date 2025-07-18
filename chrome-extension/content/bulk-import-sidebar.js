@@ -17,6 +17,16 @@
     return;
   }
   
+  // Helper function to check if extension context is still valid
+  function isExtensionContextValid() {
+    try {
+      // Try to access chrome.runtime to check if context is valid
+      return chrome.runtime && chrome.runtime.id;
+    } catch (e) {
+      return false;
+    }
+  }
+  
   const selectedProfiles = new Set();
   
   setTimeout(init, 2000);
@@ -500,6 +510,11 @@
         return;
       }
       
+      // Check if extension context is still valid before sending message
+      if (!isExtensionContextValid()) {
+        throw new Error('Extension context invalidated. Please refresh the page.');
+      }
+      
       // Send message to background script to add to queue
       console.log('Sending addToQueue message with profiles:', profilesToAdd);
       const response = await chrome.runtime.sendMessage({
@@ -532,8 +547,21 @@
       }
     } catch (error) {
       console.error('Error adding to queue:', error);
-      const errorMessage = error.message || 'Error adding profiles to queue';
-      showMessage(`Error: ${errorMessage}`, 'error');
+      
+      // Handle extension context invalidated error
+      if (error.message && error.message.includes('Extension context invalidated')) {
+        showMessage('Extension was updated. Please refresh the page and try again.', 'error');
+        
+        // Optionally, try to reload the page automatically after a delay
+        setTimeout(() => {
+          if (confirm('The extension was updated. Would you like to refresh the page now?')) {
+            window.location.reload();
+          }
+        }, 1000);
+      } else {
+        const errorMessage = error.message || 'Error adding profiles to queue';
+        showMessage(`Error: ${errorMessage}`, 'error');
+      }
     }
   }
   
