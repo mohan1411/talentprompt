@@ -691,6 +691,15 @@ window.extractUltraCleanProfile = function() {
     console.log('WARNING: No experience calculation function available');
   }
   
+  // Apply manual override if available
+  if (window.applyManualOverride) {
+    const overrideYears = window.applyManualOverride(data.linkedin_url, data.years_experience);
+    if (overrideYears !== data.years_experience) {
+      console.log(`Manual override applied: ${data.years_experience} -> ${overrideYears} years`);
+      data.years_experience = overrideYears;
+    }
+  }
+  
   // Build ultra clean full text
   const parts = [];
   if (data.name) parts.push(data.name);

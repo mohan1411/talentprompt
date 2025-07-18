@@ -161,6 +161,7 @@ class QueueProcessor {
         files: [
           'content/calculate-experience.js',
           'content/calculate-experience-advanced.js',
+          'content/manual-experience-override.js',
           'content/data-validator.js',
           'content/ultra-clean-extractor.js'
         ]

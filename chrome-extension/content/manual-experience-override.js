@@ -4,6 +4,11 @@ window.manualExperienceOverrides = {
   'anil-narasimhappa-64000518': {
     years: 15, // Approximate correct value based on individual roles
     reason: 'Manual override - ANZ company total was being counted'
+  },
+  // Mohammed Shoaib profile
+  'mohammed-shoaib-bb5a4024': {
+    years: 16, // Correct value - overlap detection was too aggressive
+    reason: 'Manual override - Overlap detection removing valid concurrent experience years'
   }
 };
 
