@@ -36,7 +36,7 @@ class ImportQueueItem(Base):
     __tablename__ = "import_queue"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     profile_data = Column(JSON, nullable=False)  # LinkedIn profile data to import
     source = Column(Enum(ImportSource), default=ImportSource.MANUAL)
     status = Column(Enum(ImportStatus), default=ImportStatus.PENDING)
@@ -50,7 +50,7 @@ class ImportQueueItem(Base):
     # Processing details
     attempts = Column(Integer, default=0)
     error_message = Column(String, nullable=True)
-    resume_id = Column(UUID(as_uuid=True), ForeignKey("resume.id"), nullable=True)
+    resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=True)
     
     # Relationships
     user = relationship("User", back_populates="import_queue_items")
@@ -63,8 +63,8 @@ class ImportHistory(Base):
     __tablename__ = "import_history"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user.id"), nullable=False)
-    resume_id = Column(UUID(as_uuid=True), ForeignKey("resume.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=True)
     source = Column(String, nullable=False)
     status = Column(String, nullable=False)
     imported_at = Column(DateTime, default=datetime.utcnow)
