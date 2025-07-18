@@ -28,6 +28,76 @@ async def test_endpoint():
     return {"status": "ok", "message": "LinkedIn fix endpoint is working"}
 
 
+@router.post("/simple-import", response_model=LinkedInImportResponse)
+async def simple_linkedin_import(
+    profile_data: LinkedInProfileImport,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+) -> LinkedInImportResponse:
+    """Simplified LinkedIn import that just updates or creates without complex checks."""
+    
+    # Normalize URL
+    normalized_url = profile_data.linkedin_url.split('?')[0].rstrip('/')
+    logger.info(f"Simple import for: {normalized_url}")
+    
+    try:
+        # Very simple query - just check exact match
+        stmt = select(Resume).where(
+            Resume.linkedin_url == normalized_url,
+            Resume.user_id == current_user.id
+        )
+        result = await db.execute(stmt)
+        existing = result.scalar_one_or_none()
+        
+        if existing:
+            # Update
+            existing.location = profile_data.location or existing.location
+            existing.summary = profile_data.about or existing.summary
+            existing.current_title = profile_data.headline or existing.current_title
+            existing.years_experience = profile_data.years_experience or existing.years_experience
+            if profile_data.skills:
+                existing.skills = [normalize_skill_for_storage(s) for s in profile_data.skills]
+            
+            await db.commit()
+            
+            return LinkedInImportResponse(
+                success=True,
+                candidate_id=existing.id,
+                message="Profile updated",
+                is_duplicate=True
+            )
+        else:
+            # Create new
+            resume = Resume(
+                user_id=current_user.id,
+                first_name=profile_data.name.split()[0] if profile_data.name else "",
+                last_name=" ".join(profile_data.name.split()[1:]) if profile_data.name and len(profile_data.name.split()) > 1 else "",
+                location=profile_data.location or "",
+                summary=profile_data.about or "",
+                current_title=profile_data.headline or "",
+                years_experience=profile_data.years_experience or 0,
+                skills=[normalize_skill_for_storage(s) for s in (profile_data.skills or [])],
+                linkedin_url=normalized_url,
+                status="active",
+                parse_status="completed"
+            )
+            
+            db.add(resume)
+            await db.commit()
+            
+            return LinkedInImportResponse(
+                success=True,
+                candidate_id=resume.id,
+                message="Profile created",
+                is_duplicate=False
+            )
+            
+    except Exception as e:
+        logger.error(f"Simple import error: {str(e)}")
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/import-or-update", response_model=LinkedInImportResponse)
 async def import_or_update_linkedin_profile(
     profile_data: LinkedInProfileImport,
