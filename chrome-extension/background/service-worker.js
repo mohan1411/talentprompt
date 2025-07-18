@@ -18,7 +18,10 @@ class QueueProcessor {
   }
 
   async start() {
-    if (this.isProcessing) return;
+    if (this.isProcessing) {
+      console.log('Queue processor is already running');
+      return;
+    }
     
     this.isProcessing = true;
     this.shouldStop = false;
@@ -29,6 +32,7 @@ class QueueProcessor {
       await this.processQueue();
     } catch (error) {
       console.error('Queue processing error:', error);
+      throw error;  // Re-throw to let caller handle it
     } finally {
       this.isProcessing = false;
       this.cleanup();
@@ -49,8 +53,14 @@ class QueueProcessor {
     }
 
     // Create a hidden processing tab
-    const processingTab = await this.createHiddenTab();
-    this.currentTab = processingTab;
+    let processingTab;
+    try {
+      processingTab = await this.createHiddenTab();
+      this.currentTab = processingTab;
+    } catch (error) {
+      console.error('Failed to create processing tab:', error);
+      throw new Error('Failed to create processing tab: ' + error.message);
+    }
 
     for (const item of pendingItems) {
       if (this.shouldStop) break;
@@ -501,9 +511,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'startQueueProcessing') {
+    console.log('Received startQueueProcessing request');
     queueProcessor.start()
-      .then(() => sendResponse({ success: true }))
-      .catch(error => sendResponse({ success: false, error: error.message }));
+      .then(() => {
+        console.log('Queue processing started successfully');
+        sendResponse({ success: true });
+      })
+      .catch(error => {
+        console.error('Failed to start queue processing:', error);
+        sendResponse({ success: false, error: error.message || 'Failed to start processing' });
+      });
     return true;
   }
   

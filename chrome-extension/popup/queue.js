@@ -110,6 +110,10 @@ async function startProcessing() {
     // Start processing in background
     const response = await chrome.runtime.sendMessage({ action: 'startQueueProcessing' });
     
+    if (!response) {
+      throw new Error('No response from background script');
+    }
+    
     if (response.success) {
       isProcessing = true;
       
@@ -124,8 +128,8 @@ async function startProcessing() {
       alert('Failed to start processing: ' + (response.error || 'Unknown error'));
     }
   } catch (error) {
-    console.error('Failed to start processing:', error);
-    alert('Failed to start processing');
+    console.error('Error starting queue processing:', error);
+    alert('Error starting queue processing: ' + error.message);
   }
 }
 
