@@ -64,8 +64,10 @@ async def import_linkedin_profile(
 ) -> LinkedInImportResponse:
     """Import a LinkedIn profile to the database."""
     
-    # Normalize LinkedIn URL (remove query parameters)
+    # Normalize LinkedIn URL (remove query parameters and trailing slash)
     normalized_url = profile_data.linkedin_url.split('?')[0].rstrip('/')
+    
+    logger.info(f"Checking for existing profile with URL: {normalized_url}")
     
     # Check if profile already exists (excluding soft-deleted)
     existing_query = select(Resume).where(
@@ -74,6 +76,17 @@ async def import_linkedin_profile(
     )
     existing_result = await db.execute(existing_query)
     existing_resume = existing_result.scalar_one_or_none()
+    
+    # If not found, also check without trailing slash
+    if not existing_resume and not normalized_url.endswith('/'):
+        existing_query2 = select(Resume).where(
+            Resume.linkedin_url == normalized_url + '/',
+            Resume.status != 'deleted'
+        )
+        existing_result2 = await db.execute(existing_query2)
+        existing_resume = existing_result2.scalar_one_or_none()
+        
+    logger.info(f"Existing resume found: {existing_resume is not None}")
     
     if existing_resume:
         # Update the existing resume with new data

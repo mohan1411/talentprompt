@@ -702,7 +702,8 @@ async function handleImportProfile(profileData, authToken) {
     throw new Error('Unable to extract profile information. Please ensure you are on a LinkedIn profile page.');
   }
   
-  const url = `${API_URL}/linkedin/import-profile`;
+  // Use the new import-or-update endpoint that handles duplicates better
+  const url = `${API_URL}/linkedin-fix/import-or-update`;
   console.log('Making request to:', url);
   console.log('Auth token present:', !!authToken);
   console.log('Request body:', JSON.stringify(profileData, null, 2));
