@@ -158,7 +158,7 @@ class QueueProcessor {
       const [result] = await chrome.scripting.executeScript({
         target: { tabId },
         func: () => {
-          console.log('Extracting profile data from:', window.location.href);
+          console.log('Extracting profile data (improved version) from:', window.location.href);
           
           const data = {
             linkedin_url: window.location.href.split('?')[0],
@@ -174,12 +174,20 @@ class QueueProcessor {
             years_experience: null
           };
           
-          // Extract name - try multiple selectors
-          const nameSelectors = ['h1', '.text-heading-xlarge', '.pv-text-details__left-panel h1'];
+          // Helper function to get text content safely
+          const getText = (el) => el?.textContent?.trim() || '';
+          
+          // Extract name - updated selectors
+          const nameSelectors = [
+            'h1.text-heading-xlarge',
+            '.pv-text-details__left-panel h1',
+            'h1[class*="inline t-24"]',
+            'h1'
+          ];
           for (const selector of nameSelectors) {
             const nameEl = document.querySelector(selector);
-            if (nameEl && nameEl.textContent.trim()) {
-              data.name = nameEl.textContent.trim();
+            if (nameEl && getText(nameEl)) {
+              data.name = getText(nameEl);
               break;
             }
           }
@@ -283,17 +291,21 @@ class QueueProcessor {
                     }
                   }
                   
-                  // Dates
+                  // Dates and Duration
                   const dateSelectors = [
                     '.t-14.t-normal.t-black--light span[aria-hidden="true"]',
-                    '.pvs-entity__caption-wrapper',
-                    'span.t-14.t-normal.t-black--light'
+                    '.pvs-entity__caption-wrapper span[aria-hidden="true"]',
+                    'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
+                    '.pvs-list__item--no-padding-in-columns .t-14.t-normal span[aria-hidden="true"]'
                   ];
                   for (const sel of dateSelectors) {
                     const el = item.querySelector(sel);
-                    if (el && el.textContent.includes(' - ')) {
-                      exp.dates = el.textContent.trim();
-                      break;
+                    if (el) {
+                      const text = el.textContent.trim();
+                      if (text.includes(' - ') || text.includes(' – ')) {
+                        exp.dates = text;
+                        break;
+                      }
                     }
                   }
                   
@@ -306,44 +318,132 @@ class QueueProcessor {
             }
           }
           
-          // Extract skills
-          const skillsSection = Array.from(document.querySelectorAll('section')).find(s => 
-            s.querySelector('h2')?.textContent.includes('Skills')
-          );
-          if (skillsSection) {
-            const skillSelectors = [
-              '[class*="skill-item"] span[aria-hidden="true"]',
-              '.skill-item__title',
-              '.pvs-list__item--line-separated span[aria-hidden="true"]',
-              'div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]'
-            ];
-            
-            const skills = new Set();
-            for (const selector of skillSelectors) {
-              const skillEls = skillsSection.querySelectorAll(selector);
-              skillEls.forEach(el => {
-                const skill = el.textContent.trim();
-                if (skill && !skill.includes('endorsement')) {
-                  skills.add(skill);
-                }
-              });
-            }
-            data.skills = Array.from(skills);
-          }
+          // Extract skills - improved version
+          const skillsSection = Array.from(document.querySelectorAll('section')).find(s => {
+            const h2 = s.querySelector('h2');
+            return h2 && h2.textContent.toLowerCase().includes('skill');
+          });
           
-          // Calculate years of experience
-          if (data.experience.length > 0) {
-            let totalMonths = 0;
-            data.experience.forEach(exp => {
-              if (exp.dates && exp.dates.includes(' - ')) {
-                // Simple calculation - can be improved
-                const parts = exp.dates.split(' - ');
-                if (parts[1].toLowerCase().includes('present')) {
-                  totalMonths += 12; // Assume at least 1 year for current job
+          if (skillsSection) {
+            const skillElements = skillsSection.querySelectorAll('.pvs-list__paged-list-item, li.pvs-list__item--line-separated, .pvs-list__item--no-padding-in-columns');
+            const skills = new Set();
+            
+            skillElements.forEach(item => {
+              // Try multiple selectors for skill names
+              const skillSelectors = [
+                'div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]',
+                '.t-bold span[aria-hidden="true"]:first-of-type',
+                '.skill-item__title',
+                '.pvs-entity__text-container span[aria-hidden="true"]:first-of-type',
+                '.pvs-list__item--no-padding-in-columns span[aria-hidden="true"]:first-of-type'
+              ];
+              
+              for (const selector of skillSelectors) {
+                const skillEl = item.querySelector(selector);
+                if (skillEl) {
+                  const skillText = skillEl.textContent.trim();
+                  if (skillText && !skillText.includes('endorsement') && skillText.length < 50 && !skillText.includes('·')) {
+                    skills.add(skillText);
+                    break;
+                  }
                 }
               }
             });
-            data.years_experience = Math.max(1, Math.floor(totalMonths / 12));
+            
+            data.skills = Array.from(skills);
+          }
+          
+          // If no skills found in skills section, try to find "Top Skills" in other locations
+          if (data.skills.length === 0) {
+            const topSkillsSelectors = [
+              '.pv-skill-categories-section .pv-skill-category-entity__name span',
+              '[class*="skill"] .t-bold span[aria-hidden="true"]',
+              '.pv-top-card-v3-section__list-item span[aria-hidden="true"]'
+            ];
+            
+            const skills = new Set();
+            for (const selector of topSkillsSelectors) {
+              document.querySelectorAll(selector).forEach(el => {
+                const text = el.textContent.trim();
+                if (text && text.length < 50 && !text.includes(':') && !text.includes('·')) {
+                  skills.add(text);
+                }
+              });
+            }
+            data.skills = Array.from(skills).slice(0, 15); // Limit to top 15
+          }
+          
+          // Calculate years of experience - improved version
+          if (data.experience.length > 0) {
+            let totalMonths = 0;
+            let calculatedFromDuration = false;
+            
+            // First try to calculate from duration strings
+            data.experience.forEach(exp => {
+              // Look for duration in the dates field (e.g., "Jan 2020 - Present · 3 yrs 2 mos")
+              if (exp.dates && exp.dates.includes('·')) {
+                const parts = exp.dates.split('·');
+                if (parts.length > 1) {
+                  const duration = parts[1].trim();
+                  const years = duration.match(/(\d+)\s*yr/);
+                  const months = duration.match(/(\d+)\s*mo/);
+                  
+                  if (years) {
+                    totalMonths += parseInt(years[1]) * 12;
+                    calculatedFromDuration = true;
+                  }
+                  if (months) {
+                    totalMonths += parseInt(months[1]);
+                    calculatedFromDuration = true;
+                  }
+                }
+              }
+            });
+            
+            // If we couldn't calculate from duration, try date parsing
+            if (!calculatedFromDuration && totalMonths === 0) {
+              const experienceDates = [];
+              
+              data.experience.forEach(exp => {
+                if (exp.dates && exp.dates.includes(' - ')) {
+                  const dateParts = exp.dates.split(' - ')[0].split('·')[0].trim();
+                  const endPart = exp.dates.split(' - ')[1].split('·')[0].trim();
+                  
+                  try {
+                    // Parse start date
+                    const startDate = new Date(dateParts);
+                    const endDate = endPart.toLowerCase() === 'present' ? new Date() : new Date(endPart);
+                    
+                    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                      experienceDates.push({ start: startDate, end: endDate });
+                    }
+                  } catch (e) {
+                    console.log('Error parsing dates:', e);
+                  }
+                }
+              });
+              
+              // Calculate total experience from parsed dates
+              if (experienceDates.length > 0) {
+                // Sort by start date
+                experienceDates.sort((a, b) => a.start - b.start);
+                
+                // Find earliest start and latest end
+                const earliestStart = experienceDates[0].start;
+                const latestEnd = experienceDates.reduce((latest, exp) => 
+                  exp.end > latest ? exp.end : latest, experienceDates[0].end);
+                
+                totalMonths = Math.floor((latestEnd - earliestStart) / (1000 * 60 * 60 * 24 * 30.44));
+              }
+            }
+            
+            // Set years of experience
+            if (totalMonths > 0) {
+              data.years_experience = Math.round(totalMonths / 12 * 10) / 10; // Round to 1 decimal
+            } else {
+              // Default to 1 year if we can't calculate
+              data.years_experience = 1;
+            }
           }
           
           console.log('Extracted profile data:', data);
