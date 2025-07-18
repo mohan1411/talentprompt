@@ -14,11 +14,20 @@ window.manualExperienceOverrides = {
 
 // Apply manual overrides
 window.applyManualOverride = function(url, calculatedYears) {
+  console.log('🔍 Checking manual override for URL:', url);
+  console.log('Calculated years:', calculatedYears);
+  
   // Extract profile ID from URL
   const profileMatch = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
-  if (!profileMatch) return calculatedYears;
+  if (!profileMatch) {
+    console.log('No profile ID found in URL');
+    return calculatedYears;
+  }
   
   const profileId = profileMatch[1];
+  console.log('Profile ID extracted:', profileId);
+  console.log('Available overrides:', Object.keys(window.manualExperienceOverrides));
+  
   const override = window.manualExperienceOverrides[profileId];
   
   if (override) {
@@ -30,6 +39,7 @@ window.applyManualOverride = function(url, calculatedYears) {
     return override.years;
   }
   
+  console.log('No override found for profile:', profileId);
   return calculatedYears;
 };
 

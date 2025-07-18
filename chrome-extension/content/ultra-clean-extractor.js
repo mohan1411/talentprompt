@@ -692,12 +692,19 @@ window.extractUltraCleanProfile = function() {
   }
   
   // Apply manual override if available
+  console.log('Checking for manual override function:', typeof window.applyManualOverride);
   if (window.applyManualOverride) {
+    console.log('Applying manual override for URL:', data.linkedin_url);
+    console.log('Current years_experience:', data.years_experience);
     const overrideYears = window.applyManualOverride(data.linkedin_url, data.years_experience);
     if (overrideYears !== data.years_experience) {
       console.log(`Manual override applied: ${data.years_experience} -> ${overrideYears} years`);
       data.years_experience = overrideYears;
+    } else {
+      console.log('No change from manual override');
     }
+  } else {
+    console.log('WARNING: Manual override function not available!');
   }
   
   // Build ultra clean full text

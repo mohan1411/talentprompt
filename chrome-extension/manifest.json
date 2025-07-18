@@ -28,10 +28,10 @@
         "content/contact-extractor.js",
         "content/inline-contact-extractor.js",
         "content/email-extractor-enhanced.js",
-        "content/ultra-clean-extractor.js",
         "content/calculate-experience.js",
         "content/calculate-experience-advanced.js",
         "content/manual-experience-override.js",
+        "content/ultra-clean-extractor.js",
         "content/data-validator.js",
         "content/linkedin-profile.js",
         "content/bulk-import-sidebar.js"
