@@ -181,3 +181,55 @@ async def cleanup_orphaned_embeddings(
             "success": False,
             "message": f"Cleanup failed: {str(e)}"
         }
+
+
+@router.post("/cleanup-deleted-resumes", response_model=Dict[str, Any])
+async def cleanup_deleted_resumes(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_superuser),
+) -> Dict[str, Any]:
+    """Permanently delete all soft-deleted resumes and their embeddings (superuser only)."""
+    
+    from app.crud.resume import resume as resume_crud
+    from sqlalchemy import select
+    from app.models.resume import Resume
+    
+    logger.info("Starting cleanup of soft-deleted resumes")
+    
+    try:
+        # Find all soft-deleted resumes
+        stmt = select(Resume).where(Resume.status == 'deleted')
+        result = await db.execute(stmt)
+        deleted_resumes = result.scalars().all()
+        
+        logger.info(f"Found {len(deleted_resumes)} soft-deleted resumes")
+        
+        success_count = 0
+        failed_ids = []
+        
+        for resume in deleted_resumes:
+            try:
+                await resume_crud.hard_delete(db, id=resume.id)
+                success_count += 1
+                logger.info(f"Hard deleted resume {resume.id}")
+            except Exception as e:
+                failed_ids.append(str(resume.id))
+                logger.error(f"Failed to hard delete resume {resume.id}: {e}")
+        
+        return {
+            "success": True,
+            "message": f"Cleaned up {success_count} soft-deleted resumes",
+            "details": {
+                "total_found": len(deleted_resumes),
+                "successfully_deleted": success_count,
+                "failed": len(failed_ids),
+                "failed_ids": failed_ids
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error during deleted resumes cleanup: {e}")
+        return {
+            "success": False,
+            "message": f"Cleanup failed: {str(e)}"
+        }

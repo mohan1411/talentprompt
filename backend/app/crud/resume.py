@@ -50,6 +50,7 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
         result = await db.execute(
             select(Resume)
             .where(Resume.user_id == user_id)
+            .where(Resume.status != 'deleted')  # Exclude soft-deleted resumes
             .order_by(Resume.created_at.desc())
             .offset(skip)
             .limit(limit)
@@ -160,7 +161,7 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
         return updated_resume
     
     async def remove(self, db: AsyncSession, *, id: UUID) -> Resume:
-        """Remove a resume and its vector embeddings."""
+        """Soft delete a resume and remove its vector embeddings."""
         # First get the resume to ensure it exists
         resume = await self.get(db, id=id)
         if not resume:
@@ -173,10 +174,39 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
             logger.info(f"Deleted vector embeddings for resume {id}")
         except Exception as e:
             logger.error(f"Failed to delete vector embeddings for resume {id}: {e}")
-            # Continue with database deletion even if vector deletion fails
+            # Continue with soft delete even if vector deletion fails
         
-        # Delete from database using parent method
-        return await super().remove(db, id=id)
+        # Soft delete by setting status to 'deleted'
+        resume.status = 'deleted'
+        resume.updated_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(resume)
+        
+        logger.info(f"Soft deleted resume {id} by setting status to 'deleted'")
+        return resume
+    
+    async def hard_delete(self, db: AsyncSession, *, id: UUID) -> Resume:
+        """Permanently delete a resume and its vector embeddings."""
+        # First get the resume to ensure it exists
+        resume = await self.get(db, id=id)
+        if not resume:
+            return None
+        
+        # Delete from vector search
+        try:
+            from app.services.vector_search import vector_search
+            await vector_search.delete_resume(str(id))
+            logger.info(f"Deleted vector embeddings for resume {id}")
+        except Exception as e:
+            logger.error(f"Failed to delete vector embeddings for resume {id}: {e}")
+            # Continue with hard delete even if vector deletion fails
+        
+        # Hard delete from database
+        await db.delete(resume)
+        await db.commit()
+        
+        logger.info(f"Hard deleted resume {id} from database")
+        return resume
 
 
 resume = CRUDResume(Resume)

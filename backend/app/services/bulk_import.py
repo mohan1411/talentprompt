@@ -213,7 +213,10 @@ class BulkImportService:
                 linkedin_url = profile_data.get('linkedin_url')
                 if linkedin_url:
                     existing = await db.execute(
-                        select(Resume).where(Resume.linkedin_url == linkedin_url)
+                        select(Resume).where(
+                            Resume.linkedin_url == linkedin_url,
+                            Resume.status != 'deleted'  # Don't count soft-deleted as duplicates
+                        )
                     )
                     if existing.scalar_one_or_none():
                         duplicates += 1

@@ -223,6 +223,41 @@ class VectorSearchService:
                 "status": "error",
                 "error": str(e)
             }
+    
+    async def get_all_ids(self) -> set:
+        """Get all resume IDs from the vector search index."""
+        try:
+            if not await self.ensure_collection_exists():
+                return set()
+            
+            # Scroll through all points to get IDs
+            all_ids = set()
+            offset = None
+            limit = 100
+            
+            while True:
+                result = self.client.scroll(
+                    collection_name=self.collection_name,
+                    limit=limit,
+                    offset=offset,
+                    with_payload=False,
+                    with_vectors=False
+                )
+                
+                points, next_offset = result
+                
+                for point in points:
+                    all_ids.add(str(point.id))
+                
+                if next_offset is None:
+                    break
+                    
+                offset = next_offset
+            
+            return all_ids
+        except Exception as e:
+            logger.error(f"Error getting all IDs from vector search: {e}")
+            return set()
 
 
 # Singleton instance
