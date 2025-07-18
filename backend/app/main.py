@@ -14,6 +14,7 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+# Force Railway redeploy - 2025-01-18
 
 # Log startup configuration
 import os
