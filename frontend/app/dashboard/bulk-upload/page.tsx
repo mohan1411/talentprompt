@@ -193,7 +193,7 @@ export default function BulkUploadCenterPage() {
       });
       setFiles(newFiles);
     }
-  }, [files, includeSubfolders]);
+  }, [files, includeSubfolders, processDroppedItems]);
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop,

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   Upload, FileText, Users, Clock, AlertCircle, 
   CheckCircle, XCircle, Play, Pause, Trash2,
-  Download, Linkedin, Zap
+  Download, Linkedin, Zap, X
 } from 'lucide-react';
 import { bulkImportApi } from '@/lib/api/bulk-import';
 import type { QueueStatus, ImportStats } from '@/lib/api/bulk-import';
@@ -28,12 +28,13 @@ export default function BulkImportPage() {
     loadImportStats();
 
     // Set up auto-refresh when processing
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => {
       if (refreshInterval) {
         clearInterval(refreshInterval);
       }
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-refresh when processing
   useEffect(() => {
