@@ -113,30 +113,32 @@ class QueueProcessor {
   }
 
   async createHiddenTab() {
-    // Try to find an existing minimized window first
-    const windows = await chrome.windows.getAll();
-    let targetWindow = windows.find(w => w.state === 'minimized' && w.type === 'normal');
-    
-    if (!targetWindow) {
-      // Create a new minimized window
-      targetWindow = await chrome.windows.create({
+    try {
+      // Create a tab in the background (not active)
+      const tab = await chrome.tabs.create({
         url: 'about:blank',
-        state: 'minimized',
-        width: 800,
-        height: 600,
-        left: -2000,
-        top: -2000
+        active: false,
+        pinned: true  // Make it pinned to reduce visual impact
       });
+      
+      console.log('Created processing tab:', tab.id);
+      return tab;
+    } catch (error) {
+      console.error('Failed to create pinned tab:', error);
+      
+      // Fallback: Create a normal background tab
+      try {
+        const tab = await chrome.tabs.create({
+          url: 'about:blank',
+          active: false
+        });
+        console.log('Created fallback processing tab:', tab.id);
+        return tab;
+      } catch (fallbackError) {
+        console.error('All tab creation methods failed:', fallbackError);
+        throw new Error('Unable to create processing tab. Please ensure you have at least one Chrome window open.');
+      }
     }
-    
-    // Create tab in the minimized window
-    const tab = await chrome.tabs.create({
-      windowId: targetWindow.id,
-      active: true,
-      url: 'about:blank'
-    });
-    
-    return tab;
   }
 
   async waitForTabComplete(tabId) {
