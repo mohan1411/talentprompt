@@ -58,6 +58,15 @@ async def simple_linkedin_import(
             if profile_data.skills:
                 existing.skills = [normalize_skill_for_storage(s) for s in profile_data.skills]
             
+            # Update linkedin data
+            existing.linkedin_data = profile_data.dict()
+            existing.last_linkedin_sync = datetime.utcnow()
+            existing.updated_at = datetime.utcnow()
+            
+            # Ensure status is active
+            if existing.status == 'deleted':
+                existing.status = 'active'
+            
             await db.commit()
             
             return LinkedInImportResponse(
@@ -67,19 +76,59 @@ async def simple_linkedin_import(
                 is_duplicate=True
             )
         else:
+            # Parse name
+            first_name = "Unknown"
+            last_name = "Profile"
+            if profile_data.name:
+                name_parts = profile_data.name.strip().split()
+                if name_parts:
+                    first_name = name_parts[0]
+                    last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+            
+            # Build raw text for searching
+            raw_text_parts = []
+            if profile_data.name:
+                raw_text_parts.append(profile_data.name)
+            if profile_data.headline:
+                raw_text_parts.append(profile_data.headline)
+            if profile_data.about:
+                raw_text_parts.append(profile_data.about)
+            if profile_data.skills:
+                raw_text_parts.append("Skills: " + ", ".join(profile_data.skills))
+            
+            raw_text = "\n\n".join(raw_text_parts)
+            
+            # Create parsed data
+            parsed_data = {
+                "first_name": first_name,
+                "last_name": last_name,
+                "experience": profile_data.experience or [],
+                "education": profile_data.education or [],
+                "skills": profile_data.skills or [],
+                "parsed_at": datetime.utcnow().isoformat()
+            }
+            
             # Create new
             resume = Resume(
                 user_id=current_user.id,
-                first_name=profile_data.name.split()[0] if profile_data.name else "",
-                last_name=" ".join(profile_data.name.split()[1:]) if profile_data.name and len(profile_data.name.split()) > 1 else "",
+                first_name=first_name,
+                last_name=last_name,
+                email=profile_data.email or "",
+                phone=profile_data.phone or "",
                 location=profile_data.location or "",
                 summary=profile_data.about or "",
                 current_title=profile_data.headline or "",
                 years_experience=profile_data.years_experience or 0,
                 skills=[normalize_skill_for_storage(s) for s in (profile_data.skills or [])],
+                keywords=[],
                 linkedin_url=normalized_url,
+                linkedin_data=profile_data.dict(),
+                raw_text=raw_text,
+                parsed_data=parsed_data,
                 status="active",
-                parse_status="completed"
+                parse_status="completed",
+                parsed_at=datetime.utcnow(),
+                last_linkedin_sync=datetime.utcnow()
             )
             
             db.add(resume)
