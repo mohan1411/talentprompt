@@ -437,9 +437,10 @@ class QueueProcessor {
               }
             }
             
-            // Set years of experience
+            // Set years of experience (must be integer for backend)
             if (totalMonths > 0) {
-              data.years_experience = Math.round(totalMonths / 12 * 10) / 10; // Round to 1 decimal
+              // Round to nearest integer
+              data.years_experience = Math.round(totalMonths / 12);
             } else {
               // Default to 1 year if we can't calculate
               data.years_experience = 1;
