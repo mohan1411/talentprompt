@@ -104,12 +104,13 @@ async def import_or_update_linkedin_profile(
             await db.commit()
             await db.refresh(existing_resume)
             
-            # Re-index in vector search
-            try:
-                from app.services.reindex_service import reindex_service
-                await reindex_service.reindex_resume(db, existing_resume)
-            except Exception as e:
-                logger.error(f"Failed to reindex resume: {e}")
+            # Re-index in vector search - temporarily disabled due to greenlet issue
+            # TODO: Fix async context issue with reindex_service
+            # try:
+            #     from app.services.reindex_service import reindex_service
+            #     await reindex_service.reindex_resume(db, existing_resume)
+            # except Exception as e:
+            #     logger.error(f"Failed to reindex resume: {e}")
             
             return LinkedInImportResponse(
                 success=True,
