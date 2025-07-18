@@ -52,14 +52,18 @@ export const bulkImportApi = {
   },
 
   async startQueueProcessing(maxItems?: number) {
-    const params = maxItems ? { max_items: maxItems } : {};
-    const response = await apiClient.post('/bulk-import/queue/process', null, { params });
+    const url = maxItems 
+      ? `/bulk-import/queue/process?max_items=${maxItems}`
+      : '/bulk-import/queue/process';
+    const response = await apiClient.post(url, null);
     return response;
   },
 
   async clearQueue(status?: string) {
-    const params = status ? { status } : {};
-    const response = await apiClient.delete('/bulk-import/queue/clear', { params });
+    const url = status 
+      ? `/bulk-import/queue/clear?status=${encodeURIComponent(status)}`
+      : '/bulk-import/queue/clear';
+    const response = await apiClient.delete(url);
     return response;
   },
 
