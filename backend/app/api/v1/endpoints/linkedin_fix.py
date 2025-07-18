@@ -22,6 +22,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/test")
+async def test_endpoint():
+    """Simple test endpoint to verify the router is working."""
+    return {"status": "ok", "message": "LinkedIn fix endpoint is working"}
+
+
 @router.post("/import-or-update", response_model=LinkedInImportResponse)
 async def import_or_update_linkedin_profile(
     profile_data: LinkedInProfileImport,
@@ -38,19 +44,28 @@ async def import_or_update_linkedin_profile(
     # Try to find existing profile with various URL formats
     existing_resume = None
     
-    # Check both with and without trailing slash, regardless of user_id
-    # This prevents duplicate key errors
-    result = await db.execute(
-        select(Resume).where(
-            or_(
+    # Simple check for exact match first
+    try:
+        result = await db.execute(
+            select(Resume).where(
                 Resume.linkedin_url == normalized_url,
-                Resume.linkedin_url == normalized_url + '/',
-                Resume.linkedin_url == profile_data.linkedin_url
-            ),
-            Resume.status != 'deleted'
+                Resume.status != 'deleted'
+            )
         )
-    )
-    existing_resume = result.scalar_one_or_none()
+        existing_resume = result.scalar_one_or_none()
+        
+        # If not found, check with trailing slash
+        if not existing_resume:
+            result = await db.execute(
+                select(Resume).where(
+                    Resume.linkedin_url == normalized_url + '/',
+                    Resume.status != 'deleted'
+                )
+            )
+            existing_resume = result.scalar_one_or_none()
+    except Exception as e:
+        logger.error(f"Error checking for existing resume: {e}")
+        # Continue without existing check - will fail on insert if duplicate
     
     # If exists but belongs to different user, we have a problem
     if existing_resume and existing_resume.user_id != current_user.id:
