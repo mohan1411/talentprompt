@@ -226,7 +226,13 @@ export default function ResumesPage() {
           </div>
         </div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <>
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Showing {resumes.length} resume{resumes.length !== 1 ? 's' : ''} • Sorted by newest first
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {resumes.map((resume) => (
             <div
               key={resume.id}
@@ -243,9 +249,20 @@ export default function ResumesPage() {
               
               <div className="flex items-start justify-between mb-4 pl-8">
                 <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                    {resume.first_name} {resume.last_name}
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                      {resume.first_name} {resume.last_name}
+                    </h3>
+                    {/* New badge for recently uploaded resumes */}
+                    {(() => {
+                      const daysSinceUpload = Math.floor((Date.now() - new Date(resume.created_at).getTime()) / (1000 * 60 * 60 * 24));
+                      return daysSinceUpload <= 7 ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                          NEW
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
                   {resume.current_title && (
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {resume.current_title}
@@ -357,6 +374,7 @@ export default function ResumesPage() {
             </div>
           ))}
         </div>
+        </>
       )}
 
       {/* Bulk Position Update Modal */}

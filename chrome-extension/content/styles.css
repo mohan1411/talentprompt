@@ -145,3 +145,31 @@
   border: 6px solid transparent;
   border-top-color: #1f2937;
 }
+
+/* Bulk import checkboxes */
+.bulk-import-checkbox-fixed {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.bulk-import-checkbox-fixed input[type="checkbox"] {
+  -webkit-appearance: checkbox !important;
+  appearance: checkbox !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: all !important;
+  width: 24px !important;
+  height: 24px !important;
+}
+
+/* Ensure search results are relatively positioned */
+li.reusable-search__result-container {
+  position: relative !important;
+}
+
+/* Make checkboxes stand out */
+.entity-result__image,
+.presence-entity__image {
+  position: relative !important;
+}

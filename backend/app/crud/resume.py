@@ -46,10 +46,11 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
     async def get_by_user(
         self, db: AsyncSession, *, user_id: UUID, skip: int = 0, limit: int = 100
     ) -> List[Resume]:
-        """Get all resumes for a specific user."""
+        """Get all resumes for a specific user, ordered by newest first."""
         result = await db.execute(
             select(Resume)
             .where(Resume.user_id == user_id)
+            .order_by(Resume.created_at.desc())
             .offset(skip)
             .limit(limit)
         )

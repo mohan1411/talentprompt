@@ -1,8 +1,8 @@
 """API dependencies."""
 
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,3 +73,26 @@ async def get_current_active_superuser(
             detail="The user doesn't have enough privileges"
         )
     return current_user
+
+
+async def get_api_key(
+    api_key: str = Header(None, alias="X-API-Key")
+) -> str:
+    """Get API key from header."""
+    if not api_key:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="API key required"
+        )
+    return api_key
+
+
+async def get_user_from_api_key(
+    db: AsyncSession,
+    api_key: str
+) -> Optional[User]:
+    """Get user from API key."""
+    # In a real implementation, you would look up the API key in the database
+    # For now, we'll just return None
+    # TODO: Implement API key lookup
+    return None

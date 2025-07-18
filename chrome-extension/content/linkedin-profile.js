@@ -2,13 +2,99 @@
 (function() {
   'use strict';
   
-  // Check if we're on a profile page
+  console.log('LinkedIn Profile content script loaded');
+  
+  // Forward declare functions
+  let handleImport;
+  
+  // Listen for messages from popup (always register this)
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('Content script received message:', request);
+    
+    if (request.action === 'importProfile') {
+      // Store the auth token if provided
+      if (request.authToken) {
+        chrome.storage.local.set({ authToken: request.authToken });
+      }
+      
+      // Check if we're on a profile page
+      if (!window.location.pathname.includes('/in/')) {
+        sendResponse({ success: false, error: 'Please navigate to a LinkedIn profile page' });
+        return true;
+      }
+      
+      // Check if we're on a details page
+      if (window.location.pathname.includes('/details/')) {
+        sendResponse({ success: false, error: 'Please navigate to the main profile page (not details page)' });
+        return true;
+      }
+      
+      // Handle import - use function if available, otherwise extract and send
+      if (typeof handleImport === 'function') {
+        handleImport().then(() => {
+          sendResponse({ success: true });
+        }).catch(error => {
+          console.error('Import error in content script:', error);
+          sendResponse({ success: false, error: error.message });
+        });
+      } else {
+        // Simplified import for when called from popup
+        handleSimpleImport(request.authToken).then(result => {
+          sendResponse({ success: true, data: result });
+        }).catch(error => {
+          sendResponse({ success: false, error: error.message });
+        });
+      }
+      return true; // Indicates async response
+    }
+  });
+  
+  // Simple import function for popup
+  async function handleSimpleImport(authToken) {
+    console.log('Handling simple import from popup');
+    
+    // Extract basic profile data
+    const profileData = {
+      linkedin_url: window.location.href.split('?')[0],
+      name: document.querySelector('h1')?.textContent?.trim() || '',
+      headline: document.querySelector('.text-body-medium.break-words')?.textContent?.trim() || '',
+      location: document.querySelector('.text-body-small.inline.t-black--light.break-words')?.textContent?.trim() || '',
+      about: '',
+      experience: [],
+      education: [],
+      skills: []
+    };
+    
+    // Extract about
+    const aboutSection = Array.from(document.querySelectorAll('section')).find(s => 
+      s.querySelector('h2')?.textContent.includes('About')
+    );
+    if (aboutSection) {
+      const aboutText = aboutSection.querySelector('.inline-show-more-text__text, [class*="line-clamp"]');
+      if (aboutText) profileData.about = aboutText.textContent.trim();
+    }
+    
+    // Send to background for import
+    const response = await chrome.runtime.sendMessage({
+      action: 'importProfile',
+      data: profileData,
+      authToken: authToken
+    });
+    
+    if (!response.success) {
+      throw new Error(response.error || 'Import failed');
+    }
+    
+    return response.data;
+  }
+  
+  // Check if we're on a profile page for the UI elements
   const pathname = window.location.pathname;
   if (!pathname.includes('/in/')) {
     return;
   }
   
-  // Don't run on detail pages (experience, education, etc)
+  // Don't run UI elements on detail pages (experience, education, etc)
   if (pathname.includes('/details/')) {
     console.log('LinkedIn Import: Skipping details page. Navigate to main profile to import.');
     return;
@@ -164,7 +250,7 @@
   }
   
   // Handle import button click
-  async function handleImport() {
+  handleImport = async function() {
     console.log('=== Import Handler v2 - Enhanced Email Extraction ===');
     
     if (isProcessing) return;
@@ -797,36 +883,5 @@
     }).observe(document, { subtree: true, childList: true });
   }
   
-  // Listen for messages from popup
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Content script received message:', request);
-    
-    if (request.action === 'importProfile') {
-      // Store the auth token if provided
-      if (request.authToken) {
-        chrome.storage.local.set({ authToken: request.authToken });
-      }
-      
-      // Check if we're on a profile page
-      if (!window.location.pathname.includes('/in/')) {
-        sendResponse({ success: false, error: 'Please navigate to a LinkedIn profile page' });
-        return true;
-      }
-      
-      // Check if we're on a details page
-      if (window.location.pathname.includes('/details/')) {
-        sendResponse({ success: false, error: 'Please navigate to the main profile page (not details page)' });
-        return true;
-      }
-      
-      handleImport().then(() => {
-        sendResponse({ success: true });
-      }).catch(error => {
-        console.error('Import error in content script:', error);
-        sendResponse({ success: false, error: error.message });
-      });
-      return true; // Indicates async response
-    }
-  });
   
 })();

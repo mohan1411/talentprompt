@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await checkAuthStatus();
   setupEventListeners();
   updateUIState();
+  updateQueueBadge();
 });
 
 // Check if user is authenticated
@@ -32,6 +33,7 @@ function setupEventListeners() {
   document.getElementById('logout-btn').addEventListener('click', handleLogout);
   document.getElementById('import-current').addEventListener('click', handleImportCurrent);
   document.getElementById('bulk-import').addEventListener('click', handleBulkImport);
+  document.getElementById('view-queue').addEventListener('click', openQueueManager);
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
 }
@@ -318,4 +320,25 @@ function openHelp() {
   chrome.tabs.create({
     url: 'https://promtitude.com/help/chrome-extension'
   });
+}
+
+// Open queue manager
+function openQueueManager() {
+  window.location.href = 'queue.html';
+}
+
+// Update queue badge
+async function updateQueueBadge() {
+  const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
+  const pendingCount = linkedinImportQueue.filter(item => item.status === 'pending').length;
+  
+  const badge = document.getElementById('queue-badge');
+  if (badge) {
+    if (pendingCount > 0) {
+      badge.textContent = pendingCount;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
 }
