@@ -501,10 +501,12 @@
       }
       
       // Send message to background script to add to queue
+      console.log('Sending addToQueue message with profiles:', profilesToAdd);
       const response = await chrome.runtime.sendMessage({
         action: 'addToQueue',
         profiles: profilesToAdd
       });
+      console.log('Received response:', response);
       
       if (response.success) {
         console.log(`Added ${response.addedCount} profiles to queue`);
@@ -530,7 +532,8 @@
       }
     } catch (error) {
       console.error('Error adding to queue:', error);
-      showMessage('Error adding profiles to queue', 'error');
+      const errorMessage = error.message || 'Error adding profiles to queue';
+      showMessage(`Error: ${errorMessage}`, 'error');
     }
   }
   

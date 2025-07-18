@@ -522,9 +522,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'addToQueue') {
+    console.log('Received addToQueue request with profiles:', request.profiles);
     handleAddToQueue(request.profiles)
-      .then(result => sendResponse(result))
-      .catch(error => sendResponse({ success: false, error: error.message }));
+      .then(result => {
+        console.log('AddToQueue success:', result);
+        sendResponse(result);
+      })
+      .catch(error => {
+        console.error('AddToQueue error:', error);
+        sendResponse({ success: false, error: error.message });
+      });
     return true;
   }
   
@@ -650,11 +657,21 @@ async function checkProfileExists(linkedinUrl, authToken) {
 // Handle adding profiles to queue
 async function handleAddToQueue(profiles) {
   try {
+    if (!profiles || !Array.isArray(profiles)) {
+      throw new Error('Invalid profiles data');
+    }
+    
     const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
     
     let addedCount = 0;
     
     profiles.forEach(profile => {
+      // Validate profile data
+      if (!profile.profileUrl || !profile.profileName) {
+        console.warn('Skipping invalid profile:', profile);
+        return;
+      }
+      
       // Check if profile already exists in queue
       if (!linkedinImportQueue.some(item => item.profileUrl === profile.profileUrl)) {
         linkedinImportQueue.push({
