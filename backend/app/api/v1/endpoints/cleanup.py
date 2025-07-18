@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @router.post("/cleanup/orphaned-vectors")
 async def cleanup_orphaned_vectors(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ):
     """Remove vector embeddings for resumes that no longer exist in the database."""
     try:
@@ -56,7 +56,7 @@ async def cleanup_orphaned_vectors(
 @router.post("/cleanup/soft-deleted-resumes")
 async def cleanup_soft_deleted_resumes(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ):
     """Permanently delete all soft-deleted resumes."""
     try:
@@ -96,7 +96,7 @@ async def cleanup_soft_deleted_resumes(
 @router.get("/cleanup/check-duplicates")
 async def check_duplicate_resumes(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_superuser),
+    current_user: models.User = Depends(deps.get_current_active_superuser),
 ):
     """Check for duplicate resumes by LinkedIn URL."""
     try:
