@@ -189,7 +189,7 @@ async def delete_resume(
     return {"message": "Resume deleted successfully"}
 
 
-@router.post("/bulk/delete")
+@router.post("/bulk/delete", response_model=dict)
 async def bulk_delete_resumes(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -198,17 +198,25 @@ async def bulk_delete_resumes(
 ) -> dict:
     """Delete multiple resumes."""
     deleted_count = 0
+    errors = []
     
     for resume_id in request.resume_ids:
-        resume = await crud.resume.get(db, id=resume_id)
-        if resume and resume.user_id == current_user.id:
-            await crud.resume.remove(db, id=resume_id)
-            deleted_count += 1
+        try:
+            resume = await crud.resume.get(db, id=resume_id)
+            if resume and resume.user_id == current_user.id:
+                await crud.resume.remove(db, id=resume_id)
+                deleted_count += 1
+        except Exception as e:
+            errors.append(f"Failed to delete resume {resume_id}: {str(e)}")
     
-    return {"message": f"Successfully deleted {deleted_count} resume(s)"}
+    response = {"message": f"Successfully deleted {deleted_count} resume(s)"}
+    if errors:
+        response["errors"] = errors
+    
+    return response
 
 
-@router.post("/bulk/update-position")
+@router.post("/bulk/update-position", response_model=dict)
 async def bulk_update_position(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -217,13 +225,21 @@ async def bulk_update_position(
 ) -> dict:
     """Update job position for multiple resumes."""
     updated_count = 0
+    errors = []
     
     for resume_id in request.resume_ids:
-        resume = await crud.resume.get(db, id=resume_id)
-        if resume and resume.user_id == current_user.id:
-            await crud.resume.update(
-                db, db_obj=resume, obj_in={"job_position": request.job_position}
-            )
-            updated_count += 1
+        try:
+            resume = await crud.resume.get(db, id=resume_id)
+            if resume and resume.user_id == current_user.id:
+                await crud.resume.update(
+                    db, db_obj=resume, obj_in={"job_position": request.job_position}
+                )
+                updated_count += 1
+        except Exception as e:
+            errors.append(f"Failed to update resume {resume_id}: {str(e)}")
     
-    return {"message": f"Successfully updated {updated_count} resume(s)"}
+    response = {"message": f"Successfully updated {updated_count} resume(s)"}
+    if errors:
+        response["errors"] = errors
+    
+    return response
