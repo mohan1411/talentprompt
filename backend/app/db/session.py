@@ -12,7 +12,7 @@ engine = create_async_engine(
     future=True,
     pool_size=40,  # Increased pool size
     max_overflow=10,  # Allow overflow connections
-    pool_pre_ping=True,  # Check connection health
+    pool_pre_ping=False,  # Disabled - causes issues with async
     pool_recycle=3600,  # Recycle connections after 1 hour
 )
 
