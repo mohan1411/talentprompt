@@ -38,37 +38,32 @@ async def import_or_update_linkedin_profile(
     # Try to find existing profile with various URL formats
     existing_resume = None
     
-    # Check exact match
+    # Check both with and without trailing slash, regardless of user_id
+    # This prevents duplicate key errors
     result = await db.execute(
         select(Resume).where(
-            Resume.linkedin_url == normalized_url,
-            Resume.user_id == current_user.id,
+            or_(
+                Resume.linkedin_url == normalized_url,
+                Resume.linkedin_url == normalized_url + '/',
+                Resume.linkedin_url == profile_data.linkedin_url
+            ),
             Resume.status != 'deleted'
         )
     )
     existing_resume = result.scalar_one_or_none()
     
-    # Check with trailing slash
-    if not existing_resume:
-        result = await db.execute(
-            select(Resume).where(
-                Resume.linkedin_url == normalized_url + '/',
-                Resume.user_id == current_user.id,
-                Resume.status != 'deleted'
-            )
+    # If exists but belongs to different user, we have a problem
+    if existing_resume and existing_resume.user_id != current_user.id:
+        raise HTTPException(
+            status_code=400,
+            detail="This LinkedIn profile has already been imported by another user"
         )
-        existing_resume = result.scalar_one_or_none()
     
-    # Check if URL contains the normalized URL (handles cases with query params in DB)
-    if not existing_resume:
-        result = await db.execute(
-            select(Resume).where(
-                Resume.linkedin_url.contains(normalized_url),
-                Resume.user_id == current_user.id,
-                Resume.status != 'deleted'
-            )
-        )
-        existing_resume = result.scalar_one_or_none()
+    # Log what we found
+    if existing_resume:
+        logger.info(f"Found existing resume ID: {existing_resume.id} with URL: {existing_resume.linkedin_url}")
+    else:
+        logger.info(f"No existing resume found for URL: {normalized_url}")
     
     try:
         # Parse LinkedIn data
