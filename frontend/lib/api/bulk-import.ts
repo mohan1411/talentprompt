@@ -43,24 +43,24 @@ export const bulkImportApi = {
   // Queue management
   async addToQueue(request: QueueProfilesRequest) {
     const response = await apiClient.post('/bulk-import/queue/add', request);
-    return response.data;
+    return response;
   },
 
   async getQueueStatus(): Promise<QueueStatus> {
-    const response = await apiClient.get<QueueStatus>('/bulk-import/queue/status');
-    return response.data;
+    const response = await apiClient.get('/bulk-import/queue/status');
+    return response as QueueStatus;
   },
 
   async startQueueProcessing(maxItems?: number) {
     const params = maxItems ? { max_items: maxItems } : {};
     const response = await apiClient.post('/bulk-import/queue/process', null, { params });
-    return response.data;
+    return response;
   },
 
   async clearQueue(status?: string) {
     const params = status ? { status } : {};
     const response = await apiClient.delete('/bulk-import/queue/clear', { params });
-    return response.data;
+    return response;
   },
 
   // File upload
@@ -73,20 +73,20 @@ export const bulkImportApi = {
         'Content-Type': 'multipart/form-data',
       },
     });
-    return response.data;
+    return response;
   },
 
   // Statistics
   async getImportStats(days: number = 30): Promise<ImportStats> {
-    const response = await apiClient.get<ImportStats>('/bulk-import/stats', {
+    const response = await apiClient.get('/bulk-import/stats', {
       params: { days },
     });
-    return response.data;
+    return response as ImportStats;
   },
 
   // Compliance
   async getComplianceLimits() {
     const response = await apiClient.get('/bulk-import/compliance/limits');
-    return response.data;
+    return response;
   },
 };
