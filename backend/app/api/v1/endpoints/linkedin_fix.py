@@ -150,19 +150,20 @@ async def import_or_update_linkedin_profile(
             db.add(resume)
             await db.flush()
             
-            # Generate embedding for vector search
-            if profile_data.about or profile_data.headline:
-                search_text = f"{profile_data.headline or ''} {profile_data.about or ''}"
-                embedding = await vector_search.index_resume(
-                    resume_id=str(resume.id),
-                    text=search_text,
-                    metadata={
-                        "name": f"{parsed_data.get('first_name', '')} {parsed_data.get('last_name', '')}",
-                        "skills": resume_data['skills'],
-                        "location": resume_data['location'],
-                        "years_experience": resume_data['years_experience']
-                    }
-                )
+            # Generate embedding for vector search - temporarily disabled
+            # TODO: Fix async context issue
+            # if profile_data.about or profile_data.headline:
+            #     search_text = f"{profile_data.headline or ''} {profile_data.about or ''}"
+            #     embedding = await vector_search.index_resume(
+            #         resume_id=str(resume.id),
+            #         text=search_text,
+            #         metadata={
+            #             "name": f"{parsed_data.get('first_name', '')} {parsed_data.get('last_name', '')}",
+            #             "skills": resume_data['skills'],
+            #             "location": resume_data['location'],
+            #             "years_experience": resume_data['years_experience']
+            #         }
+            #     )
             
             await db.commit()
             
