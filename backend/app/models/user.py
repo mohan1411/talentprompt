@@ -44,6 +44,7 @@ class User(Base):
     interview_reviews = relationship("InterviewFeedback", back_populates="reviewer")
     interview_templates = relationship("InterviewTemplate", back_populates="creator")
     created_pipelines = relationship("InterviewPipeline", back_populates="creator")
+    outreach_messages = relationship("OutreachMessage", back_populates="user")
     
     # Supabase integration (if using Supabase Auth)
     supabase_id = Column(String, unique=True, nullable=True)
