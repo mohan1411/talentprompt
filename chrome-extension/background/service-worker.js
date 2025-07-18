@@ -244,91 +244,76 @@ class QueueProcessor {
             s.querySelector('h2')?.textContent.includes('Experience')
           );
           if (experienceSection) {
-            const experienceSelectors = [
-              'li.artdeco-list__item',
-              '.experience-item',
-              'div.pvs-list__item--line-separated',
-              'li.pvs-list__paged-list-item'
-            ];
+            console.log('=== EXPERIENCE EXTRACTION DEBUG ===');
             
-            for (const selector of experienceSelectors) {
-              const items = experienceSection.querySelectorAll(selector);
-              if (items.length > 0) {
-                items.forEach(item => {
-                  const exp = {
-                    title: '',
-                    company: '',
-                    dates: '',
-                    location: '',
-                    description: ''
-                  };
+            // Find the main experience list
+            const expList = experienceSection.querySelector('ul') || experienceSection.querySelector('.pvs-list');
+            if (expList) {
+              // Get direct children only (top-level items)
+              const topLevelItems = Array.from(expList.children).filter(child => child.tagName === 'LI');
+              console.log(`Found ${topLevelItems.length} top-level experience items`);
+              
+              topLevelItems.forEach((item, idx) => {
+                // Extract all visible text spans
+                const visibleSpans = item.querySelectorAll('span[aria-hidden="true"]:not(.visually-hidden)');
+                const texts = Array.from(visibleSpans).map(span => span.textContent.trim()).filter(t => t);
+                
+                console.log(`\nItem ${idx + 1} texts:`, texts);
+                
+                // Check if this has nested experiences (grouped by company)
+                const nestedList = item.querySelector('ul');
+                if (nestedList) {
+                  console.log('This is a grouped experience (multiple roles at same company)');
                   
-                  // Title
-                  const titleSelectors = [
-                    '[data-field="experience_title"]',
-                    '.t-bold span[aria-hidden="true"]',
-                    '.display-flex.align-items-center span[aria-hidden="true"]'
-                  ];
-                  for (const sel of titleSelectors) {
-                    const el = item.querySelector(sel);
-                    if (el && el.textContent.trim()) {
-                      exp.title = el.textContent.trim();
+                  // Extract company name from parent
+                  let companyName = '';
+                  for (const text of texts) {
+                    if (text && !text.includes('·') && !text.match(/\d+\s*yr/) && text.length > 2) {
+                      companyName = text;
                       break;
                     }
                   }
                   
-                  // Company
-                  const companySelectors = [
-                    '[data-field="experience_company_name"]',
-                    '.t-14.t-normal:not(.t-black--light) span[aria-hidden="true"]',
-                    'span.t-14.t-normal span[aria-hidden="true"]'
-                  ];
-                  for (const sel of companySelectors) {
-                    const el = item.querySelector(sel);
-                    if (el && el.textContent.trim() && !el.textContent.includes('·')) {
-                      exp.company = el.textContent.trim().split(' · ')[0];
-                      break;
-                    }
-                  }
-                  
-                  // Dates and Duration - Look for both date range and duration
-                  const dateSelectors = [
-                    '.t-14.t-normal.t-black--light span[aria-hidden="true"]',
-                    '.pvs-entity__caption-wrapper span[aria-hidden="true"]',
-                    'span.t-14.t-normal.t-black--light span[aria-hidden="true"]',
-                    '.pvs-list__item--no-padding-in-columns .t-14.t-normal span[aria-hidden="true"]'
-                  ];
-                  
-                  // Collect all date-like texts
-                  const dateTexts = [];
-                  for (const sel of dateSelectors) {
-                    item.querySelectorAll(sel).forEach(el => {
-                      const text = el.textContent.trim();
-                      if (text && (text.includes(' - ') || text.includes(' – ') || text.includes(' yr') || text.includes(' mo'))) {
-                        dateTexts.push(text);
+                  // Process each role
+                  const roles = nestedList.querySelectorAll('li');
+                  roles.forEach((roleItem, roleIdx) => {
+                    const roleTexts = Array.from(roleItem.querySelectorAll('span[aria-hidden="true"]'))
+                      .map(s => s.textContent.trim()).filter(t => t);
+                    
+                    if (roleTexts.length >= 2) {
+                      const exp = {
+                        title: roleTexts[0] || '',
+                        company: companyName || roleTexts[1] || '',
+                        dates: roleTexts.find(t => t.includes('·') || t.match(/\d{4}/)) || '',
+                        location: '',
+                        description: ''
+                      };
+                      
+                      if (exp.title || exp.company) {
+                        data.experience.push(exp);
+                        console.log(`  Role ${roleIdx + 1}: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
                       }
-                    });
-                  }
-                  
-                  // Find the most complete date string (with duration)
-                  exp.dates = dateTexts.find(t => t.includes('·')) || dateTexts[0] || '';
-                  
-                  // Also try to find duration separately if not in dates
-                  if (!exp.dates.includes('·')) {
-                    const durationText = dateTexts.find(t => t.match(/\d+\s*yr|\d+\s*mo/));
-                    if (durationText && exp.dates) {
-                      exp.dates = exp.dates + ' · ' + durationText;
+                    }
+                  });
+                } else {
+                  // Single experience item
+                  if (texts.length >= 2) {
+                    const exp = {
+                      title: texts[0] || '',
+                      company: texts[1] ? texts[1].split(' · ')[0] : '',
+                      dates: texts.find(t => t.includes('·') || t.match(/\d{4}/)) || '',
+                      location: '',
+                      description: ''
+                    };
+                    
+                    if (exp.title || exp.company) {
+                      data.experience.push(exp);
+                      console.log(`Single role: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
                     }
                   }
-                  
-                  if (exp.title || exp.company) {
-                    data.experience.push(exp);
-                    console.log(`Extracted experience: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
-                  }
-                });
-                break;
-              }
-            }
+                }
+              });
+            console.log(`\nTotal experiences extracted: ${data.experience.length}`);
           }
           
           // Extract skills - improved version
