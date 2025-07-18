@@ -1,0 +1,41 @@
+# Railway Backend Environment Variables
+# Copy these to your Railway backend service
+
+# CORS Configuration - CRITICAL FOR PROMTITUDE.COM
+BACKEND_CORS_ORIGINS=["https://promtitude.com","https://www.promtitude.com","https://api.promtitude.com","http://localhost:3000","http://localhost:3001"]
+
+# Application
+PROJECT_NAME=Promtitude
+VERSION=0.1.0
+API_V1_STR=/api/v1
+
+# Security
+SECRET_KEY=lIcBVNdg670oz28hdsukEZWWfmLm3vVqUectFczcSvU
+ACCESS_TOKEN_EXPIRE_MINUTES=11520
+
+# Database (Railway provides these automatically)
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+
+# Redis (If you have Redis service)
+REDIS_URL=${{Redis.REDIS_URL}}
+
+# AI Services
+OPENAI_API_KEY=<your-openai-api-key>
+OPENAI_MODEL=gpt-4o-mini
+ANTHROPIC_API_KEY=<your-anthropic-api-key>
+ANTHROPIC_MODEL=claude-3-sonnet-20240229
+EMBEDDING_MODEL=text-embedding-ada-002
+
+# Vector Database
+QDRANT_URL=http://localhost:6333
+QDRANT_COLLECTION_NAME=promtitude_resumes
+
+# First User
+FIRST_SUPERUSER=admin@promtitude.com
+FIRST_SUPERUSER_PASSWORD=changethispassword
+
+# Monitoring
+LOG_LEVEL=INFO
+
+# Allowed Hosts
+ALLOWED_HOSTS=["*"]
