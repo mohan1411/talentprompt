@@ -155,10 +155,49 @@ class QueueProcessor {
 
   async extractProfileData(tabId) {
     try {
+      // First, inject the necessary scripts for advanced extraction
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: [
+          'content/calculate-experience.js',
+          'content/calculate-experience-advanced.js',
+          'content/data-validator.js',
+          'content/ultra-clean-extractor.js'
+        ]
+      });
+      
+      // Now execute the extraction using the ultra-clean extractor
       const [result] = await chrome.scripting.executeScript({
         target: { tabId },
         func: () => {
-          console.log('Extracting profile data (improved version) from:', window.location.href);
+          console.log('Extracting profile data using ultra-clean extractor from:', window.location.href);
+          
+          // Use the ultra-clean extractor if available
+          if (window.extractUltraCleanProfile) {
+            console.log('Using ultra-clean extractor for comprehensive extraction');
+            const profileData = window.extractUltraCleanProfile();
+            
+            // Ensure we have the required fields for the backend
+            if (!profileData.email) profileData.email = null;
+            if (!profileData.phone) profileData.phone = null;
+            if (!profileData.years_experience) profileData.years_experience = null;
+            
+            // Convert experience format if needed
+            if (profileData.experience && Array.isArray(profileData.experience)) {
+              profileData.experience = profileData.experience.map(exp => ({
+                title: exp.title || '',
+                company: exp.company || '',
+                dates: exp.duration || exp.dates || '',
+                location: exp.location || '',
+                description: exp.description || ''
+              }));
+            }
+            
+            return profileData;
+          }
+          
+          // Fallback to inline extraction if ultra-clean extractor is not available
+          console.log('WARNING: Ultra-clean extractor not available, using fallback extraction');
           
           const data = {
             linkedin_url: window.location.href.split('?')[0],
@@ -239,250 +278,39 @@ class QueueProcessor {
             }
           }
           
-          // Extract experience with more detail
+          // For experience and skills, delegate to advanced functions if available
+          if (window.calculateTotalExperienceAdvanced || window.calculateTotalExperience) {
+            console.log('Advanced experience calculation functions are available');
+          }
+          
+          // Basic experience extraction (will be overridden by ultra-clean if available)
           const experienceSection = Array.from(document.querySelectorAll('section')).find(s => 
             s.querySelector('h2')?.textContent.includes('Experience')
           );
           if (experienceSection) {
-            console.log('=== EXPERIENCE EXTRACTION DEBUG ===');
-            
-            // Find the main experience list
             const expList = experienceSection.querySelector('ul') || experienceSection.querySelector('.pvs-list');
             if (expList) {
-              // Get direct children only (top-level items)
-              const topLevelItems = Array.from(expList.children).filter(child => child.tagName === 'LI');
-              console.log(`Found ${topLevelItems.length} top-level experience items`);
-              
-              topLevelItems.forEach((item, idx) => {
-                // Extract all visible text spans
-                const visibleSpans = item.querySelectorAll('span[aria-hidden="true"]:not(.visually-hidden)');
-                const texts = Array.from(visibleSpans).map(span => span.textContent.trim()).filter(t => t);
+              const items = expList.querySelectorAll('li');
+              items.forEach(item => {
+                const texts = Array.from(item.querySelectorAll('span[aria-hidden="true"]'))
+                  .map(span => span.textContent.trim()).filter(t => t);
                 
-                console.log(`\nItem ${idx + 1} texts:`, texts);
-                
-                // Check if this has nested experiences (grouped by company)
-                const nestedList = item.querySelector('ul');
-                if (nestedList) {
-                  console.log('This is a grouped experience (multiple roles at same company)');
-                  
-                  // Extract company name from parent
-                  let companyName = '';
-                  for (const text of texts) {
-                    if (text && !text.includes('·') && !text.match(/\d+\s*yr/) && text.length > 2) {
-                      companyName = text;
-                      break;
-                    }
-                  }
-                  
-                  // Process each role
-                  const roles = nestedList.querySelectorAll('li');
-                  roles.forEach((roleItem, roleIdx) => {
-                    const roleTexts = Array.from(roleItem.querySelectorAll('span[aria-hidden="true"]'))
-                      .map(s => s.textContent.trim()).filter(t => t);
-                    
-                    if (roleTexts.length >= 2) {
-                      const exp = {
-                        title: roleTexts[0] || '',
-                        company: companyName || roleTexts[1] || '',
-                        dates: roleTexts.find(t => t.includes('·') || t.match(/\d{4}/)) || '',
-                        location: '',
-                        description: ''
-                      };
-                      
-                      if (exp.title || exp.company) {
-                        data.experience.push(exp);
-                        console.log(`  Role ${roleIdx + 1}: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
-                      }
-                    }
+                if (texts.length >= 2) {
+                  data.experience.push({
+                    title: texts[0] || '',
+                    company: texts[1] || '',
+                    dates: texts.find(t => t.match(/\d{4}|Present/i)) || '',
+                    location: '',
+                    description: ''
                   });
-                } else {
-                  // Single experience item
-                  if (texts.length >= 2) {
-                    const exp = {
-                      title: texts[0] || '',
-                      company: texts[1] ? texts[1].split(' · ')[0] : '',
-                      dates: texts.find(t => t.includes('·') || t.match(/\d{4}/)) || '',
-                      location: '',
-                      description: ''
-                    };
-                    
-                    if (exp.title || exp.company) {
-                      data.experience.push(exp);
-                      console.log(`Single role: ${exp.title} at ${exp.company}, dates: ${exp.dates}`);
-                    }
-                  }
-                }
-              });
-            console.log(`\nTotal experiences extracted: ${data.experience.length}`);
-          }
-          
-          // Extract skills - improved version
-          const skillsSection = Array.from(document.querySelectorAll('section')).find(s => {
-            const h2 = s.querySelector('h2');
-            return h2 && h2.textContent.toLowerCase().includes('skill');
-          });
-          
-          if (skillsSection) {
-            const skillElements = skillsSection.querySelectorAll('.pvs-list__paged-list-item, li.pvs-list__item--line-separated, .pvs-list__item--no-padding-in-columns');
-            const skills = new Set();
-            
-            skillElements.forEach(item => {
-              // Try multiple selectors for skill names
-              const skillSelectors = [
-                'div[data-field="skill_card_skill_topic"] span[aria-hidden="true"]',
-                '.t-bold span[aria-hidden="true"]:first-of-type',
-                '.skill-item__title',
-                '.pvs-entity__text-container span[aria-hidden="true"]:first-of-type',
-                '.pvs-list__item--no-padding-in-columns span[aria-hidden="true"]:first-of-type'
-              ];
-              
-              for (const selector of skillSelectors) {
-                const skillEl = item.querySelector(selector);
-                if (skillEl) {
-                  const skillText = skillEl.textContent.trim();
-                  if (skillText && !skillText.includes('endorsement') && skillText.length < 50 && !skillText.includes('·')) {
-                    skills.add(skillText);
-                    break;
-                  }
-                }
-              }
-            });
-            
-            data.skills = Array.from(skills);
-          }
-          
-          // If no skills found in skills section, try to find "Top Skills" in other locations
-          if (data.skills.length === 0) {
-            const topSkillsSelectors = [
-              '.pv-skill-categories-section .pv-skill-category-entity__name span',
-              '[class*="skill"] .t-bold span[aria-hidden="true"]',
-              '.pv-top-card-v3-section__list-item span[aria-hidden="true"]'
-            ];
-            
-            const skills = new Set();
-            for (const selector of topSkillsSelectors) {
-              document.querySelectorAll(selector).forEach(el => {
-                const text = el.textContent.trim();
-                if (text && text.length < 50 && !text.includes(':') && !text.includes('·')) {
-                  skills.add(text);
                 }
               });
             }
-            data.skills = Array.from(skills).slice(0, 15); // Limit to top 15
           }
           
-          // Calculate years of experience - improved version
-          if (data.experience.length > 0) {
-            let totalMonths = 0;
-            let calculatedFromDuration = false;
-            
-            // First try to calculate from duration strings
-            data.experience.forEach(exp => {
-              // Look for duration in the dates field (e.g., "Jan 2020 - Present · 3 yrs 2 mos")
-              if (exp.dates && exp.dates.includes('·')) {
-                const parts = exp.dates.split('·');
-                if (parts.length > 1) {
-                  const duration = parts[1].trim();
-                  const years = duration.match(/(\d+)\s*yr/);
-                  const months = duration.match(/(\d+)\s*mo/);
-                  
-                  let expMonths = 0;
-                  if (years) {
-                    expMonths += parseInt(years[1]) * 12;
-                    calculatedFromDuration = true;
-                  }
-                  if (months) {
-                    expMonths += parseInt(months[1]);
-                    calculatedFromDuration = true;
-                  }
-                  
-                  if (expMonths > 0) {
-                    totalMonths += expMonths;
-                    console.log(`Experience: ${exp.title} at ${exp.company} - Duration: ${duration} = ${expMonths} months`);
-                  }
-                }
-              }
-            });
-            
-            if (calculatedFromDuration) {
-              console.log(`Total experience calculated from durations: ${totalMonths} months = ${Math.round(totalMonths / 12)} years`);
-            }
-            
-            // If we couldn't calculate from duration, try date parsing
-            if (!calculatedFromDuration && totalMonths === 0) {
-              const experienceDates = [];
-              
-              data.experience.forEach(exp => {
-                if (exp.dates && exp.dates.includes(' - ')) {
-                  const dateParts = exp.dates.split(' - ')[0].split('·')[0].trim();
-                  const endPart = exp.dates.split(' - ')[1].split('·')[0].trim();
-                  
-                  try {
-                    // Parse start date
-                    const startDate = new Date(dateParts);
-                    const endDate = endPart.toLowerCase() === 'present' ? new Date() : new Date(endPart);
-                    
-                    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                      experienceDates.push({ start: startDate, end: endDate });
-                    }
-                  } catch (e) {
-                    console.log('Error parsing dates:', e);
-                  }
-                }
-              });
-              
-              // Calculate total experience from parsed dates
-              if (experienceDates.length > 0) {
-                // Sort by start date
-                experienceDates.sort((a, b) => a.start - b.start);
-                
-                // Find earliest start and latest end
-                const earliestStart = experienceDates[0].start;
-                const latestEnd = experienceDates.reduce((latest, exp) => 
-                  exp.end > latest ? exp.end : latest, experienceDates[0].end);
-                
-                totalMonths = Math.floor((latestEnd - earliestStart) / (1000 * 60 * 60 * 24 * 30.44));
-              }
-            }
-            
-            // Set years of experience (must be integer for backend)
-            if (totalMonths > 0) {
-              // Round to nearest integer
-              data.years_experience = Math.round(totalMonths / 12);
-            } else {
-              // Default to 1 year if we can't calculate
-              data.years_experience = 1;
-            }
-          }
-          
-          // Additional experience extraction for grouped experiences
-          // LinkedIn sometimes shows total company duration separately
-          const allExpTexts = experienceSection ? Array.from(experienceSection.querySelectorAll('span[aria-hidden="true"]')).map(s => s.textContent.trim()) : [];
-          const additionalDurations = allExpTexts.filter(text => 
-            text.match(/^\d+\s*yrs?\s*\d*\s*mos?$/) && 
-            !data.experience.some(exp => exp.dates && exp.dates.includes(text))
-          );
-          
-          if (additionalDurations.length > 0) {
-            console.log('Found additional duration texts that might be totals:', additionalDurations);
-          }
-          
-          // Log extraction results for debugging
-          console.log('Extracted profile data:', {
-            name: data.name,
-            headline: data.headline,
-            location: data.location,
-            'skills_count': data.skills.length,
-            'skills': data.skills,
-            'experience_count': data.experience.length,
-            'experience_details': data.experience.map(e => ({ title: e.title, company: e.company, dates: e.dates })),
-            'years_experience': data.years_experience,
-            'linkedin_url': data.linkedin_url
-          });
-          
-          // Add warning if no skills found
-          if (data.skills.length === 0) {
-            console.warn('No skills were extracted from the profile. The skills section might have a different structure.');
+          // Default experience calculation if no advanced function available
+          if (data.experience.length > 0 && !data.years_experience) {
+            data.years_experience = 1; // Conservative default
           }
           
           return data;

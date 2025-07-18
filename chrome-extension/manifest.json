@@ -30,6 +30,7 @@
         "content/email-extractor-enhanced.js",
         "content/ultra-clean-extractor.js",
         "content/calculate-experience.js",
+        "content/calculate-experience-advanced.js",
         "content/data-validator.js",
         "content/linkedin-profile.js",
         "content/bulk-import-sidebar.js"
