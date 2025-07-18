@@ -24,7 +24,16 @@
   "content_scripts": [
     {
       "matches": ["https://*.linkedin.com/*"],
-      "js": ["content/linkedin-profile.js", "content/bulk-import-sidebar.js"],
+      "js": [
+        "content/contact-extractor.js",
+        "content/inline-contact-extractor.js",
+        "content/email-extractor-enhanced.js",
+        "content/ultra-clean-extractor.js",
+        "content/calculate-experience.js",
+        "content/data-validator.js",
+        "content/linkedin-profile.js",
+        "content/bulk-import-sidebar.js"
+      ],
       "css": ["content/styles.css"],
       "run_at": "document_end"
     }
