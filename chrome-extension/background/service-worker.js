@@ -447,7 +447,23 @@ class QueueProcessor {
             }
           }
           
-          console.log('Extracted profile data:', data);
+          // Log extraction results for debugging
+          console.log('Extracted profile data:', {
+            name: data.name,
+            headline: data.headline,
+            location: data.location,
+            'skills_count': data.skills.length,
+            'skills': data.skills,
+            'experience_count': data.experience.length,
+            'years_experience': data.years_experience,
+            'linkedin_url': data.linkedin_url
+          });
+          
+          // Add warning if no skills found
+          if (data.skills.length === 0) {
+            console.warn('No skills were extracted from the profile. The skills section might have a different structure.');
+          }
+          
           return data;
         }
       });

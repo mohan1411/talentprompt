@@ -64,20 +64,53 @@ async def import_linkedin_profile(
 ) -> LinkedInImportResponse:
     """Import a LinkedIn profile to the database."""
     
-    # Check if profile already exists
-    existing_query = select(Resume).where(Resume.linkedin_url == profile_data.linkedin_url)
+    # Normalize LinkedIn URL (remove query parameters)
+    normalized_url = profile_data.linkedin_url.split('?')[0].rstrip('/')
+    
+    # Check if profile already exists (excluding soft-deleted)
+    existing_query = select(Resume).where(
+        Resume.linkedin_url == normalized_url,
+        Resume.status != 'deleted'
+    )
     existing_result = await db.execute(existing_query)
     existing_resume = existing_result.scalar_one_or_none()
     
     if existing_resume:
-        # Update last sync time
-        existing_resume.last_linkedin_sync = datetime.utcnow()
+        # Update the existing resume with new data
+        logger.info(f"Updating existing profile: {normalized_url}")
+        
+        # Update with new data
+        update_data = {
+            "location": profile_data.location or existing_resume.location,
+            "summary": profile_data.about or existing_resume.summary,
+            "current_title": profile_data.headline or existing_resume.current_title,
+            "years_experience": profile_data.years_experience or existing_resume.years_experience,
+            "last_linkedin_sync": datetime.utcnow(),
+        }
+        
+        # Update skills if provided
+        if profile_data.skills:
+            normalized_skills = [normalize_skill_for_storage(skill) for skill in profile_data.skills]
+            if normalized_skills:
+                update_data["skills"] = normalized_skills
+        
+        for key, value in update_data.items():
+            setattr(existing_resume, key, value)
+        
         await db.commit()
+        await db.refresh(existing_resume)
+        
+        # Re-index in vector search
+        try:
+            from app.services.reindex_service import reindex_service
+            await reindex_service.reindex_resume(db, existing_resume)
+        except Exception as e:
+            logger.error(f"Failed to reindex resume: {e}")
         
         return LinkedInImportResponse(
             success=True,
             candidate_id=existing_resume.id,
-            message="Profile already exists in database",
+            message="Profile updated successfully",
             is_duplicate=True
         )
     
@@ -99,7 +132,7 @@ async def import_linkedin_profile(
             "years_experience": profile_data.years_experience or parsed_data.get("years_experience", 0),
             "skills": [normalize_skill_for_storage(skill) for skill in (profile_data.skills or [])],
             "keywords": parsed_data.get("keywords", []),
-            "linkedin_url": profile_data.linkedin_url,
+            "linkedin_url": normalized_url,
             "linkedin_data": profile_data.dict(),
             "last_linkedin_sync": datetime.utcnow(),
             "status": "active",
