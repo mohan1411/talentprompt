@@ -96,6 +96,7 @@ class ResumeProcessor:
                     
                     # Index in Qdrant for vector search
                     metadata = {
+                        "user_id": str(resume.user_id),  # CRITICAL: Include user_id for security
                         "first_name": update_data.get("first_name", ""),
                         "last_name": update_data.get("last_name", ""),
                         "email": update_data.get("email", ""),

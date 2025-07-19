@@ -105,6 +105,11 @@ class VectorSearchService:
             # Get embedding
             embedding = await self.get_embedding(text)
             
+            # CRITICAL: Ensure user_id is in metadata
+            if "user_id" not in metadata:
+                logger.error(f"SECURITY WARNING: Attempting to index resume {resume_id} without user_id!")
+                raise ValueError("user_id is required in metadata for security")
+            
             # Create point
             point = PointStruct(
                 id=resume_id,
@@ -132,6 +137,7 @@ class VectorSearchService:
     async def search_similar(
         self, 
         query: str, 
+        user_id: Optional[str] = None,
         limit: int = 10,
         filters: Optional[Dict[str, Any]] = None
     ) -> List[Dict[str, Any]]:
@@ -140,10 +146,20 @@ class VectorSearchService:
             # Get query embedding
             query_embedding = await self.get_embedding(query)
             
-            # Build filter if provided
-            qdrant_filter = None
+            # Build filter - ALWAYS include user_id for security
+            conditions = []
+            
+            # CRITICAL: Add user_id filter if provided
+            if user_id:
+                conditions.append(
+                    FieldCondition(
+                        key="user_id",
+                        match=MatchValue(value=user_id)
+                    )
+                )
+            
+            # Add additional filters if provided
             if filters:
-                conditions = []
                 for key, value in filters.items():
                     conditions.append(
                         FieldCondition(
@@ -151,8 +167,8 @@ class VectorSearchService:
                             match=MatchValue(value=value)
                         )
                     )
-                if conditions:
-                    qdrant_filter = Filter(must=conditions)
+            
+            qdrant_filter = Filter(must=conditions) if conditions else None
             
             # Search
             results = self.client.search(

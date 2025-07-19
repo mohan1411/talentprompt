@@ -101,7 +101,7 @@ async def get_analytics_stats(
         total_users_result = await db.execute(total_users_query)
         total_users = total_users_result.scalar() or 0
         
-        total_resumes_query = select(func.count(Resume.id))
+        total_resumes_query = select(func.count(Resume.id)).where(Resume.user_id == current_user.id)
         total_resumes_result = await db.execute(total_resumes_query)
         total_resumes = total_resumes_result.scalar() or 0
     except Exception as e:

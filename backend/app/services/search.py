@@ -26,6 +26,7 @@ class SearchService:
         self,
         db: AsyncSession,
         query: str,
+        user_id: UUID,
         limit: int = 10,
         filters: Optional[dict] = None
     ) -> List[Tuple[dict, float]]:
@@ -52,6 +53,7 @@ class SearchService:
             logger.info("Attempting vector search with Qdrant...")
             vector_results = await vector_search.search_similar(
                 query=query,
+                user_id=str(user_id),  # SECURITY: Pass user_id to vector search
                 limit=limit * 2,  # Get more results to filter
                 filters=filters
             )
@@ -62,11 +64,14 @@ class SearchService:
                 resume_ids = [r["resume_id"] for r in vector_results]
                 logger.info(f"Vector search returned IDs: {resume_ids[:5]}...")  # Log first 5
                 
-                # Fetch full resume data from PostgreSQL
-                stmt = select(Resume).where(Resume.id.in_(resume_ids))
+                # Fetch full resume data from PostgreSQL - CRITICAL: Filter by user_id
+                stmt = select(Resume).where(
+                    Resume.id.in_(resume_ids),
+                    Resume.user_id == user_id  # SECURITY: Only show user's own resumes
+                )
                 result = await db.execute(stmt)
                 resumes = {str(r.id): r for r in result.scalars().all()}
-                logger.info(f"Found {len(resumes)} resumes in PostgreSQL matching vector IDs")
+                logger.info(f"Found {len(resumes)} resumes in PostgreSQL matching vector IDs for user {user_id}")
                 
                 # Combine results with scores
                 search_results = []
@@ -129,12 +134,13 @@ class SearchService:
             # Fall back to keyword search
         
         # Fallback: Keyword-based search using PostgreSQL
-        return await self._keyword_search(db, query, limit, filters)
+        return await self._keyword_search(db, query, user_id, limit, filters)
     
     async def _keyword_search(
         self,
         db: AsyncSession,
         query: str,
+        user_id: UUID,
         limit: int = 10,
         filters: Optional[dict] = None
     ) -> List[Tuple[dict, float]]:
@@ -142,10 +148,11 @@ class SearchService:
         logger.info("\n--- Keyword Search Debug ---")
         logger.info(f"Query: '{query}'")
         
-        # Build query
+        # Build query - CRITICAL: Filter by user_id
         stmt = select(Resume).where(
             Resume.status == 'active',
-            Resume.parse_status == 'completed'
+            Resume.parse_status == 'completed',
+            Resume.user_id == user_id  # SECURITY: Only show user's own resumes
         )
         
         # Add keyword search with enhanced skill matching
@@ -228,7 +235,8 @@ class SearchService:
             # Search for resumes with exact skill match that might have been missed
             exact_skill_stmt = select(Resume).where(
                 Resume.status == 'active',
-                Resume.parse_status == 'completed'
+                Resume.parse_status == 'completed',
+                Resume.user_id == user_id  # SECURITY: Only show user's own resumes
             )
             
             # Add exact skill conditions
@@ -331,11 +339,15 @@ class SearchService:
         self,
         db: AsyncSession,
         resume_id: str,
+        user_id: UUID,
         limit: int = 5
     ) -> List[Tuple[dict, float]]:
         """Find similar resumes to a given resume."""
-        # Get the resume
-        stmt = select(Resume).where(Resume.id == resume_id)
+        # Get the resume - CRITICAL: Ensure it belongs to the user
+        stmt = select(Resume).where(
+            Resume.id == resume_id,
+            Resume.user_id == user_id  # SECURITY: Only access user's own resumes
+        )
         result = await db.execute(stmt)
         resume = result.scalar_one_or_none()
         
@@ -354,8 +366,8 @@ class SearchService:
         
         query = " ".join(query_parts)
         
-        # Search for similar resumes
-        results = await self.search_resumes(db, query, limit + 1)
+        # Search for similar resumes - pass user_id
+        results = await self.search_resumes(db, query, user_id, limit + 1)
         
         # Filter out the original resume
         return [(r, s) for r, s in results if r["id"] != str(resume_id)][:limit]
@@ -363,7 +375,8 @@ class SearchService:
     async def get_search_suggestions(
         self,
         db: AsyncSession,
-        query: str
+        query: str,
+        user_id: UUID
     ) -> List[Dict[str, Any]]:
         """Get search suggestions based on partial query."""
         suggestions = []
@@ -430,6 +443,7 @@ class SearchService:
             # Check for both words appearing together (with possible words in between)
             count_stmt = select(func.count(Resume.id)).where(
                 Resume.status == 'active',
+                Resume.user_id == user_id,  # SECURITY: Only count user's own resumes
                 or_(
                     # Check for level AND tech in title/summary
                     and_(
@@ -464,6 +478,7 @@ class SearchService:
             if actual_count == 0:
                 tech_count_stmt = select(func.count(Resume.id)).where(
                     Resume.status == 'active',
+                    Resume.user_id == user_id,  # SECURITY: Only count user's own resumes
                     or_(
                         Resume.current_title.ilike(f"%{found_tech}%"),
                         Resume.summary.ilike(f"%{found_tech}%"),
@@ -495,11 +510,13 @@ class SearchService:
                     skill_conditions = create_skill_search_conditions(keyword, Resume)
                     count_stmt = select(func.count(Resume.id)).where(
                         Resume.status == 'active',
+                        Resume.user_id == user_id,  # SECURITY: Only count user's own resumes
                         or_(*skill_conditions)
                     )
                 else:
                     count_stmt = select(func.count(Resume.id)).where(
                         Resume.status == 'active',
+                        Resume.user_id == user_id,  # SECURITY: Only count user's own resumes
                         or_(
                             Resume.summary.ilike(f"%{keyword}%"),
                             Resume.current_title.ilike(f"%{keyword}%"),
@@ -524,6 +541,7 @@ class SearchService:
                 SELECT DISTINCT skill, COUNT(*) as count
                 FROM resumes, jsonb_array_elements_text(skills::jsonb) as skill
                 WHERE status = 'active' 
+                AND user_id = :user_id
                 AND LOWER(skill) LIKE LOWER(:query)
                 GROUP BY skill
                 ORDER BY count DESC
@@ -532,7 +550,7 @@ class SearchService:
             
             try:
                 logger.info(f"Searching for skills matching '{query}'")
-                result = await db.execute(skill_stmt, {"query": f"%{query}%"})
+                result = await db.execute(skill_stmt, {"query": f"%{query}%", "user_id": user_id})
                 skill_matches = result.all()
                 logger.info(f"Found {len(skill_matches)} matching skills in database")
                 
@@ -553,6 +571,7 @@ class SearchService:
                     logger.info("Trying fallback skill search method")
                     fallback_stmt = select(Resume.skills).where(
                         Resume.skills.isnot(None),
+                        Resume.user_id == user_id,  # SECURITY: Only search user's own resumes
                         cast(Resume.skills, String).ilike(f'%{query}%')
                     ).limit(20)
                     
@@ -586,7 +605,8 @@ class SearchService:
             # First try exact phrase match
             stmt = select(Resume.current_title, func.count(Resume.id)).where(
                 Resume.current_title.ilike(f"%{query}%"),
-                Resume.status == 'active'
+                Resume.status == 'active',
+                Resume.user_id == user_id  # SECURITY: Only show user's own titles
             ).group_by(Resume.current_title).limit(5)
             
             result = await db.execute(stmt)
@@ -614,13 +634,15 @@ class SearchService:
     async def get_popular_tags(
         self,
         db: AsyncSession,
+        user_id: UUID,
         limit: int = 30
     ) -> List[Dict[str, Any]]:
         """Get popular skills and technologies from resumes."""
-        # Get all resumes with skills
+        # Get all resumes with skills - CRITICAL: Filter by user_id
         stmt = select(Resume.skills).where(
             Resume.skills.isnot(None),
-            Resume.status == 'active'
+            Resume.status == 'active',
+            Resume.user_id == user_id  # SECURITY: Only show user's own tags
         )
         
         result = await db.execute(stmt)

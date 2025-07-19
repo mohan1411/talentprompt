@@ -74,10 +74,11 @@ async def search_resumes(
     logger.info(f"Limit: {search_query.limit}")
     logger.info(f"Filters: {filters_dict}")
     
-    # Perform search
+    # Perform search - CRITICAL: Pass user_id to filter results
     results = await search_service.search_resumes(
         db,
         query=search_query.query,
+        user_id=current_user.id,  # SECURITY: Only show user's own resumes
         limit=search_query.limit,
         filters=filters_dict
     )
@@ -151,10 +152,11 @@ async def get_similar_resumes(
             detail="Search service is not configured. Please set OPENAI_API_KEY."
         )
     
-    # Get similar resumes
+    # Get similar resumes - CRITICAL: Pass user_id to filter results
     results = await search_service.get_similar_resumes(
         db,
         resume_id=resume_id,
+        user_id=current_user.id,  # SECURITY: Only show user's own resumes
         limit=limit
     )
     
@@ -197,7 +199,7 @@ async def get_search_suggestions(
     
     Returns suggestions with candidate counts and categories.
     """
-    suggestions = await search_service.get_search_suggestions(db, q)
+    suggestions = await search_service.get_search_suggestions(db, q, current_user.id)
     return suggestions
 
 
@@ -219,7 +221,7 @@ async def get_popular_tags(
     
     Returns the most common skills with their counts.
     """
-    tags = await search_service.get_popular_tags(db, limit)
+    tags = await search_service.get_popular_tags(db, current_user.id, limit)
     return tags
 
 
@@ -253,24 +255,26 @@ async def debug_search(
     from sqlalchemy import select, func
     from app.models.resume import Resume
     
-    # Count total resumes
+    # Count total resumes - CRITICAL: Filter by user
     total_stmt = select(func.count(Resume.id)).where(
         Resume.status == 'active',
-        Resume.parse_status == 'completed'
+        Resume.parse_status == 'completed',
+        Resume.user_id == current_user.id  # SECURITY: Only count user's own resumes
     )
     total_result = await db.execute(total_stmt)
     total_resumes = total_result.scalar() or 0
     
-    # Count resumes with skills
+    # Count resumes with skills - CRITICAL: Filter by user
     skills_stmt = select(func.count(Resume.id)).where(
         Resume.status == 'active',
         Resume.parse_status == 'completed',
-        Resume.skills.isnot(None)
+        Resume.skills.isnot(None),
+        Resume.user_id == current_user.id  # SECURITY: Only count user's own resumes
     )
     skills_result = await db.execute(skills_stmt)
     resumes_with_skills = skills_result.scalar() or 0
     
-    # Get sample of skills data
+    # Get sample of skills data - CRITICAL: Filter by user
     sample_stmt = select(
         Resume.id,
         Resume.first_name,
@@ -278,7 +282,8 @@ async def debug_search(
         Resume.skills,
         Resume.current_title
     ).where(
-        Resume.skills.isnot(None)
+        Resume.skills.isnot(None),
+        Resume.user_id == current_user.id  # SECURITY: Only show user's own resumes
     ).limit(5)
     
     sample_result = await db.execute(sample_stmt)
@@ -313,6 +318,7 @@ async def debug_search(
             func.cast(Resume.skills, String).label('skills_text')
         ).where(
             Resume.status == 'active',
+            Resume.user_id == current_user.id,  # SECURITY: Only show user's own resumes
             func.cast(Resume.skills, String).ilike(search_pattern)
         ).limit(3)
         
@@ -327,9 +333,10 @@ async def debug_search(
                 "found": True
             })
     
-    # Also check raw text
+    # Also check raw text - CRITICAL: Filter by user
     raw_text_stmt = select(func.count(Resume.id)).where(
-        Resume.raw_text.ilike(f'%{q}%')
+        Resume.raw_text.ilike(f'%{q}%'),
+        Resume.user_id == current_user.id  # SECURITY: Only count user's own resumes
     )
     raw_text_result = await db.execute(raw_text_stmt)
     raw_text_count = raw_text_result.scalar() or 0
