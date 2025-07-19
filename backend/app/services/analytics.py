@@ -8,7 +8,9 @@ from sqlalchemy import select, func, and_, distinct
 from sqlalchemy.orm import selectinload
 
 from app.models import AnalyticsEvent, EventType, User
-from app.core.logging import logger
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class AnalyticsService:

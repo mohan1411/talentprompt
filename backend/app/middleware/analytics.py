@@ -10,7 +10,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import async_session_maker
 from app.services.analytics import analytics_service
 from app.models import EventType
-from app.core.logging import logger
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class AnalyticsMiddleware(BaseHTTPMiddleware):
