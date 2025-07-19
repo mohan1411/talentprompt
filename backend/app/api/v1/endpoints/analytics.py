@@ -10,9 +10,13 @@ from pydantic import BaseModel, Field
 from app.api import deps
 from app.models import User, EventType
 from app.services.analytics import analytics_service
-from app.schemas.base import MessageResponse
 
 router = APIRouter()
+
+
+class MessageResponse(BaseModel):
+    """Simple message response."""
+    message: str
 
 
 class TrackEventRequest(BaseModel):
