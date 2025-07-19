@@ -2,7 +2,17 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, bulk_import, debug, cleanup, linkedin_fix, outreach, admin_migrate, analytics
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, bulk_import, debug, cleanup, linkedin_fix, outreach, admin_migrate
+
+# Try importing analytics with error handling
+try:
+    from app.api.v1.endpoints import analytics
+    print("Analytics module imported successfully")
+except Exception as e:
+    print(f"Failed to import analytics module: {e}")
+    # Use simple fallback
+    from app.api.v1.endpoints import analytics_simple as analytics
+    print("Using simple analytics fallback")
 
 api_router = APIRouter()
 

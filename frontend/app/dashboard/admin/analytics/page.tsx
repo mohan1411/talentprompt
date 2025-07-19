@@ -33,7 +33,8 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
-      const response = await fetch('/api/v1/analytics/stats?days=30', {
+      // Try the basic stats endpoint first
+      const response = await fetch('/api/v1/analytics/basic-stats', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
