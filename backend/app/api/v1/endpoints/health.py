@@ -1,7 +1,7 @@
 """Health check endpoints."""
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Any
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,7 +53,7 @@ async def redis_health() -> Dict[str, str]:
 
 
 @router.get("/qdrant")
-async def qdrant_health() -> Dict[str, any]:
+async def qdrant_health() -> Dict[str, Any]:
     """Qdrant connectivity and configuration check."""
     import os
     
