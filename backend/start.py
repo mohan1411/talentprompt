@@ -12,7 +12,7 @@ async def main():
     
     # Run database migrations
     if "--skip-migrations" not in sys.argv and os.environ.get("SKIP_MIGRATIONS", "false").lower() != "true":
-        print("Running database migrations...")
+        print("Running database migrations (including outreach tables)...")
         try:
             import subprocess
             result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
