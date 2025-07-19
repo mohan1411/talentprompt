@@ -53,6 +53,11 @@
           Importing <span id="current-import">0</span> of <span id="total-import">0</span>
         </p>
       </div>
+      <div style="margin-top: 12px; padding: 8px; background: #fef3c7; border-radius: 6px; border: 1px solid #fbbf24;">
+        <p style="margin: 0; font-size: 11px; color: #78350f; line-height: 1.4;">
+          <strong>⚠️ Note:</strong> Use responsibly for professional recruiting. You are responsible for complying with LinkedIn's Terms of Service.
+        </p>
+      </div>
     `;
     
     document.body.appendChild(bulkToolbar);

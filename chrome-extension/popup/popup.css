@@ -158,3 +158,16 @@ button {
 .footer a:hover {
   color: #2563eb;
 }
+
+.disclaimer {
+  padding: 12px 16px;
+  background: #fef3c7;
+  border-top: 1px solid #fbbf24;
+}
+
+.disclaimer p {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #78350f;
+}
