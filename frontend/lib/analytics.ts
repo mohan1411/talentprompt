@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/lib/auth/context';
 
 // Event types matching backend
 export const EventType = {
