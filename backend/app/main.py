@@ -53,17 +53,50 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
 @app.on_event("startup")
 async def startup_event():
     """Initialize database on startup."""
-    if os.environ.get("RAILWAY_ENVIRONMENT"):
-        print("Running in Railway environment - initializing database...")
-        try:
-            from app.core.init_db import init_db
-            result = await init_db()
-            print(f"Database initialization complete: {result}")
-        except Exception as e:
-            print(f"Warning: Database initialization failed: {e}")
-            # Don't fail startup, let the app continue
-    else:
-        print("Not in Railway environment - skipping auto database init")
+    print(f"Startup event - Environment: {os.environ.get('RAILWAY_ENVIRONMENT', 'local')}")
+    
+    # Always try to create tables if they don't exist
+    try:
+        from app.api.v1.dependencies.database import get_db
+        from sqlalchemy import text
+        
+        async for db in get_db():
+            # Check if outreach_messages table exists
+            result = await db.execute(text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'outreach_messages'
+                );
+            """))
+            
+            if not result.scalar():
+                print("outreach_messages table not found - creating tables...")
+                
+                # Read and execute SQL file
+                sql_path = os.path.join(os.path.dirname(__file__), "..", "create_outreach_tables.sql")
+                if os.path.exists(sql_path):
+                    with open(sql_path, "r") as f:
+                        sql = f.read()
+                    
+                    # Execute each statement separately
+                    statements = [s.strip() for s in sql.split(';') if s.strip()]
+                    for statement in statements:
+                        if statement:
+                            try:
+                                await db.execute(text(statement))
+                            except Exception as e:
+                                print(f"Statement error (continuing): {e}")
+                    
+                    await db.commit()
+                    print("Tables created successfully!")
+                else:
+                    print(f"SQL file not found at {sql_path}")
+            else:
+                print("outreach_messages table already exists")
+            break
+    except Exception as e:
+        print(f"Startup database check failed: {e}")
+        # Don't fail startup, let the app continue
 
 
 @app.get("/")
@@ -125,87 +158,124 @@ async def health_check():
 @app.get("/api/v1/migrate")
 async def run_migrations():
     """Run database migrations - useful for production deployments."""
-    import subprocess
-    import psycopg2
-    from urllib.parse import urlparse
+    from app.api.v1.dependencies.database import get_db
+    from sqlalchemy import text
     
     results = {
         "status": "starting",
-        "alembic_migration": None,
-        "direct_sql": None,
+        "tables_created": False,
+        "error": None,
         "tables_check": None
     }
     
-    # Try alembic migrations first
     try:
-        result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
-        if result.returncode == 0:
-            results["alembic_migration"] = "success"
-            results["status"] = "completed"
-        else:
-            results["alembic_migration"] = f"failed: {result.stderr}"
-    except Exception as e:
-        results["alembic_migration"] = f"error: {str(e)}"
-    
-    # If alembic fails, try direct SQL
-    if results["alembic_migration"] != "success":
-        try:
-            db_url = os.environ.get("DATABASE_URL", "")
-            if db_url.startswith("postgres://"):
-                db_url = db_url.replace("postgres://", "postgresql://", 1)
-            
-            parsed = urlparse(db_url)
-            conn = psycopg2.connect(
-                host=parsed.hostname,
-                port=parsed.port,
-                database=parsed.path[1:],
-                user=parsed.username,
-                password=parsed.password
-            )
-            
-            with conn.cursor() as cur:
-                # Read and execute SQL file
-                with open("create_outreach_tables.sql", "r") as f:
-                    sql = f.read()
-                cur.execute(sql)
-                conn.commit()
-                results["direct_sql"] = "success"
-                results["status"] = "completed"
-            
-            conn.close()
-        except Exception as e:
-            results["direct_sql"] = f"error: {str(e)}"
-            results["status"] = "failed"
-    
-    # Check if tables exist
-    try:
-        from app.api.v1.dependencies.database import get_db
-        from sqlalchemy import text
-        
         async for db in get_db():
-            # Check for outreach_messages table
-            result = await db.execute(text("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_name = 'outreach_messages'
-                );
+            # First check if tables exist
+            check_result = await db.execute(text("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name IN ('outreach_messages', 'outreach_templates')
             """))
-            table_exists = result.scalar()
-            results["tables_check"] = {
-                "outreach_messages": table_exists,
-                "outreach_templates": None
-            }
+            existing_tables = [row[0] for row in check_result]
             
-            # Check for outreach_templates table
-            result = await db.execute(text("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_name = 'outreach_templates'
-                );
+            if 'outreach_messages' not in existing_tables:
+                print("Creating outreach tables...")
+                
+                # Create enum types
+                try:
+                    await db.execute(text("""
+                        DO $$ BEGIN
+                            CREATE TYPE messagestyle AS ENUM ('casual', 'professional', 'technical');
+                        EXCEPTION
+                            WHEN duplicate_object THEN null;
+                        END $$;
+                    """))
+                    await db.execute(text("""
+                        DO $$ BEGIN
+                            CREATE TYPE messagestatus AS ENUM ('generated', 'sent', 'opened', 'responded', 'not_interested');
+                        EXCEPTION
+                            WHEN duplicate_object THEN null;
+                        END $$;
+                    """))
+                except Exception as e:
+                    print(f"Enum creation warning: {e}")
+                
+                # Create outreach_messages table
+                await db.execute(text("""
+                    CREATE TABLE IF NOT EXISTS outreach_messages (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        user_id UUID NOT NULL REFERENCES users(id),
+                        resume_id UUID NOT NULL REFERENCES resumes(id),
+                        subject VARCHAR(255) NOT NULL,
+                        body TEXT NOT NULL,
+                        style messagestyle NOT NULL,
+                        job_title VARCHAR(255),
+                        job_requirements JSON,
+                        company_name VARCHAR(255),
+                        status messagestatus DEFAULT 'generated',
+                        sent_at TIMESTAMP,
+                        opened_at TIMESTAMP,
+                        responded_at TIMESTAMP,
+                        quality_score FLOAT,
+                        response_rate FLOAT,
+                        generation_prompt TEXT,
+                        model_version VARCHAR(50),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                
+                # Create indexes
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_user_id ON outreach_messages(user_id)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_resume_id ON outreach_messages(resume_id)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_status ON outreach_messages(status)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_created_at ON outreach_messages(created_at)"))
+                
+                # Create outreach_templates table
+                await db.execute(text("""
+                    CREATE TABLE IF NOT EXISTS outreach_templates (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        user_id UUID NOT NULL REFERENCES users(id),
+                        name VARCHAR(255) NOT NULL,
+                        description TEXT,
+                        subject_template VARCHAR(500),
+                        body_template TEXT NOT NULL,
+                        style messagestyle NOT NULL,
+                        industry VARCHAR(100),
+                        role_level VARCHAR(50),
+                        job_function VARCHAR(100),
+                        times_used INTEGER DEFAULT 0,
+                        avg_response_rate FLOAT,
+                        is_public BOOLEAN DEFAULT false,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                
+                # Create indexes for templates
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_templates_user_id ON outreach_templates(user_id)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_templates_is_public ON outreach_templates(is_public)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_templates_style ON outreach_templates(style)"))
+                
+                await db.commit()
+                results["tables_created"] = True
+                results["status"] = "completed"
+            else:
+                results["status"] = "tables_already_exist"
+            
+            # Final check
+            final_check = await db.execute(text("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public' 
+                AND table_name IN ('outreach_messages', 'outreach_templates')
             """))
-            results["tables_check"]["outreach_templates"] = result.scalar()
+            results["tables_check"] = [row[0] for row in final_check]
             break
+            
     except Exception as e:
-        results["tables_check"] = f"error: {str(e)}"
+        results["error"] = str(e)
+        results["status"] = "failed"
     
     return results
