@@ -54,19 +54,21 @@ export interface OutreachAnalytics {
 
 export const outreachApi = {
   async generateMessages(data: OutreachMessageRequest): Promise<OutreachMessageResponse> {
+    console.log('Sending outreach request:', data);
     const response = await apiClient.post('/outreach/generate', data);
-    return response.data;
+    console.log('Outreach response:', response);
+    return response; // The response is already the data, not wrapped in { data: ... }
   },
 
   async trackPerformance(data: MessagePerformanceTrack): Promise<{ success: boolean }> {
     const response = await apiClient.post('/outreach/track', data);
-    return response.data;
+    return response;
   },
 
   async getAnalytics(days: number = 30): Promise<OutreachAnalytics> {
     const response = await apiClient.get('/outreach/analytics', {
       params: { days }
     });
-    return response.data;
+    return response;
   },
 };

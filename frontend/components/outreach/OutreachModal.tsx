@@ -62,18 +62,23 @@ export function OutreachModal({ isOpen, onClose, candidate }: OutreachModalProps
       };
 
       const response = await outreachApi.generateMessages(request);
+      console.log('Full response:', response);
       
-      if (response.success) {
+      if (response && response.success) {
         setMessages(response.messages);
         toast({
           title: "Messages generated!",
           description: "Three personalized messages have been created",
         });
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
+      console.error('Outreach generation error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       toast({
         title: "Generation failed",
-        description: "Failed to generate messages. Please try again.",
+        description: `Failed to generate messages: ${errorMessage}`,
         variant: "destructive",
       });
     } finally {
