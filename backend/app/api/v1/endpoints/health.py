@@ -53,38 +53,39 @@ async def redis_health() -> Dict[str, str]:
 
 
 @router.get("/qdrant")
-async def qdrant_health() -> Dict[str, Any]:
-    """Qdrant connectivity and configuration check."""
-    import os
-    
-    qdrant_url = os.getenv("QDRANT_URL", settings.QDRANT_URL)
-    has_api_key = bool(os.getenv("QDRANT_API_KEY", settings.QDRANT_API_KEY))
-    
-    # Mask sensitive parts of URL
-    if qdrant_url and len(qdrant_url) > 20:
-        masked_url = qdrant_url[:10] + "***" + qdrant_url[-10:]
-    else:
-        masked_url = qdrant_url
-    
-    result = {
-        "status": "checking",
-        "config": {
-            "url": masked_url,
-            "has_api_key": has_api_key,
-            "collection_name": settings.QDRANT_COLLECTION_NAME,
-            "is_localhost": "localhost" in qdrant_url or "127.0.0.1" in qdrant_url if qdrant_url else False
-        },
-        "timestamp": datetime.utcnow().isoformat(),
-    }
-    
+async def qdrant_health() -> Dict[str, str]:
+    """Qdrant connectivity check - simplified to avoid type issues."""
     try:
-        from app.services.vector_search import vector_search
-        info = await vector_search.get_collection_info()
-        result["status"] = "healthy" if info.get("status") == "connected" else "unhealthy"
-        result["qdrant_info"] = info
+        import os
+        qdrant_url = os.getenv("QDRANT_URL", settings.QDRANT_URL)
+        
+        # Basic check
+        if "localhost" in qdrant_url:
+            return {
+                "status": "warning",
+                "message": "Qdrant configured for localhost",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        
+        # Try to check collection
+        try:
+            from app.services.vector_search import vector_search
+            info = await vector_search.get_collection_info()
+            return {
+                "status": "healthy",
+                "message": f"Connected to Qdrant with {info.get('points_count', 0)} vectors",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+        except Exception as e:
+            return {
+                "status": "unhealthy",
+                "message": f"Qdrant error: {str(e)}",
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+            
     except Exception as e:
-        result["status"] = "unhealthy"
-        result["error"] = str(e)
-        result["error_type"] = type(e).__name__
-    
-    return result
+        return {
+            "status": "error",
+            "message": f"Configuration error: {str(e)}",
+            "timestamp": datetime.utcnow().isoformat(),
+        }
