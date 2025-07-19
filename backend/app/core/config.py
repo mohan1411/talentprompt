@@ -100,11 +100,16 @@ class Settings(BaseSettings):
     # Other
     SENTRY_DSN: Optional[str] = None
     LOG_LEVEL: str = "INFO"
+    ENVIRONMENT: str = "production"  # development, staging, production
+    
+    # File Upload
+    MAX_FILE_SIZE_MB: int = 10
     
     class Config:
         case_sensitive = True
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # Ignore extra fields in .env file
 
 
 settings = Settings()
