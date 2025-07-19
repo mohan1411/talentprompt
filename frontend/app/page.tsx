@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { 
@@ -14,12 +14,20 @@ import {
 export default function HomePage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [showSearchPrompt, setShowSearchPrompt] = useState(false);
 
   useEffect(() => {
     if (!isLoading && user) {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
+
+  const handleSearchClick = () => {
+    setShowSearchPrompt(true);
+    setTimeout(() => {
+      router.push('/register');
+    }, 1500);
+  };
 
   const features = [
     // Search & Discovery
@@ -179,13 +187,22 @@ export default function HomePage() {
             {/* Demo Search Bar */}
             <div className="mx-auto max-w-2xl mb-8">
               <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
                 <input
                   type="text"
                   placeholder="Try: Product manager with B2B SaaS experience and strong analytics skills..."
-                  className="w-full pl-12 pr-4 py-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm group-hover:shadow-md transition-shadow"
+                  className="w-full pl-12 pr-4 py-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm group-hover:shadow-md transition-all cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  onClick={handleSearchClick}
+                  onFocus={handleSearchClick}
                   readOnly
                 />
+                {showSearchPrompt && (
+                  <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-lg animate-fade-in">
+                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
+                      🚀 Sign up to unlock powerful AI search capabilities!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
