@@ -183,6 +183,113 @@ async def cleanup_orphaned_embeddings(
         }
 
 
+@router.post("/security-reindex-vectors", response_model=Dict[str, Any])
+async def security_reindex_vectors(
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user),
+) -> Dict[str, Any]:
+    """
+    CRITICAL SECURITY FIX: Re-index all vectors with user_id.
+    
+    This fixes the security issue where users could see all resumes.
+    Only superusers or the initial admin can run this.
+    """
+    # Check if user is authorized
+    if not current_user.is_superuser and current_user.email != "mohanarasu.chinnasamy@gmail.com":
+        raise HTTPException(
+            status_code=403,
+            detail="Only administrators can run this operation"
+        )
+    
+    try:
+        from app.services.vector_search import vector_search
+        from app.services.embeddings import embedding_service
+        from app.models.resume import Resume
+        from sqlalchemy import select
+        
+        logger.info("Starting SECURITY re-indexing with user_id")
+        
+        # Get all resumes with completed parse status
+        stmt = select(Resume).where(
+            Resume.status == 'active',
+            Resume.parse_status == 'completed'
+        )
+        
+        result = await db.execute(stmt)
+        resumes = result.scalars().all()
+        
+        logger.info(f"Found {len(resumes)} resumes to re-index for security")
+        
+        success_count = 0
+        error_count = 0
+        errors = []
+        
+        for resume in resumes:
+            try:
+                # Prepare resume text for embedding
+                resume_data = {
+                    "first_name": resume.first_name,
+                    "last_name": resume.last_name,
+                    "email": resume.email,
+                    "phone": resume.phone,
+                    "location": resume.location,
+                    "current_title": resume.current_title,
+                    "summary": resume.summary,
+                    "years_experience": resume.years_experience,
+                    "skills": resume.skills or [],
+                    "keywords": resume.keywords or []
+                }
+                
+                resume_text = embedding_service.prepare_resume_text(resume_data)
+                
+                # Prepare metadata with user_id - CRITICAL FOR SECURITY
+                metadata = {
+                    "user_id": str(resume.user_id),  # CRITICAL: Include user_id for security
+                    "first_name": resume.first_name or "",
+                    "last_name": resume.last_name or "",
+                    "email": resume.email or "",
+                    "location": resume.location or "",
+                    "current_title": resume.current_title or "",
+                    "years_experience": resume.years_experience or 0,
+                    "skills": resume.skills or [],
+                    "keywords": resume.keywords or []
+                }
+                
+                # Re-index in Qdrant
+                await vector_search.index_resume(
+                    resume_id=str(resume.id),
+                    text=resume_text,
+                    metadata=metadata
+                )
+                
+                success_count += 1
+                logger.info(f"Re-indexed resume {resume.id} with user_id {resume.user_id}")
+                
+            except Exception as e:
+                error_count += 1
+                error_msg = f"Resume {resume.id}: {str(e)}"
+                errors.append(error_msg)
+                logger.error(f"Failed to re-index {error_msg}")
+        
+        logger.info(f"Security re-indexing complete: {success_count} success, {error_count} errors")
+        
+        return {
+            "status": "completed",
+            "message": "Security re-indexing complete. Users can now only see their own resumes.",
+            "total_resumes": len(resumes),
+            "success_count": success_count,
+            "error_count": error_count,
+            "errors": errors[:10] if errors else []  # Return first 10 errors only
+        }
+        
+    except Exception as e:
+        logger.error(f"Critical error during security re-indexing: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to complete security re-indexing: {str(e)}"
+        )
+
+
 @router.post("/cleanup-deleted-resumes", response_model=Dict[str, Any])
 async def cleanup_deleted_resumes(
     db: AsyncSession = Depends(deps.get_db),
