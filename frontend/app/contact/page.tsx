@@ -56,24 +56,8 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Phone</h3>
-                  <p className="text-gray-600 dark:text-gray-400">+1 (555) 123-4567</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">Mon-Fri 9AM-5PM EST</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
-                    <MapPin className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-                  </div>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Office</h3>
-                  <p className="text-gray-600 dark:text-gray-400">
-                    123 Innovation Drive<br />
-                    San Francisco, CA 94105<br />
-                    United States
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-400">+91 98867 90146</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500">Mon-Fri 9AM-6PM IST</p>
                 </div>
               </div>
             </div>

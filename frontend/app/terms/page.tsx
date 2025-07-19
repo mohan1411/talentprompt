@@ -149,7 +149,7 @@ export default function TermsOfServicePage() {
           <section className="mb-8">
             <h2 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white">14. Governing Law</h2>
             <p className="text-gray-700 dark:text-gray-300">
-              These Terms shall be governed by and construed in accordance with the laws of [Your Jurisdiction], without regard to its conflict of law provisions. Any disputes shall be resolved in the courts of [Your Jurisdiction].
+              These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law provisions. Any disputes shall be resolved in the courts of Bangalore, India.
             </p>
           </section>
 
@@ -167,7 +167,7 @@ export default function TermsOfServicePage() {
             </p>
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-gray-700 dark:text-gray-300">
               <p><strong>Email:</strong> legal@promtitude.com</p>
-              <p><strong>Address:</strong> [Your Company Address]</p>
+              <p><strong>Phone:</strong> +91 98867 90146</p>
             </div>
           </section>
         </div>

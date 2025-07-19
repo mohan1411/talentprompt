@@ -140,7 +140,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-gray-700 dark:text-gray-300">
               <p><strong>Email:</strong> privacy@promtitude.com</p>
-              <p><strong>Address:</strong> [Your Company Address]</p>
+              <p><strong>Phone:</strong> +91 98867 90146</p>
               <p><strong>Data Protection Officer:</strong> dpo@promtitude.com</p>
             </div>
           </section>
