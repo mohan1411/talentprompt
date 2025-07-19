@@ -10,6 +10,19 @@ async def main():
         subprocess.run([sys.executable, "debug_env.py"])
         print("\n" + "="*50 + "\n")
     
+    # Run database migrations
+    if "--skip-migrations" not in sys.argv and os.environ.get("SKIP_MIGRATIONS", "false").lower() != "true":
+        print("Running database migrations...")
+        try:
+            import subprocess
+            result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
+            if result.returncode == 0:
+                print("✅ Migrations completed successfully!")
+            else:
+                print(f"⚠️ Migration warning: {result.stderr}")
+        except Exception as e:
+            print(f"⚠️ Could not run migrations: {str(e)}")
+    
     # Check if we should initialize the database
     if "--init-db" in sys.argv or os.environ.get("INIT_DB", "false").lower() == "true":
         print("Initializing database...")
