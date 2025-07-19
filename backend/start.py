@@ -18,8 +18,12 @@ async def main():
             result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
             if result.returncode == 0:
                 print("✅ Migrations completed successfully!")
+                print(f"Output: {result.stdout}")
             else:
-                print(f"⚠️ Migration warning: {result.stderr}")
+                print(f"❌ Migration failed: {result.stderr}")
+                print(f"Return code: {result.returncode}")
+                # Don't fail startup, just warn
+                print("⚠️ Continuing without migrations...")
         except Exception as e:
             print(f"⚠️ Could not run migrations: {str(e)}")
     

@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, bulk_import, debug, cleanup, linkedin_fix, outreach
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, bulk_import, debug, cleanup, linkedin_fix, outreach, admin_migrate
 
 api_router = APIRouter()
 
@@ -28,3 +28,4 @@ api_router.include_router(bulk_import.router, prefix="/bulk-import", tags=["bulk
 api_router.include_router(debug.router, prefix="/debug-system", tags=["debug-system"])
 api_router.include_router(cleanup.router, prefix="/cleanup", tags=["cleanup"])
 api_router.include_router(outreach.router, prefix="/outreach", tags=["outreach"])
+api_router.include_router(admin_migrate.router, prefix="/admin/migrate", tags=["admin"])
