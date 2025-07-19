@@ -31,8 +31,8 @@ def upgrade():
         sa.Column('attempts', sa.Integer(), nullable=True, default=0),
         sa.Column('error_message', sa.String(), nullable=True),
         sa.Column('resume_id', postgresql.UUID(as_uuid=True), nullable=True),
-        sa.ForeignKeyConstraint(['resume_id'], ['resume.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+        sa.ForeignKeyConstraint(['resume_id'], ['resumes.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_import_queue_status'), 'import_queue', ['status'], unique=False)
@@ -49,8 +49,8 @@ def upgrade():
         sa.Column('imported_at', sa.DateTime(), nullable=True),
         sa.Column('ip_address', sa.String(), nullable=True),
         sa.Column('user_agent', sa.String(), nullable=True),
-        sa.ForeignKeyConstraint(['resume_id'], ['resume.id'], ),
-        sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
+        sa.ForeignKeyConstraint(['resume_id'], ['resumes.id'], ),
+        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_import_history_user_id'), 'import_history', ['user_id'], unique=False)
