@@ -44,6 +44,11 @@ async def generate_outreach_messages(
     The messages are personalized based on the candidate's profile and the job requirements.
     """
     try:
+        # Clean up job_requirements if it's a string "null"
+        job_requirements = message_request.job_requirements
+        if job_requirements and isinstance(job_requirements, str) and job_requirements.lower() == "null":
+            job_requirements = None
+        
         service = OutreachService()
         result = await service.generate_messages(
             db=db,
@@ -51,7 +56,7 @@ async def generate_outreach_messages(
             resume_id=message_request.resume_id,
             job_title=message_request.job_title,
             company_name=message_request.company_name,
-            job_requirements=message_request.job_requirements,
+            job_requirements=job_requirements,
             custom_instructions=message_request.custom_instructions
         )
         

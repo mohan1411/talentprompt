@@ -57,8 +57,8 @@ export function OutreachModal({ isOpen, onClose, candidate }: OutreachModalProps
       const request: OutreachMessageRequest = {
         resume_id: candidate.id,
         job_title: jobTitle,
-        company_name: companyName || undefined,
-        custom_instructions: customInstructions || undefined,
+        ...(companyName && { company_name: companyName }),
+        ...(customInstructions && { custom_instructions: customInstructions }),
       };
 
       const response = await outreachApi.generateMessages(request);
