@@ -33,8 +33,11 @@ export default function AnalyticsPage() {
 
   const fetchAnalytics = async () => {
     try {
+      // Use the correct API base URL
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://talentprompt-production.up.railway.app';
+      
       // Try the basic stats endpoint first
-      const response = await fetch('/api/v1/analytics/basic-stats', {
+      const response = await fetch(`${API_BASE_URL}/api/v1/analytics/basic-stats`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
