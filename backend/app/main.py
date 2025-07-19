@@ -159,6 +159,30 @@ async def health_check():
     return {"status": "healthy", "version": settings.VERSION}
 
 
+@app.get("/api/v1/analytics/test")
+async def test_analytics_endpoint():
+    """Test analytics endpoint."""
+    return {"status": "Analytics test endpoint working"}
+
+
+@app.get("/api/v1/analytics/basic-stats")
+async def get_basic_analytics_stats():
+    """Get basic analytics statistics."""
+    return {
+        "daily_active_users": [],
+        "feature_usage": {},
+        "popular_searches": [],
+        "api_performance": {
+            "total_requests": 0,
+            "avg_response_time_ms": 0,
+            "requests_per_hour": 0,
+            "top_endpoints": []
+        },
+        "total_users": 0,
+        "total_resumes": 0
+    }
+
+
 @app.get("/api/v1/migrate")
 async def run_migrations():
     """Run database migrations - useful for production deployments."""
