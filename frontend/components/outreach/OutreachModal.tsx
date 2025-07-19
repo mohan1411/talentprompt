@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Copy, Mail, Sparkles, User, Briefcase, Code } from "lucide-react";
+import { Loader2, Copy, Mail, Sparkles, User, Briefcase, Code, X } from "lucide-react";
 import { outreachApi, OutreachMessageRequest, OutreachMessage } from '@/lib/api/outreach';
 
 interface OutreachModalProps {
@@ -130,10 +130,18 @@ export function OutreachModal({ isOpen, onClose, candidate }: OutreachModalProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Generate Outreach Messages
-          </DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Generate Outreach Messages
+            </DialogTitle>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
           <DialogDescription>
             Create personalized outreach messages for {candidate.name}
           </DialogDescription>

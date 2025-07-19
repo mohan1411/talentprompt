@@ -34,6 +34,7 @@ const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
           "relative bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-h-[90vh] overflow-y-auto",
           className
         )}
+        onClick={(e) => e.stopPropagation()}
         {...props}
       >
         {children}
