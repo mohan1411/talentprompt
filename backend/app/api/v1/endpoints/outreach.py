@@ -10,7 +10,7 @@ from sqlalchemy import select, func, Integer, cast
 from sqlalchemy.orm import selectinload
 
 from app.api import deps
-from app.models import User, OutreachMessage, OutreachTemplate, MessageStyle, MessageStatus
+from app.models import User, OutreachMessage, OutreachTemplate, MessageStyle, MessageStatus, EventType
 from app.schemas.outreach import (
     OutreachMessageGenerate,
     OutreachMessageGenerateResponse,
@@ -21,6 +21,7 @@ from app.schemas.outreach import (
     OutreachAnalytics
 )
 from app.services.outreach import OutreachService
+from app.services.analytics import analytics_service
 
 logger = logging.getLogger(__name__)
 

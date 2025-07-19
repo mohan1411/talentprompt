@@ -7,6 +7,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
+from app.middleware.analytics import AnalyticsMiddleware
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -45,6 +46,9 @@ app.add_middleware(
     TrustedHostMiddleware,
     allowed_hosts=settings.ALLOWED_HOSTS,
 )
+
+# Add analytics middleware
+app.add_middleware(AnalyticsMiddleware)
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
@@ -226,11 +230,30 @@ async def run_migrations():
                     )
                 """))
                 
+                # Create analytics_events table
+                await db.execute(text("""
+                    CREATE TABLE IF NOT EXISTS analytics_events (
+                        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                        event_type VARCHAR(50) NOT NULL,
+                        event_data JSONB,
+                        ip_address VARCHAR(45),
+                        user_agent VARCHAR(500),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """))
+                
                 # Create indexes
                 await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_user_id ON outreach_messages(user_id)"))
                 await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_resume_id ON outreach_messages(resume_id)"))
                 await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_status ON outreach_messages(status)"))
                 await db.execute(text("CREATE INDEX IF NOT EXISTS idx_outreach_messages_created_at ON outreach_messages(created_at)"))
+                
+                # Create analytics indexes
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_analytics_events_user_id ON analytics_events(user_id)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_analytics_events_event_type ON analytics_events(event_type)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_analytics_events_created_at ON analytics_events(created_at)"))
+                await db.execute(text("CREATE INDEX IF NOT EXISTS idx_analytics_events_type_date ON analytics_events(event_type, created_at)"))
                 
                 # Create outreach_templates table
                 await db.execute(text("""

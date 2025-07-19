@@ -11,6 +11,8 @@ from app.api import deps
 from app.core.config import settings
 from app.schemas.resume import ResumeSearchResult
 from app.services.search import search_service
+from app.services.analytics import analytics_service
+from app.models import EventType
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -81,6 +83,19 @@ async def search_resumes(
     )
     
     logger.info(f"Search returned {len(results)} results")
+    
+    # Track search analytics
+    await analytics_service.track_event(
+        db=db,
+        event_type=EventType.SEARCH_PERFORMED,
+        event_data={
+            "query": search_query.query,
+            "filters": filters_dict,
+            "results_count": len(results),
+            "has_results": len(results) > 0
+        },
+        user_id=current_user.id
+    )
     
     # Convert to response format
     search_results = []
