@@ -65,16 +65,16 @@ async def startup_event():
         from sqlalchemy import text
         
         async for db in get_db():
-            # Check if outreach_messages table exists
+            # Check if outreach_messages and analytics_events tables exist
             result = await db.execute(text("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_name = 'outreach_messages'
-                );
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_name IN ('outreach_messages', 'analytics_events')
             """))
+            existing_tables = [row[0] for row in result]
             
-            if not result.scalar():
-                print("outreach_messages table not found - creating tables...")
+            if 'analytics_events' not in existing_tables:
+                print("analytics_events table not found - creating analytics table...")
                 
                 # Read and execute SQL file
                 sql_path = os.path.join(os.path.dirname(__file__), "..", "create_outreach_tables.sql")
@@ -183,7 +183,7 @@ async def run_migrations():
             """))
             existing_tables = [row[0] for row in check_result]
             
-            if 'outreach_messages' not in existing_tables:
+            if 'outreach_messages' not in existing_tables or 'analytics_events' not in existing_tables:
                 print("Creating outreach tables...")
                 
                 # Create enum types

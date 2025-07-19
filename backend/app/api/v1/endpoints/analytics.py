@@ -11,7 +11,16 @@ from app.api import deps
 from app.models import User, EventType
 from app.services.analytics import analytics_service
 
+import logging
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
+
+@router.get("/test")
+async def test_analytics():
+    """Test endpoint to verify analytics routes are working."""
+    return {"status": "Analytics endpoint is working"}
 
 
 class MessageResponse(BaseModel):
@@ -80,17 +89,23 @@ async def get_analytics_stats(
     popular_searches = await analytics_service.get_popular_searches(db, days=7, limit=10)
     api_performance = await analytics_service.get_api_performance(db, hours=24)
     
-    # Get total counts
-    from sqlalchemy import select, func
-    from app.models import User, Resume
+    # Get total counts - simplified for now
+    total_users = 0
+    total_resumes = 0
     
-    total_users_query = select(func.count(User.id))
-    total_users_result = await db.execute(total_users_query)
-    total_users = total_users_result.scalar() or 0
-    
-    total_resumes_query = select(func.count(Resume.id))
-    total_resumes_result = await db.execute(total_resumes_query)
-    total_resumes = total_resumes_result.scalar() or 0
+    try:
+        from sqlalchemy import select, func
+        from app.models import Resume
+        
+        total_users_query = select(func.count(User.id))
+        total_users_result = await db.execute(total_users_query)
+        total_users = total_users_result.scalar() or 0
+        
+        total_resumes_query = select(func.count(Resume.id))
+        total_resumes_result = await db.execute(total_resumes_query)
+        total_resumes = total_resumes_result.scalar() or 0
+    except Exception as e:
+        logger.error(f"Error getting total counts: {e}")
     
     return AnalyticsStatsResponse(
         daily_active_users=daily_active_users,
