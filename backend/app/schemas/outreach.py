@@ -114,7 +114,7 @@ class MessagePerformanceTrack(BaseModel):
     """Schema for tracking message performance."""
     
     message_id: UUID
-    event: str = Field(..., regex="^(sent|opened|responded|not_interested)$")
+    event: str = Field(..., pattern="^(sent|opened|responded|not_interested)$")
     metadata: Optional[Dict[str, Any]] = Field(
         None,
         description="Additional event metadata",
