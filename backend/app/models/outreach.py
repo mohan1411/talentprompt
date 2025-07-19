@@ -40,7 +40,7 @@ class OutreachMessage(Base):
     # Message content
     subject = Column(String(255), nullable=False)
     body = Column(Text, nullable=False)
-    style = Column(Enum(MessageStyle), nullable=False)
+    style = Column(Enum(MessageStyle, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     
     # Job context
     job_title = Column(String(255))
@@ -48,7 +48,7 @@ class OutreachMessage(Base):
     company_name = Column(String(255))
     
     # Tracking
-    status = Column(Enum(MessageStatus), default=MessageStatus.GENERATED)
+    status = Column(Enum(MessageStatus, values_callable=lambda obj: [e.value for e in obj]), default=MessageStatus.GENERATED)
     sent_at = Column(DateTime)
     opened_at = Column(DateTime)
     responded_at = Column(DateTime)
@@ -83,7 +83,7 @@ class OutreachTemplate(Base):
     # Template content
     subject_template = Column(String(500))
     body_template = Column(Text, nullable=False)
-    style = Column(Enum(MessageStyle), nullable=False)
+    style = Column(Enum(MessageStyle, values_callable=lambda obj: [e.value for e in obj]), nullable=False)
     
     # Categorization
     industry = Column(String(100))
