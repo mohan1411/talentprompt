@@ -11,6 +11,12 @@ EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
 
+-- Create alembic_version table if it doesn't exist
+CREATE TABLE IF NOT EXISTS alembic_version (
+    version_num VARCHAR(32) NOT NULL,
+    CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
+);
+
 -- Create outreach_messages table
 CREATE TABLE IF NOT EXISTS outreach_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -61,12 +61,78 @@ def run_migrations():
     except Exception as e:
         print(f"❌ Migration error: {e}")
 
+async def ensure_tables_exist():
+    """Ensure outreach tables exist by checking and creating if needed."""
+    print("=" * 60)
+    print("CHECKING DATABASE TABLES")
+    print("=" * 60)
+    
+    try:
+        import psycopg2
+        from urllib.parse import urlparse
+        
+        db_url = os.environ.get("DATABASE_URL", "")
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        
+        parsed = urlparse(db_url)
+        conn = psycopg2.connect(
+            host=parsed.hostname,
+            port=parsed.port,
+            database=parsed.path[1:],
+            user=parsed.username,
+            password=parsed.password
+        )
+        
+        with conn.cursor() as cur:
+            # Check if outreach_messages table exists
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'outreach_messages'
+                );
+            """)
+            outreach_messages_exists = cur.fetchone()[0]
+            
+            # Check if outreach_templates table exists
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'outreach_templates'
+                );
+            """)
+            outreach_templates_exists = cur.fetchone()[0]
+            
+            print(f"outreach_messages table exists: {outreach_messages_exists}")
+            print(f"outreach_templates table exists: {outreach_templates_exists}")
+            
+            # If tables don't exist, create them
+            if not outreach_messages_exists or not outreach_templates_exists:
+                print("Creating missing tables...")
+                with open("create_outreach_tables.sql", "r") as f:
+                    sql = f.read()
+                cur.execute(sql)
+                conn.commit()
+                print("✅ Tables created successfully!")
+            else:
+                print("✅ All required tables already exist!")
+        
+        conn.close()
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error checking/creating tables: {e}")
+        return False
+
 async def main():
     """Main startup function."""
     print("Starting Railway backend...")
     
     # Always run migrations on Railway
     run_migrations()
+    
+    # Ensure tables exist as a backup
+    await ensure_tables_exist()
     
     # Start the server
     port = int(os.environ.get("PORT", 8000))

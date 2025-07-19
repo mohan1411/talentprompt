@@ -1,5 +1,6 @@
 """Main FastAPI application entry point."""
 
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
@@ -17,7 +18,6 @@ app = FastAPI(
 # Force Railway redeploy - 2025-01-18
 
 # Log startup configuration
-import os
 print(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
 print(f"Environment: {os.environ.get('RAILWAY_ENVIRONMENT', 'local')}")
 print(f"DATABASE_URL present: {'DATABASE_URL' in os.environ}")
@@ -48,6 +48,22 @@ app.add_middleware(
 
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup."""
+    if os.environ.get("RAILWAY_ENVIRONMENT"):
+        print("Running in Railway environment - initializing database...")
+        try:
+            from app.core.init_db import init_db
+            result = await init_db()
+            print(f"Database initialization complete: {result}")
+        except Exception as e:
+            print(f"Warning: Database initialization failed: {e}")
+            # Don't fail startup, let the app continue
+    else:
+        print("Not in Railway environment - skipping auto database init")
 
 
 @app.get("/")
@@ -104,3 +120,92 @@ async def health_check():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "version": settings.VERSION}
+
+
+@app.get("/api/v1/migrate")
+async def run_migrations():
+    """Run database migrations - useful for production deployments."""
+    import subprocess
+    import psycopg2
+    from urllib.parse import urlparse
+    
+    results = {
+        "status": "starting",
+        "alembic_migration": None,
+        "direct_sql": None,
+        "tables_check": None
+    }
+    
+    # Try alembic migrations first
+    try:
+        result = subprocess.run(["alembic", "upgrade", "head"], capture_output=True, text=True)
+        if result.returncode == 0:
+            results["alembic_migration"] = "success"
+            results["status"] = "completed"
+        else:
+            results["alembic_migration"] = f"failed: {result.stderr}"
+    except Exception as e:
+        results["alembic_migration"] = f"error: {str(e)}"
+    
+    # If alembic fails, try direct SQL
+    if results["alembic_migration"] != "success":
+        try:
+            db_url = os.environ.get("DATABASE_URL", "")
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql://", 1)
+            
+            parsed = urlparse(db_url)
+            conn = psycopg2.connect(
+                host=parsed.hostname,
+                port=parsed.port,
+                database=parsed.path[1:],
+                user=parsed.username,
+                password=parsed.password
+            )
+            
+            with conn.cursor() as cur:
+                # Read and execute SQL file
+                with open("create_outreach_tables.sql", "r") as f:
+                    sql = f.read()
+                cur.execute(sql)
+                conn.commit()
+                results["direct_sql"] = "success"
+                results["status"] = "completed"
+            
+            conn.close()
+        except Exception as e:
+            results["direct_sql"] = f"error: {str(e)}"
+            results["status"] = "failed"
+    
+    # Check if tables exist
+    try:
+        from app.api.v1.dependencies.database import get_db
+        from sqlalchemy import text
+        
+        async for db in get_db():
+            # Check for outreach_messages table
+            result = await db.execute(text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'outreach_messages'
+                );
+            """))
+            table_exists = result.scalar()
+            results["tables_check"] = {
+                "outreach_messages": table_exists,
+                "outreach_templates": None
+            }
+            
+            # Check for outreach_templates table
+            result = await db.execute(text("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_name = 'outreach_templates'
+                );
+            """))
+            results["tables_check"]["outreach_templates"] = result.scalar()
+            break
+    except Exception as e:
+        results["tables_check"] = f"error: {str(e)}"
+    
+    return results
