@@ -60,7 +60,6 @@ export default function RegisterPage() {
         email: formData.email,
         username: username,
         password: formData.password,
-        marketing_opt_in: marketingOptIn,
       });
     } catch (err) {
       if (err instanceof ApiError) {
