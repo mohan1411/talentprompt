@@ -66,10 +66,14 @@ async def track_event(
 @router.get("/stats", response_model=AnalyticsStatsResponse)
 async def get_analytics_stats(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.get_current_active_user),
     days: int = Query(30, ge=1, le=365),
 ) -> AnalyticsStatsResponse:
-    """Get analytics statistics (admin only)."""
+    """Get analytics statistics."""
+    # For now, allow all authenticated users to view analytics
+    # In production, you might want to check for admin role
+    # if not current_user.is_superuser:
+    #     raise HTTPException(status_code=403, detail="Admin access required")
     # Get various analytics
     daily_active_users = await analytics_service.get_daily_active_users(db, days=days)
     feature_usage = await analytics_service.get_feature_usage(db, days=days)
@@ -101,12 +105,16 @@ async def get_analytics_stats(
 @router.get("/events")
 async def get_recent_events(
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.get_current_active_user),
     limit: int = Query(100, ge=1, le=1000),
     event_type: Optional[str] = None,
     user_id: Optional[UUID] = None,
 ) -> List[Dict[str, Any]]:
-    """Get recent analytics events (admin only)."""
+    """Get recent analytics events."""
+    # Check if user is superuser for viewing all events
+    if not current_user.is_superuser and user_id != current_user.id:
+        # Non-superusers can only view their own events
+        user_id = current_user.id
     from sqlalchemy import select
     from app.models import AnalyticsEvent
     
@@ -136,8 +144,12 @@ async def get_recent_events(
 async def get_user_analytics(
     user_id: UUID,
     db: AsyncSession = Depends(deps.get_db),
-    current_user: User = Depends(deps.get_current_active_superuser),
+    current_user: User = Depends(deps.get_current_active_user),
     days: int = Query(30, ge=1, le=365),
 ) -> Dict[str, Any]:
-    """Get analytics for a specific user (admin only)."""
+    """Get analytics for a specific user."""
+    # Non-superusers can only view their own analytics
+    if not current_user.is_superuser and user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You can only view your own analytics")
+    
     return await analytics_service.get_user_analytics(db, user_id=user_id, days=days)

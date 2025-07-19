@@ -40,7 +40,8 @@ export default function AnalyticsPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch analytics');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Failed to fetch analytics (${response.status})`);
       }
 
       const data = await response.json();
