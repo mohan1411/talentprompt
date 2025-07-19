@@ -2,8 +2,8 @@
 
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import AnyHttpUrl, Field, validator
-from pydantic_settings import BaseSettings
+from pydantic import AnyHttpUrl, Field, field_validator, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -15,13 +15,21 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security
-    SECRET_KEY: str = Field(..., min_length=32)
+    SECRET_KEY: str = Field(default="local-dev-secret-key-change-in-production", min_length=32)
+    JWT_SECRET_KEY: Optional[str] = Field(default=None)  # Alias for SECRET_KEY if provided
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    
+    @model_validator(mode='before')
+    def set_secret_key(cls, values):
+        """Use JWT_SECRET_KEY as SECRET_KEY if SECRET_KEY is not provided."""
+        if not values.get('SECRET_KEY') and values.get('JWT_SECRET_KEY'):
+            values['SECRET_KEY'] = values['JWT_SECRET_KEY']
+        return values
     
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
-    @validator("BACKEND_CORS_ORIGINS", pre=True)
+    @field_validator("BACKEND_CORS_ORIGINS", mode='before')
     def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
@@ -40,29 +48,29 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "promtitude"
     DATABASE_URL: Optional[str] = None
 
-    @validator("DATABASE_URL", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        # First check if DATABASE_URL is provided in environment
-        if v:
+    @model_validator(mode='after')
+    def assemble_db_connection(self) -> 'Settings':
+        # If DATABASE_URL is already set, ensure it uses asyncpg
+        if self.DATABASE_URL:
             # Log the database URL (without password) for debugging
             import re
-            safe_url = re.sub(r'://[^@]+@', '://***:***@', v)
+            safe_url = re.sub(r'://[^@]+@', '://***:***@', self.DATABASE_URL)
             print(f"Using DATABASE_URL: {safe_url}")
             
             # Ensure we use asyncpg driver
-            if v.startswith("postgresql://"):
-                return v.replace("postgresql://", "postgresql+asyncpg://")
-            elif v.startswith("postgres://"):
-                return v.replace("postgres://", "postgresql+asyncpg://")
-            return v
-        
-        # Otherwise, build from individual components
-        print("WARNING: DATABASE_URL not found, using default localhost settings")
-        return (
-            f"postgresql+asyncpg://{values.get('POSTGRES_USER')}:"
-            f"{values.get('POSTGRES_PASSWORD')}@{values.get('POSTGRES_SERVER')}:"
-            f"{values.get('POSTGRES_PORT', 5432)}/{values.get('POSTGRES_DB')}"
-        )
+            if self.DATABASE_URL.startswith("postgresql://"):
+                self.DATABASE_URL = self.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://")
+            elif self.DATABASE_URL.startswith("postgres://"):
+                self.DATABASE_URL = self.DATABASE_URL.replace("postgres://", "postgresql+asyncpg://")
+        else:
+            # Build from individual components
+            print("WARNING: DATABASE_URL not found, using default localhost settings")
+            self.DATABASE_URL = (
+                f"postgresql+asyncpg://{self.POSTGRES_USER}:"
+                f"{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:"
+                f"{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            )
+        return self
     
     # Redis
     REDIS_URL: str = "redis://localhost:6379/0"
@@ -105,11 +113,12 @@ class Settings(BaseSettings):
     # File Upload
     MAX_FILE_SIZE_MB: int = 10
     
-    class Config:
-        case_sensitive = True
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "ignore"  # Ignore extra fields in .env file
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"  # Ignore extra fields in .env file
+    )
 
 
 settings = Settings()
