@@ -8,7 +8,7 @@ import {
   Search, Zap, Brain, Shield, Users, BarChart, 
   Mic, FileText, Sparkles, Target, Upload, Tags, 
   Headphones, FileCheck, TrendingUp, MessageSquare,
-  Calendar, Bot, Check
+  Calendar, Bot, Check, Mail, Chrome, LineChart
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -90,6 +90,21 @@ export default function HomePage() {
       description: 'Pre-built templates for different roles and levels',
       category: 'analytics',
     },
+    // Outreach & Communication
+    {
+      icon: Mail,
+      title: 'AI Outreach Messages',
+      description: 'Generate personalized outreach with GPT-4 in multiple tones',
+      category: 'outreach',
+      isNew: true,
+    },
+    {
+      icon: Chrome,
+      title: 'LinkedIn Chrome Extension',
+      description: 'Import profiles instantly with one-click browser extension',
+      category: 'outreach',
+      isNew: true,
+    },
     // Platform & Security
     {
       icon: Shield,
@@ -103,6 +118,13 @@ export default function HomePage() {
       description: 'Share candidates, interviews, and insights with your team',
       category: 'platform',
     },
+    {
+      icon: LineChart,
+      title: 'Usage Analytics',
+      description: 'Track platform usage, popular searches, and performance',
+      category: 'platform',
+      isNew: true,
+    },
   ];
 
   return (
@@ -113,7 +135,16 @@ export default function HomePage() {
           <Link href="/" className="text-2xl font-bold text-primary">
             Promtitude
           </Link>
-          <nav className="flex gap-4">
+          <nav className="flex gap-4 items-center">
+            <a 
+              href="https://chrome.google.com/webstore" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary flex items-center gap-1"
+            >
+              <Chrome className="h-4 w-4" />
+              <span className="hidden sm:inline">Chrome Extension</span>
+            </a>
             <Link
               href="/login"
               className="btn-secondary"
@@ -142,7 +173,7 @@ export default function HomePage() {
             </h1>
             <p className="mx-auto mb-8 max-w-3xl text-xl text-gray-600 dark:text-gray-400">
               The complete AI-powered recruitment platform. Search candidates with natural language, 
-              conduct interviews with AI assistance, and make data-driven hiring decisions.
+              conduct interviews with AI assistance, craft personalized outreach messages, and make data-driven hiring decisions.
             </p>
             
             {/* Demo Search Bar */}
@@ -240,22 +271,30 @@ export default function HomePage() {
         {/* Stats Section */}
         <section className="py-16 border-y border-gray-200 dark:border-gray-700">
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
               <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">100+</div>
+                <div className="text-4xl font-bold text-primary mb-2">1000+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Resumes Processed</div>
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">50+</div>
+                <div className="text-4xl font-bold text-primary mb-2">200+</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Interviews Conducted</div>
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 <div className="text-4xl font-bold text-primary mb-2">&lt;300ms</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Search Response Time</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Search Response</div>
               </div>
               <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <div className="text-4xl font-bold text-primary mb-2">95%</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Match Accuracy</div>
+              </div>
+              <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
+                <div className="text-4xl font-bold text-primary mb-2">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Outreach Messages</div>
+              </div>
+              <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
+                <div className="text-4xl font-bold text-primary mb-2">3x</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Response Rate</div>
               </div>
             </div>
           </div>
@@ -278,6 +317,7 @@ export default function HomePage() {
                     case 'search': return 'from-blue-500/10 to-blue-600/10 border-blue-500/20';
                     case 'interview': return 'from-purple-500/10 to-purple-600/10 border-purple-500/20';
                     case 'analytics': return 'from-green-500/10 to-green-600/10 border-green-500/20';
+                    case 'outreach': return 'from-orange-500/10 to-orange-600/10 border-orange-500/20';
                     case 'platform': return 'from-gray-500/10 to-gray-600/10 border-gray-500/20';
                     default: return 'from-gray-500/10 to-gray-600/10 border-gray-500/20';
                   }
@@ -288,6 +328,7 @@ export default function HomePage() {
                     case 'search': return 'text-blue-600 dark:text-blue-400';
                     case 'interview': return 'text-purple-600 dark:text-purple-400';
                     case 'analytics': return 'text-green-600 dark:text-green-400';
+                    case 'outreach': return 'text-orange-600 dark:text-orange-400';
                     case 'platform': return 'text-gray-600 dark:text-gray-400';
                     default: return 'text-gray-600 dark:text-gray-400';
                   }
@@ -425,6 +466,138 @@ export default function HomePage() {
                       <p className="text-sm text-green-700 dark:text-green-300">Candidate showing high engagement and enthusiasm</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* AI Outreach & Engagement Showcase */}
+        <section className="py-24 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20">
+          <div className="container mx-auto px-4">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="order-2 lg:order-1 relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-full flex items-center justify-center">
+                        <Mail className="h-6 w-6 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">AI Outreach Generator</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Personalized messages in seconds</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Candidate Profile</span>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Sarah Chen - Senior Frontend Engineer</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">React, TypeScript, 8 years experience</p>
+                    </div>
+                    
+                    <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 text-orange-500" />
+                        <span className="text-xs font-medium text-orange-600 dark:text-orange-400">AI Generated - Professional Tone</span>
+                      </div>
+                      <p className="text-sm text-gray-700 dark:text-gray-300">
+                        "Hi Sarah, I came across your impressive background in React and TypeScript. 
+                        We're looking for a Senior Frontend Engineer to lead our UI architecture initiative. 
+                        Your experience with design systems particularly caught my attention..."
+                      </p>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        Casual
+                      </button>
+                      <button className="text-xs px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 font-medium">
+                        Professional
+                      </button>
+                      <button className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                        Technical
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="order-1 lg:order-2 animate-fade-in">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300 mb-4">
+                  <Mail className="h-4 w-4 mr-1" />
+                  Boost Response Rates
+                </span>
+                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+                  AI-Powered Outreach Messages
+                </h2>
+                <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+                  Stop spending hours crafting personalized messages. Our AI generates compelling, 
+                  contextual outreach in seconds, with multiple tone options to match your style.
+                </p>
+                
+                <div className="space-y-4 mb-8">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Personalized at Scale</h4>
+                      <p className="text-gray-600 dark:text-gray-400">Generate unique messages based on each candidate's profile</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Multiple Tones</h4>
+                      <p className="text-gray-600 dark:text-gray-400">Choose between casual, professional, or technical messaging styles</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Chrome Extension</h4>
+                      <p className="text-gray-600 dark:text-gray-400">Import LinkedIn profiles instantly with our browser extension</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-6 mb-8">
+                  <div>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">3x</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Higher Response Rate</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">10s</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Per Message</div>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">GPT-4</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">Powered</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-4">
+                  <Link href="/register" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
+                    <Mail className="h-5 w-5" />
+                    Try AI Outreach Free
+                  </Link>
+                  <a 
+                    href="https://chrome.google.com/webstore" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="btn-secondary inline-flex items-center gap-2 px-6 py-3"
+                  >
+                    <Chrome className="h-5 w-5" />
+                    Get Chrome Extension
+                  </a>
                 </div>
               </div>
             </div>
