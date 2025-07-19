@@ -225,6 +225,7 @@ data/
 backups/
 SS/
 frontend-temp/
+chrome-extension-local/
 
 # Database
 *.db
