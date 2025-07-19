@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { ApiError } from '@/lib/api/client';
-import { Eye, EyeOff, Mail, Lock, TrendingUp, Users, Target, Zap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Target, Zap, Search } from 'lucide-react';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -65,35 +65,47 @@ export default function LoginPage() {
             Your AI-powered recruitment platform is ready to help you find the perfect candidates.
           </p>
           
-          <div className="grid grid-cols-2 gap-4 mt-8">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl font-bold mb-1">2.3x</div>
-              <div className="text-sm text-indigo-100">Faster hiring</div>
+          <div className="space-y-4 mt-8">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Search className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Search Like You Think</h3>
+                <p className="text-sm text-indigo-100">No more complex boolean queries - just describe what you need</p>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl font-bold mb-1">87%</div>
-              <div className="text-sm text-indigo-100">Better matches</div>
+            
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Zap className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold">AI-Powered Speed</h3>
+                <p className="text-sm text-indigo-100">Find perfect candidates in seconds, not hours</p>
+              </div>
             </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl font-bold mb-1">45%</div>
-              <div className="text-sm text-indigo-100">Cost reduction</div>
-            </div>
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-              <div className="text-3xl font-bold mb-1">10k+</div>
-              <div className="text-sm text-indigo-100">Active recruiters</div>
+            
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                <Target className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Better Matches</h3>
+                <p className="text-sm text-indigo-100">Our AI understands context and finds candidates you'd miss</p>
+              </div>
             </div>
           </div>
         </div>
         
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm text-indigo-100">
-            <TrendingUp className="h-4 w-4" />
-            <span>Average time saved per hire: 18 hours</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-indigo-100">
-            <Users className="h-4 w-4" />
-            <span>Join 10,000+ recruiters already using Promtitude</span>
-          </div>
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+          <p className="text-sm text-indigo-100 italic">
+            "The future of recruitment is here. Natural language search and AI assistance 
+            will transform how we find and hire talent."
+          </p>
+          <p className="text-xs text-indigo-200 mt-2">
+            - Built with cutting-edge AI technology
+          </p>
         </div>
       </div>
 

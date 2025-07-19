@@ -96,7 +96,7 @@ export default function RegisterPage() {
             Start hiring smarter with AI
           </h1>
           <p className="text-xl text-blue-100">
-            Join thousands of recruiters using Promtitude to find perfect candidates faster.
+            Start your journey with AI-powered recruitment. Find perfect candidates faster than ever before.
           </p>
           
           <div className="space-y-4 mt-8">
@@ -132,9 +132,13 @@ export default function RegisterPage() {
           </div>
         </div>
         
-        <div className="text-sm text-blue-100">
-          <p>"Promtitude reduced our time-to-hire by 60%"</p>
-          <p className="mt-2 font-semibold">- Sarah Chen, Head of Talent at TechCorp</p>
+        <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+          <p className="text-sm text-blue-100 font-medium">
+            🚀 Early Access Benefits
+          </p>
+          <p className="text-xs text-blue-200 mt-1">
+            Be among the first to experience the future of AI-powered recruitment
+          </p>
         </div>
       </div>
 
