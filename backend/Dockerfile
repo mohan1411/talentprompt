@@ -30,8 +30,10 @@ USER appuser
 # Expose port
 EXPOSE 8000
 
-# Copy start script
+# Copy start scripts
 COPY start.py .
+COPY railway_start.py .
+COPY create_outreach_tables.sql .
 
-# Run the application
+# Run the application (Railway will override this with railway_start.py)
 CMD ["python", "start.py"]

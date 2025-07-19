@@ -76,3 +76,32 @@ async def check_migration_status(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/create-outreach-tables")
+async def create_outreach_tables(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_superuser)
+) -> dict:
+    """Manually create outreach tables (superuser only)."""
+    try:
+        from sqlalchemy import text
+        
+        # Read SQL file
+        import os
+        sql_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "create_outreach_tables.sql")
+        with open(sql_path, "r") as f:
+            sql = f.read()
+        
+        # Execute SQL
+        await db.execute(text(sql))
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": "Outreach tables created successfully"
+        }
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
