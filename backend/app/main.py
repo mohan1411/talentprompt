@@ -167,8 +167,12 @@ async def test_analytics_endpoint():
 
 @app.get("/api/v1/analytics/basic-stats")
 async def get_basic_analytics_stats():
-    """Get basic analytics statistics."""
-    return {
+    """Get basic analytics statistics with real data."""
+    from app.api.v1.dependencies.database import get_db
+    from sqlalchemy import text, select, func
+    from app.models import User, Resume
+    
+    stats = {
         "daily_active_users": [],
         "feature_usage": {},
         "popular_searches": [],
@@ -181,6 +185,29 @@ async def get_basic_analytics_stats():
         "total_users": 0,
         "total_resumes": 0
     }
+    
+    try:
+        async for db in get_db():
+            # Get total users
+            user_count = await db.execute(select(func.count(User.id)))
+            stats["total_users"] = user_count.scalar() or 0
+            
+            # Get total resumes
+            resume_count = await db.execute(select(func.count(Resume.id)))
+            stats["total_resumes"] = resume_count.scalar() or 0
+            
+            # Get recent analytics events count
+            analytics_count = await db.execute(text("""
+                SELECT COUNT(*) FROM analytics_events 
+                WHERE created_at > NOW() - INTERVAL '24 hours'
+            """))
+            stats["api_performance"]["total_requests"] = analytics_count.scalar() or 0
+            
+            break
+    except Exception as e:
+        print(f"Error getting analytics stats: {e}")
+    
+    return stats
 
 
 @app.get("/api/v1/migrate")
