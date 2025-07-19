@@ -17,9 +17,22 @@ depends_on = None
 
 
 def upgrade():
-    # Create enum types
-    op.execute("CREATE TYPE messagestyle AS ENUM ('casual', 'professional', 'technical')")
-    op.execute("CREATE TYPE messagestatus AS ENUM ('generated', 'sent', 'opened', 'responded', 'not_interested')")
+    # Create enum types (check if they exist first)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE messagestyle AS ENUM ('casual', 'professional', 'technical');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE messagestatus AS ENUM ('generated', 'sent', 'opened', 'responded', 'not_interested');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
     
     # Create outreach_messages table
     op.create_table('outreach_messages',
