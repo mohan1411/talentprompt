@@ -71,16 +71,19 @@ class AnalyticsMiddleware(BaseHTTPMiddleware):
                 event_data["query"] = request.query_params.get("q")
             
             # Use session maker to get DB session
-            async with async_session_maker() as db:
-                await analytics_service.track_event(
-                    db=db,
-                    event_type=EventType.API_REQUEST,
-                    event_data=event_data,
-                    user_id=user_id,
-                    ip_address=ip_address,
-                    user_agent=user_agent,
-                    wait_for_commit=False  # Fire and forget
-                )
+            try:
+                async with async_session_maker() as db:
+                    await analytics_service.track_event(
+                        db=db,
+                        event_type=EventType.API_REQUEST,
+                        event_data=event_data,
+                        user_id=user_id,
+                        ip_address=ip_address,
+                        user_agent=user_agent,
+                        wait_for_commit=False  # Fire and forget
+                    )
+            except Exception as db_error:
+                logger.error(f"Analytics DB error: {str(db_error)}")
                 
         except Exception as e:
             # Don't let analytics errors affect the response
@@ -123,16 +126,19 @@ def track_event_handler(
                 ip_address = request.client.host if request.client else None
                 user_agent = request.headers.get("user-agent", "")[:500]
                 
-                async with async_session_maker() as db:
-                    await analytics_service.track_event(
-                        db=db,
-                        event_type=event_type,
-                        event_data=event_data,
-                        user_id=user_id,
-                        ip_address=ip_address,
-                        user_agent=user_agent,
-                        wait_for_commit=False
-                    )
+                try:
+                    async with async_session_maker() as db:
+                        await analytics_service.track_event(
+                            db=db,
+                            event_type=event_type,
+                            event_data=event_data,
+                            user_id=user_id,
+                            ip_address=ip_address,
+                            user_agent=user_agent,
+                            wait_for_commit=False
+                        )
+                except Exception as db_error:
+                    logger.error(f"Event tracking DB error: {str(db_error)}")
             except Exception as e:
                 logger.error(f"Event tracking error: {str(e)}")
             

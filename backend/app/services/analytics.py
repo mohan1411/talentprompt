@@ -52,29 +52,22 @@ class AnalyticsService:
             
             db.add(event)
             
+            # Always commit immediately to avoid session issues
+            await db.commit()
+            
             if wait_for_commit:
-                await db.commit()
                 await db.refresh(event)
                 return event
             else:
-                # Fire and forget - commit in background
-                asyncio.create_task(AnalyticsService._async_commit(db))
                 return None
                 
         except Exception as e:
             logger.error(f"Failed to track analytics event: {str(e)}")
-            if wait_for_commit:
+            try:
                 await db.rollback()
+            except:
+                pass  # Session might already be closed
             return None
-    
-    @staticmethod
-    async def _async_commit(db: AsyncSession):
-        """Commit in background."""
-        try:
-            await db.commit()
-        except Exception as e:
-            logger.error(f"Failed to commit analytics event: {str(e)}")
-            await db.rollback()
     
     @staticmethod
     async def get_event_counts(
