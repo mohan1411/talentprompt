@@ -109,7 +109,7 @@ export default function HomePage() {
     {
       icon: Shield,
       title: 'Enterprise Security',
-      description: 'GDPR compliant, SOC 2 certified, end-to-end encryption',
+      description: 'Privacy-focused, secure data handling, end-to-end encryption',
       category: 'platform',
     },
     {

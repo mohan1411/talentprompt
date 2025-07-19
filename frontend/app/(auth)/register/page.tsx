@@ -16,6 +16,12 @@ export default function RegisterPage() {
     company: '',
     job_title: '',
   });
+  const [consents, setConsents] = useState({
+    terms: false,
+    privacy: false,
+    age: false,
+    marketing: false,
+  });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -24,6 +30,17 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Validate consents
+    if (!consents.terms || !consents.privacy) {
+      setError('You must accept the Terms of Service and Privacy Policy');
+      return;
+    }
+
+    if (!consents.age) {
+      setError('You must be at least 16 years old to use this service');
+      return;
+    }
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
@@ -211,26 +228,79 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="terms"
-              required
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-            />
-            <label
-              htmlFor="terms"
-              className="ml-2 text-sm text-gray-600 dark:text-gray-400"
-            >
-              I agree to the{' '}
-              <Link href="/terms" className="text-primary hover:underline">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link href="/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
-            </label>
+          {/* Consent Checkboxes */}
+          <div className="space-y-3">
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={consents.terms}
+                onChange={(e) => setConsents({ ...consents, terms: e.target.checked })}
+                className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="terms"
+                className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+              >
+                I have read and agree to the{' '}
+                <Link href="/terms" target="_blank" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>
+                {' '}*
+              </label>
+            </div>
+
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="privacy"
+                checked={consents.privacy}
+                onChange={(e) => setConsents({ ...consents, privacy: e.target.checked })}
+                className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="privacy"
+                className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+              >
+                I have read and agree to the{' '}
+                <Link href="/privacy" target="_blank" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+                {' '}and understand how my data will be processed *
+              </label>
+            </div>
+
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="age"
+                checked={consents.age}
+                onChange={(e) => setConsents({ ...consents, age: e.target.checked })}
+                className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="age"
+                className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+              >
+                I confirm that I am at least 16 years old *
+              </label>
+            </div>
+
+            <div className="flex items-start">
+              <input
+                type="checkbox"
+                id="marketing"
+                checked={consents.marketing}
+                onChange={(e) => setConsents({ ...consents, marketing: e.target.checked })}
+                className="mt-1 rounded border-gray-300 text-primary focus:ring-primary"
+              />
+              <label
+                htmlFor="marketing"
+                className="ml-2 text-sm text-gray-600 dark:text-gray-400"
+              >
+                I would like to receive product updates and marketing communications (optional)
+              </label>
+            </div>
           </div>
 
           <button
