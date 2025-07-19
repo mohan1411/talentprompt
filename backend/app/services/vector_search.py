@@ -79,6 +79,7 @@ class VectorSearchService:
                 
         except Exception as e:
             logger.warning(f"Could not ensure Qdrant collection: {e}")
+            logger.warning("Qdrant is not available - vector search will be disabled")
             # Continue anyway - will fail on actual operations if Qdrant is not available
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
