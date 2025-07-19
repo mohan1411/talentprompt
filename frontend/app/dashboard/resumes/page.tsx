@@ -16,10 +16,12 @@ import {
   Clock,
   XCircle,
   Users,
-  Linkedin
+  Linkedin,
+  Mail
 } from 'lucide-react';
 import { resumeApi } from '@/lib/api/client';
 import type { Resume } from '@/lib/api/client';
+import { OutreachModal } from '@/components/outreach/OutreachModal';
 
 export default function ResumesPage() {
   const router = useRouter();
@@ -29,6 +31,8 @@ export default function ResumesPage() {
   const [selectedResumes, setSelectedResumes] = useState<Set<string>>(new Set());
   const [showBulkPositionModal, setShowBulkPositionModal] = useState(false);
   const [bulkJobPosition, setBulkJobPosition] = useState('');
+  const [showOutreachModal, setShowOutreachModal] = useState(false);
+  const [outreachCandidate, setOutreachCandidate] = useState<Resume | null>(null);
 
   useEffect(() => {
     fetchResumes();
@@ -109,6 +113,11 @@ export default function ResumesPage() {
   const handleFindSimilar = (resume: Resume) => {
     // Navigate to search page with similar results
     router.push(`/dashboard/search/similar/${resume.id}?name=${encodeURIComponent(`${resume.first_name} ${resume.last_name}`)}`);
+  };
+
+  const handleGenerateOutreach = (resume: Resume) => {
+    setOutreachCandidate(resume);
+    setShowOutreachModal(true);
   };
 
   const getStatusBadge = (parseStatus: string) => {
@@ -362,6 +371,13 @@ export default function ResumesPage() {
                       <Users className="h-4 w-4" />
                     </button>
                     <button
+                      onClick={() => handleGenerateOutreach(resume)}
+                      className="text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300"
+                      title="Generate outreach message"
+                    >
+                      <Mail className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleDelete(resume.id)}
                       className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                       title="Delete resume"
@@ -415,6 +431,24 @@ export default function ResumesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Outreach Modal */}
+      {showOutreachModal && outreachCandidate && (
+        <OutreachModal
+          isOpen={showOutreachModal}
+          onClose={() => {
+            setShowOutreachModal(false);
+            setOutreachCandidate(null);
+          }}
+          candidate={{
+            id: outreachCandidate.id,
+            name: `${outreachCandidate.first_name} ${outreachCandidate.last_name}`,
+            title: outreachCandidate.current_title || '',
+            skills: outreachCandidate.skills,
+            experience: outreachCandidate.years_experience || undefined
+          }}
+        />
       )}
     </div>
   );

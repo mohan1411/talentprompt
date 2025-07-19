@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Filter, MapPin, Briefcase, X, Users, Linkedin } from 'lucide-react';
+import { Search, Filter, MapPin, Briefcase, X, Users, Linkedin, Mail } from 'lucide-react';
 import { searchApi } from '@/lib/api/client';
 import type { SearchResult } from '@/lib/api/client';
+import { OutreachModal } from '@/components/outreach/OutreachModal';
 import { searchHistory } from '@/lib/search-history';
 import SearchSuggestions from '@/components/search/SearchSuggestions';
 import TagCloud from '@/components/search/TagCloud';
@@ -28,6 +29,8 @@ export default function SearchPage() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [showOutreachModal, setShowOutreachModal] = useState(false);
+  const [outreachCandidate, setOutreachCandidate] = useState<SearchResult | null>(null);
 
   // Load search from URL params on mount
   useEffect(() => {
@@ -219,6 +222,11 @@ export default function SearchPage() {
       max_experience: '',
       skills: [],
     });
+  };
+
+  const handleGenerateOutreach = (candidate: SearchResult) => {
+    setOutreachCandidate(candidate);
+    setShowOutreachModal(true);
   };
 
   return (
@@ -520,10 +528,17 @@ export default function SearchPage() {
                 <div className="flex gap-2 ml-4">
                   <button 
                     onClick={() => router.push(`/dashboard/search/similar/${result.id}?name=${encodeURIComponent(`${result.first_name} ${result.last_name}`)}`)}
-                    className="btn-secondary"
+                    className="btn-secondary p-2"
                     title="Find similar candidates"
                   >
                     <Users className="h-4 w-4" />
+                  </button>
+                  <button 
+                    onClick={() => handleGenerateOutreach(result)}
+                    className="btn-secondary p-2"
+                    title="Generate outreach message"
+                  >
+                    <Mail className="h-4 w-4" />
                   </button>
                   <button 
                     onClick={() => router.push(`/dashboard/resumes/${result.id}`)}
@@ -573,6 +588,24 @@ export default function SearchPage() {
             </ul>
           </div>
         </div>
+      )}
+
+      {/* Outreach Modal */}
+      {showOutreachModal && outreachCandidate && (
+        <OutreachModal
+          isOpen={showOutreachModal}
+          onClose={() => {
+            setShowOutreachModal(false);
+            setOutreachCandidate(null);
+          }}
+          candidate={{
+            id: outreachCandidate.id,
+            name: `${outreachCandidate.first_name} ${outreachCandidate.last_name}`,
+            title: outreachCandidate.current_title || '',
+            skills: outreachCandidate.skills,
+            experience: outreachCandidate.years_experience || undefined
+          }}
+        />
       )}
     </div>
   );
