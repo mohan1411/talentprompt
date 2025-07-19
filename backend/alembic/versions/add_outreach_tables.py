@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'add_outreach_tables'
-down_revision = 'add_import_queue_tables'
+down_revision = 'add_import_queue'
 branch_labels = None
 depends_on = None
 
