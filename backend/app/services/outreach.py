@@ -77,11 +77,11 @@ class OutreachService:
                     resume_id=resume_id,
                     subject=message_data["subject"],
                     body=message_data["body"],
-                    style=style,
+                    style=style.value,  # Use the enum value (lowercase)
                     job_title=job_title,
                     job_requirements=job_requirements,
                     company_name=company_name,
-                    status=MessageStatus.GENERATED,
+                    status=MessageStatus.GENERATED.value,  # Use the enum value
                     quality_score=message_data.get("quality_score", 0.8),
                     generation_prompt=message_data.get("prompt"),
                     model_version=settings.OPENAI_MODEL
