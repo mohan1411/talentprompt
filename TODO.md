@@ -1,5 +1,19 @@
 # Promtitude TODO List
 
+## 🔴 CRITICAL SECURITY FIXES (DO THESE FIRST!)
+
+### User Data Isolation - PRIVACY BREACH
+- [ ] **FIX SEARCH TO FILTER BY USER** - Currently ALL users can see ALL resumes!
+  - [ ] Update search service to filter by user_id
+  - [ ] Update vector search to include user_id in metadata
+  - [ ] Update all search endpoints to pass current_user.id
+  - [ ] Fix similar resumes endpoint to only show user's own resumes
+  - [ ] Fix popular tags to only show from user's resumes
+  - [ ] Re-index existing vectors with user_id
+  - [ ] Test thoroughly that users can only see their own resumes
+- [ ] Audit all other endpoints for similar data leakage issues
+- [ ] Add integration tests to prevent regression
+
 ## 🚀 Immediate Priorities
 
 ### Chrome Extension Publishing
