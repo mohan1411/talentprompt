@@ -46,13 +46,17 @@ function GoogleCallbackContent() {
 
       try {
         // Exchange code for token using the new endpoint
+        console.log('Exchanging OAuth code for token...');
         const response = await oauthApi.exchangeToken(code, 'google');
+        console.log('Token exchange response:', response);
         
         // Clear state token
         sessionStorage.removeItem('oauth_state');
         
         // Handle the authentication
+        console.log('Handling OAuth callback with token...');
         await handleOAuthCallback(response.access_token);
+        console.log('OAuth callback handled successfully');
       } catch (err) {
         console.error('OAuth callback error:', err);
         setError('Failed to complete authentication. Please try again.');

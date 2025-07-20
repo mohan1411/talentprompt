@@ -50,7 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
+      console.log('refreshUser: Fetching user data...');
       const userData = await authApi.getMe();
+      console.log('refreshUser: User data received:', userData);
       setUser(userData);
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -122,10 +124,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   
   const handleOAuthCallback = async (token: string) => {
     try {
+      console.log('handleOAuthCallback: Storing token...');
       // Store token
       localStorage.setItem('access_token', token);
       setToken(token);
       
+      console.log('handleOAuthCallback: Fetching user data...');
       // Fetch user data
       await refreshUser();
       
@@ -133,8 +137,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const redirectUrl = sessionStorage.getItem('oauth_redirect') || '/dashboard';
       sessionStorage.removeItem('oauth_redirect');
       
-      // Redirect
-      router.push(redirectUrl);
+      console.log('handleOAuthCallback: Redirecting to:', redirectUrl);
+      // Small delay to ensure state is updated
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 100);
     } catch (error) {
       console.error('OAuth callback failed:', error);
       throw error;

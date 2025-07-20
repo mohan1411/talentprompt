@@ -3,6 +3,10 @@
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://talentprompt-production.up.railway.app';
+// Force production URL if on promtitude.com
+const ACTUAL_API_URL = typeof window !== 'undefined' && window.location.hostname === 'promtitude.com' 
+  ? 'https://talentprompt-production.up.railway.app' 
+  : API_BASE_URL;
 
 // Debug log for API URL
 if (typeof window !== 'undefined') {
@@ -42,7 +46,7 @@ async function makeRequest(endpoint: string, options: RequestOptions & { params?
   }
 
   // Build URL with query params
-  let url = `${API_BASE_URL}/api/v1${endpoint}`;
+  let url = `${ACTUAL_API_URL}/api/v1${endpoint}`;
   if (options.params) {
     const params = new URLSearchParams();
     Object.entries(options.params).forEach(([key, value]) => {

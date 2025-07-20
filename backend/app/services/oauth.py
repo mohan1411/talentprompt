@@ -77,7 +77,11 @@ class OAuthService:
             'prompt': 'consent'
         }
         
-        return f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+        auth_url = f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
+        logger.info(f"Generated Google OAuth URL with redirect_uri: {redirect_uri}")
+        logger.info(f"Full auth URL: {auth_url}")
+        
+        return auth_url
     
     def get_linkedin_auth_url(self, state: str, redirect_uri: Optional[str] = None) -> str:
         """Get LinkedIn OAuth authorization URL."""
