@@ -102,9 +102,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loginWithOAuth = async (provider: 'google' | 'linkedin') => {
     try {
-      // Store current URL to redirect back after OAuth
+      // Store redirect URL - but not if we're on login/register pages
       const currentUrl = window.location.pathname;
-      sessionStorage.setItem('oauth_redirect', currentUrl);
+      const isAuthPage = currentUrl.includes('/login') || currentUrl.includes('/register');
+      const redirectUrl = isAuthPage ? '/dashboard' : currentUrl;
+      sessionStorage.setItem('oauth_redirect', redirectUrl);
       
       // Get OAuth URL based on provider
       const data = provider === 'google' 
