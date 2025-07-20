@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { oauthApi } from '@/lib/api/client';
 import { Loader2 } from 'lucide-react';
 
-export default function LinkedInCallbackPage() {
+function LinkedInCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { handleOAuthCallback } = useAuth();
@@ -103,5 +103,22 @@ export default function LinkedInCallbackPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LinkedInCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Loading...
+          </h2>
+        </div>
+      </div>
+    }>
+      <LinkedInCallbackContent />
+    </Suspense>
   );
 }
