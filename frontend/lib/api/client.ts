@@ -149,6 +149,49 @@ export const authApi = {
   },
 };
 
+// OAuth endpoints
+export const oauthApi = {
+  async initiateGoogleLogin(redirectUri?: string) {
+    const params = redirectUri ? { redirect_uri: redirectUri } : {};
+    return makeRequest('/auth/oauth/google/login', { params });
+  },
+
+  async initiateLinkedInLogin(redirectUri?: string) {
+    const params = redirectUri ? { redirect_uri: redirectUri } : {};
+    return makeRequest('/auth/oauth/linkedin/login', { params });
+  },
+
+  async handleGoogleCallback(code: string, state: string) {
+    return makeRequest('/auth/oauth/google/callback', {
+      params: { code, state }
+    });
+  },
+
+  async handleLinkedInCallback(code: string, state: string) {
+    return makeRequest('/auth/oauth/linkedin/callback', {
+      params: { code, state }
+    });
+  },
+  
+  async exchangeToken(code: string, provider: 'google' | 'linkedin', redirectUri?: string) {
+    return makeRequest('/auth/oauth/v2/token', {
+      method: 'POST',
+      body: {
+        code,
+        provider,
+        redirect_uri: redirectUri || `${window.location.origin}/auth/${provider}/callback`
+      }
+    });
+  },
+
+  async linkOAuthAccount(provider: 'google' | 'linkedin', oauthData: any) {
+    return makeRequest(`/auth/oauth/link/${provider}`, {
+      method: 'POST',
+      body: oauthData,
+    });
+  },
+};
+
 // Resume endpoints
 export const resumeApi = {
   async upload(file: File, jobPosition?: string) {

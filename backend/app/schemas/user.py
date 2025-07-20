@@ -16,13 +16,15 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     company: Optional[str] = None
     job_title: Optional[str] = None
+    oauth_provider: Optional[str] = None
+    oauth_provider_id: Optional[str] = None
 
 
 # Properties to receive via API on creation
 class UserCreate(UserBase):
     email: EmailStr
     username: str
-    password: str = Field(..., min_length=8)
+    password: Optional[str] = Field(None, min_length=8)  # Optional for OAuth users
 
 
 # Properties to receive via API on update
@@ -58,4 +60,15 @@ class User(UserInDBBase):
 
 # Properties stored in DB
 class UserInDB(UserInDBBase):
-    hashed_password: str
+    hashed_password: Optional[str]  # Optional for OAuth users
+    oauth_data: Optional[str] = None
+
+
+# OAuth specific schemas
+class OAuthUserInfo(BaseModel):
+    email: EmailStr
+    full_name: str
+    provider: str
+    provider_id: str
+    picture: Optional[str] = None
+    raw_data: dict

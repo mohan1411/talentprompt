@@ -6,7 +6,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { authApi, User } from '@/lib/api/client';
+import { authApi, oauthApi, User } from '@/lib/api/client';
 
 interface RegisterData {
   email: string;
@@ -25,6 +25,8 @@ interface AuthContextType {
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  loginWithOAuth: (provider: 'google' | 'linkedin') => Promise<void>;
+  handleOAuthCallback: (token: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -96,9 +98,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/');
   };
 
+  const loginWithOAuth = async (provider: 'google' | 'linkedin') => {
+    try {
+      // Store current URL to redirect back after OAuth
+      const currentUrl = window.location.pathname;
+      sessionStorage.setItem('oauth_redirect', currentUrl);
+      
+      // Get OAuth URL based on provider
+      const data = provider === 'google' 
+        ? await oauthApi.initiateGoogleLogin()
+        : await oauthApi.initiateLinkedInLogin();
+      
+      // Store state token for security
+      sessionStorage.setItem('oauth_state', data.state);
+      
+      // Redirect to OAuth provider
+      window.location.href = data.auth_url;
+    } catch (error) {
+      console.error('OAuth login failed:', error);
+      throw error;
+    }
+  };
+  
+  const handleOAuthCallback = async (token: string) => {
+    try {
+      // Store token
+      localStorage.setItem('access_token', token);
+      setToken(token);
+      
+      // Fetch user data
+      await refreshUser();
+      
+      // Get redirect URL from session storage
+      const redirectUrl = sessionStorage.getItem('oauth_redirect') || '/dashboard';
+      sessionStorage.removeItem('oauth_redirect');
+      
+      // Redirect
+      router.push(redirectUrl);
+    } catch (error) {
+      console.error('OAuth callback failed:', error);
+      throw error;
+    }
+  };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, refreshUser, loginWithOAuth, handleOAuthCallback }}>
       {children}
     </AuthContext.Provider>
   );

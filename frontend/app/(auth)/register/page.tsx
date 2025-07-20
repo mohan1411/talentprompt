@@ -18,7 +18,7 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'linkedin' | null>(null);
-  const { register } = useAuth();
+  const { register, loginWithOAuth } = useAuth();
   const router = useRouter();
 
   // Password strength calculation
@@ -74,11 +74,18 @@ export default function RegisterPage() {
 
   const handleSocialLogin = async (provider: 'google' | 'linkedin') => {
     setSocialLoading(provider);
-    // TODO: Implement social login
-    setTimeout(() => {
-      alert(`${provider} login will be implemented soon!`);
+    setError('');
+    
+    try {
+      await loginWithOAuth(provider);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('Failed to initiate OAuth login. Please try again.');
+      }
       setSocialLoading(null);
-    }, 1000);
+    }
   };
 
   return (

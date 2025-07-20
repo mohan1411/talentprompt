@@ -1,8 +1,9 @@
 """User CRUD operations."""
 
-from typing import Optional
+from typing import Optional, Dict, Any
+import json
 
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
@@ -24,13 +25,25 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         result = await db.execute(select(User).where(User.username == username))
         return result.scalar_one_or_none()
     
+    async def get_by_oauth(self, db: AsyncSession, *, provider: str, provider_id: str) -> Optional[User]:
+        """Get user by OAuth provider and provider ID."""
+        result = await db.execute(
+            select(User).where(
+                and_(
+                    User.oauth_provider == provider,
+                    User.oauth_provider_id == provider_id
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+    
     async def create(self, db: AsyncSession, *, obj_in: UserCreate) -> User:
         """Create new user."""
         db_obj = User(
             email=obj_in.email,
             username=obj_in.username,
             full_name=obj_in.full_name,
-            hashed_password=get_password_hash(obj_in.password),
+            hashed_password=get_password_hash(obj_in.password) if obj_in.password else None,
             is_active=obj_in.is_active,
             is_superuser=obj_in.is_superuser,
             company=obj_in.company,
@@ -67,10 +80,81 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         if not user:
             return None
         
+        # OAuth users don't have passwords
+        if not user.hashed_password:
+            return None
+        
         if not verify_password(password, user.hashed_password):
             return None
         
         return user
+    
+    async def create_oauth_user(
+        self, 
+        db: AsyncSession, 
+        *, 
+        email: str,
+        full_name: str,
+        provider: str,
+        provider_id: str,
+        oauth_data: Dict[str, Any],
+        username: Optional[str] = None
+    ) -> User:
+        """Create new OAuth user."""
+        # Generate username from email if not provided
+        if not username:
+            username = email.split('@')[0]
+            # Ensure username is unique
+            counter = 1
+            base_username = username
+            while await self.get_by_username(db, username=username):
+                username = f"{base_username}{counter}"
+                counter += 1
+        
+        db_obj = User(
+            email=email,
+            username=username,
+            full_name=full_name,
+            oauth_provider=provider,
+            oauth_provider_id=provider_id,
+            oauth_data=json.dumps(oauth_data),
+            is_active=True,
+            is_superuser=False,
+        )
+        db.add(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
+    
+    async def update_oauth_data(
+        self,
+        db: AsyncSession,
+        *,
+        db_obj: User,
+        oauth_data: Dict[str, Any]
+    ) -> User:
+        """Update OAuth data for existing user."""
+        db_obj.oauth_data = json.dumps(oauth_data)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
+    
+    async def link_oauth_account(
+        self,
+        db: AsyncSession,
+        *,
+        db_obj: User,
+        provider: str,
+        provider_id: str,
+        oauth_data: Dict[str, Any]
+    ) -> User:
+        """Link OAuth account to existing user."""
+        db_obj.oauth_provider = provider
+        db_obj.oauth_provider_id = provider_id
+        db_obj.oauth_data = json.dumps(oauth_data)
+        await db.commit()
+        await db.refresh(db_obj)
+        return db_obj
 
 
 user = CRUDUser(User)

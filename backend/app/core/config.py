@@ -105,6 +105,20 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
     
+    # OAuth Settings
+    # Google OAuth
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: Optional[str] = None
+    
+    # LinkedIn OAuth
+    LINKEDIN_CLIENT_ID: Optional[str] = None
+    LINKEDIN_CLIENT_SECRET: Optional[str] = None
+    LINKEDIN_REDIRECT_URI: Optional[str] = None
+    
+    # Frontend URL for OAuth redirects
+    FRONTEND_URL: str = "http://localhost:3000"
+    
     # Other
     SENTRY_DSN: Optional[str] = None
     LOG_LEVEL: str = "INFO"
