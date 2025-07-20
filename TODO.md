@@ -90,7 +90,8 @@
 ## 🐛 Known Issues to Fix
 
 ### Bugs
-- [ ] Social login buttons (currently just show alerts)
+- [x] Google OAuth login - ✅ WORKING in local and production (July 20, 2025)
+- [ ] LinkedIn OAuth login - credentials needed from LinkedIn Developer Portal
 - [ ] Contact form doesn't actually send emails
 - [ ] Marketing opt-in checkbox doesn't save preference
 - [ ] Password reset link doesn't work
@@ -159,6 +160,7 @@
 
 ### Completed Recently
 - ✅ Modern registration/login pages with social login UI
+- ✅ Google OAuth authentication (fully working in production) - July 20, 2025
 - ✅ GDPR compliance (Privacy Policy, Terms, Cookie Consent)
 - ✅ AI Outreach Message Generator
 - ✅ LinkedIn Chrome Extension (local and prod versions)
