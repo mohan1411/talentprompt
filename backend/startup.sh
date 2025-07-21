@@ -2,7 +2,6 @@
 
 # Run database fix
 echo "Running database fix..."
-cd backend
 python fix_email_verification.py
 
 # Start the application
