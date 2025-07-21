@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#4F46E5"/>
+  
+  <!-- Letter P stylized with AI nodes -->
+  <g>
+    <!-- Main P shape -->
+    <path d="M160 120 L160 392 M160 120 L280 120 Q320 120 320 160 Q320 200 280 200 L160 200" 
+          stroke="white" stroke-width="32" stroke-linecap="round" fill="none"/>
+    
+    <!-- AI Nodes on the P -->
+    <circle cx="160" cy="120" r="16" fill="white"/>
+    <circle cx="280" cy="120" r="16" fill="white"/>
+    <circle cx="320" cy="160" r="16" fill="white"/>
+    <circle cx="280" cy="200" r="16" fill="white"/>
+    <circle cx="160" cy="200" r="16" fill="white"/>
+    <circle cx="160" cy="392" r="16" fill="white"/>
+    
+    <!-- Connecting lines (neural network style) -->
+    <line x1="160" y1="120" x2="280" y2="120" stroke="white" stroke-width="2" opacity="0.5"/>
+    <line x1="280" y1="120" x2="320" y2="160" stroke="white" stroke-width="2" opacity="0.5"/>
+    <line x1="320" y1="160" x2="280" y2="200" stroke="white" stroke-width="2" opacity="0.5"/>
+    <line x1="280" y1="200" x2="160" y2="200" stroke="white" stroke-width="2" opacity="0.5"/>
+    
+    <!-- Sparkle/AI element -->
+    <g transform="translate(340, 140)">
+      <path d="M0 -20 L6 -6 L20 0 L6 6 L0 20 L-6 6 L-20 0 L-6 -6 Z" fill="#FCD34D"/>
+    </g>
+  </g>
+</svg>

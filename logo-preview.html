@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promtitude Ultra-Thin Logo Preview</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 40px;
+        }
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .logo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo-card h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        .logo-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .logo-preview.dark {
+            background: #0a0a0a;
+        }
+        .export-sizes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .export-btn {
+            padding: 8px 16px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .export-btn:hover {
+            background: #4338CA;
+        }
+        .canvas-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Promtitude Ultra-Thin Logo Variations</h1>
+        
+        <div class="logo-grid">
+            <!-- Logo 1: Geometric P with AI Nodes -->
+            <div class="logo-card">
+                <h3>Geometric P with AI Nodes</h3>
+                <div class="logo-preview">
+                    <img src="frontend/public/logo-thin-1.svg" width="200" height="200" id="logo1">
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo('logo1', 512, 'geometric')">512px</button>
+                    <button class="export-btn" onclick="exportLogo('logo1', 256, 'geometric')">256px</button>
+                    <button class="export-btn" onclick="exportLogo('logo1', 128, 'geometric')">128px</button>
+                    <button class="export-btn" onclick="exportLogo('logo1', 64, 'geometric')">64px</button>
+                    <button class="export-btn" onclick="exportLogo('logo1', 32, 'geometric')">32px</button>
+                </div>
+            </div>
+
+            <!-- Logo 2: Abstract P with Data Flow -->
+            <div class="logo-card">
+                <h3>Abstract P with Data Flow</h3>
+                <div class="logo-preview">
+                    <img src="frontend/public/logo-thin-2.svg" width="200" height="200" id="logo2">
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo('logo2', 512, 'dataflow')">512px</button>
+                    <button class="export-btn" onclick="exportLogo('logo2', 256, 'dataflow')">256px</button>
+                    <button class="export-btn" onclick="exportLogo('logo2', 128, 'dataflow')">128px</button>
+                    <button class="export-btn" onclick="exportLogo('logo2', 64, 'dataflow')">64px</button>
+                    <button class="export-btn" onclick="exportLogo('logo2', 32, 'dataflow')">32px</button>
+                </div>
+            </div>
+
+            <!-- Logo 3: Minimalist P with Circuit -->
+            <div class="logo-card">
+                <h3>Minimalist P with Circuit Pattern</h3>
+                <div class="logo-preview">
+                    <img src="frontend/public/logo-thin-3.svg" width="200" height="200" id="logo3">
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo('logo3', 512, 'circuit')">512px</button>
+                    <button class="export-btn" onclick="exportLogo('logo3', 256, 'circuit')">256px</button>
+                    <button class="export-btn" onclick="exportLogo('logo3', 128, 'circuit')">128px</button>
+                    <button class="export-btn" onclick="exportLogo('logo3', 64, 'circuit')">64px</button>
+                    <button class="export-btn" onclick="exportLogo('logo3', 32, 'circuit')">32px</button>
+                </div>
+            </div>
+
+            <!-- Logo 4: Dark Theme with Gradient -->
+            <div class="logo-card">
+                <h3>Dark Theme with Gradient</h3>
+                <div class="logo-preview dark">
+                    <img src="frontend/public/logo-thin-dark.svg" width="200" height="200" id="logo4">
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo('logo4', 512, 'dark')">512px</button>
+                    <button class="export-btn" onclick="exportLogo('logo4', 256, 'dark')">256px</button>
+                    <button class="export-btn" onclick="exportLogo('logo4', 128, 'dark')">128px</button>
+                    <button class="export-btn" onclick="exportLogo('logo4', 64, 'dark')">64px</button>
+                    <button class="export-btn" onclick="exportLogo('logo4', 32, 'dark')">32px</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden canvas for export -->
+        <div class="canvas-container">
+            <canvas id="exportCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        function exportLogo(logoId, size, variant) {
+            const img = document.getElementById(logoId);
+            const canvas = document.getElementById('exportCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Create temporary image for SVG
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                // Clear canvas
+                ctx.clearRect(0, 0, size, size);
+                
+                // Draw white background for non-dark variants
+                if (variant !== 'dark') {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, size, size);
+                }
+                
+                // Draw image
+                ctx.drawImage(tempImg, 0, 0, size, size);
+                
+                // Download
+                canvas.toBlob(function(blob) {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `promtitude-logo-${variant}-${size}px.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            };
+            
+            // For SVG files, we need to set the source differently
+            tempImg.src = img.src;
+        }
+    </script>
+</body>
+</html>

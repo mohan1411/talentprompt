@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Promtitude Logo Generator</title>
+</head>
+<body>
+    <h1>Promtitude Logo Generator</h1>
+    <p>Right-click each logo and save as PNG:</p>
+    
+    <!-- 512x512 Logo -->
+    <div>
+        <h3>512x512 (LinkedIn App Logo)</h3>
+        <canvas id="logo512" width="512" height="512"></canvas>
+    </div>
+    
+    <!-- 256x256 Logo -->
+    <div>
+        <h3>256x256 (General Use)</h3>
+        <canvas id="logo256" width="256" height="256"></canvas>
+    </div>
+    
+    <!-- 128x128 Logo -->
+    <div>
+        <h3>128x128 (Chrome Extension)</h3>
+        <canvas id="logo128" width="128" height="128"></canvas>
+    </div>
+
+    <script>
+        function drawLogo(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const scale = size / 512;
+            
+            // Background circle
+            ctx.fillStyle = '#4F46E5';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size * 0.47, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Set up for P letter
+            ctx.strokeStyle = 'white';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 32 * scale;
+            
+            // Draw P
+            ctx.beginPath();
+            // Vertical line
+            ctx.moveTo(160 * scale, 120 * scale);
+            ctx.lineTo(160 * scale, 392 * scale);
+            // Top horizontal
+            ctx.moveTo(160 * scale, 120 * scale);
+            ctx.lineTo(280 * scale, 120 * scale);
+            // Curve
+            ctx.quadraticCurveTo(320 * scale, 120 * scale, 320 * scale, 160 * scale);
+            ctx.quadraticCurveTo(320 * scale, 200 * scale, 280 * scale, 200 * scale);
+            ctx.lineTo(160 * scale, 200 * scale);
+            ctx.stroke();
+            
+            // AI Nodes
+            ctx.fillStyle = 'white';
+            const nodes = [
+                [160, 120], [280, 120], [320, 160], 
+                [280, 200], [160, 200], [160, 392]
+            ];
+            
+            nodes.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x * scale, y * scale, 16 * scale, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Connecting lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2 * scale;
+            
+            ctx.beginPath();
+            ctx.moveTo(160 * scale, 120 * scale);
+            ctx.lineTo(280 * scale, 120 * scale);
+            ctx.moveTo(280 * scale, 120 * scale);
+            ctx.lineTo(320 * scale, 160 * scale);
+            ctx.moveTo(320 * scale, 160 * scale);
+            ctx.lineTo(280 * scale, 200 * scale);
+            ctx.moveTo(280 * scale, 200 * scale);
+            ctx.lineTo(160 * scale, 200 * scale);
+            ctx.stroke();
+            
+            // Sparkle
+            ctx.fillStyle = '#FCD34D';
+            ctx.save();
+            ctx.translate(340 * scale, 140 * scale);
+            ctx.beginPath();
+            ctx.moveTo(0, -20 * scale);
+            ctx.lineTo(6 * scale, -6 * scale);
+            ctx.lineTo(20 * scale, 0);
+            ctx.lineTo(6 * scale, 6 * scale);
+            ctx.lineTo(0, 20 * scale);
+            ctx.lineTo(-6 * scale, 6 * scale);
+            ctx.lineTo(-20 * scale, 0);
+            ctx.lineTo(-6 * scale, -6 * scale);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+        }
+        
+        // Draw all sizes
+        drawLogo('logo512', 512);
+        drawLogo('logo256', 256);
+        drawLogo('logo128', 128);
+    </script>
+</body>
+</html>
