@@ -1,14 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { ApiError } from '@/lib/api/client';
-import { Eye, EyeOff, Mail, Lock, Target, Zap, Search } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, Target, Zap, Search, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
 
-export default function LoginPage() {
+function LoginContent() {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -18,8 +18,18 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState<'google' | 'linkedin' | null>(null);
+  const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
   const { login, loginWithOAuth } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('verified') === 'true') {
+      setShowVerifiedMessage(true);
+      // Remove the query parameter from URL
+      window.history.replaceState({}, '', '/login');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -201,6 +211,13 @@ export default function LoginPage() {
 
           {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {showVerifiedMessage && (
+              <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 p-3 rounded-md text-sm flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 flex-shrink-0" />
+                Email verified successfully! You can now log in.
+              </div>
+            )}
+
             {error && (
               <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm flex items-center gap-2">
                 <div className="h-4 w-4 rounded-full bg-red-600 dark:bg-red-400 flex items-center justify-center flex-shrink-0">
@@ -313,5 +330,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

@@ -1,5 +1,19 @@
 # Promtitude TODO List
 
+### Task: Registration Page ✅ COMPLETED - July 21, 2025
+**Platforms:** Web
+**Priority:** High
+**Status:** ✅ COMPLETED
+**Description:**
+Implement Captcha and email verification when user register through email and password
+- [x] Added Google reCAPTCHA v3 integration
+- [x] Created email verification system
+- [x] Added verification endpoints
+- [x] Created verification pending and success pages
+- [x] Updated registration flow to send verification emails
+- [x] Added success message on login page after verification
+
+
 ### Dashboard Improvements ✅ COMPLETED - July 21, 2025
 ```
 ### Task: Improve Dashboard UX for New Users
@@ -37,13 +51,14 @@
 
 ## 🚀 Immediate Priorities
 
-### Chrome Extension Publishing
-- [ ] Create 128x128px PNG icon for Chrome Web Store
-- [ ] Take 3-4 screenshots of extension in action
-- [ ] Pay $5 Chrome Web Store developer fee
-- [ ] Create production ZIP file from `/chrome-extension/`
-- [ ] Write store description (132 char summary + full description)
-- [ ] Submit to Chrome Web Store for review
+### Chrome Extension Publishing ✅ SUBMITTED - July 21, 2025
+- [x] Create 128x128px PNG icon for Chrome Web Store
+- [x] Take 3-4 screenshots of extension in action
+- [x] Pay $5 Chrome Web Store developer fee
+- [x] Create production ZIP file from `/chrome-extension/`
+- [x] Write store description (132 char summary + full description)
+- [x] Submit to Chrome Web Store for review
+- [ ] **STATUS**: Awaiting review from Google (1-3 business days)
 
 ### Critical Fixes
 - [ ] Test all features in production after recent deployments
@@ -188,6 +203,12 @@
   - Welcome section explaining natural language search
   - Resume source hints
   - Interactive resume statistics chart
+- ✅ Registration security enhancements - July 21, 2025
+  - Google reCAPTCHA v3 integration
+  - Email verification system
+  - Verification pending and success pages
+  - Secure token-based verification flow
+- ✅ Chrome Extension submitted to Chrome Web Store - July 21, 2025
 - ✅ GDPR compliance (Privacy Policy, Terms, Cookie Consent)
 - ✅ AI Outreach Message Generator
 - ✅ LinkedIn Chrome Extension (local and prod versions)

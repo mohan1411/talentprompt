@@ -25,6 +25,11 @@ class UserCreate(UserBase):
     email: EmailStr
     username: str
     password: Optional[str] = Field(None, min_length=8)  # Optional for OAuth users
+    recaptcha_token: Optional[str] = Field(None, alias="recaptchaToken")
+    marketing_opt_in: Optional[bool] = Field(False, alias="marketingOptIn")
+    
+    class Config:
+        populate_by_name = True  # Allow both snake_case and camelCase
 
 
 # Properties to receive via API on update

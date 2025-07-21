@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { ApiError } from '@/lib/api/client';
 import { Eye, EyeOff, Mail, Lock, CheckCircle, Users, Search, Brain, Sparkles, Zap } from 'lucide-react';
 import Image from 'next/image';
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [socialLoading, setSocialLoading] = useState<'google' | 'linkedin' | null>(null);
   const { register, loginWithOAuth } = useAuth();
   const router = useRouter();
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   // Password strength calculation
   const getPasswordStrength = (password: string) => {
@@ -37,7 +39,7 @@ export default function RegisterPage() {
   const strengthText = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'][passwordStrength];
   const strengthColor = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'][passwordStrength];
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
@@ -54,6 +56,17 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      // Execute reCAPTCHA
+      let recaptchaToken = '';
+      if (executeRecaptcha) {
+        try {
+          recaptchaToken = await executeRecaptcha('register');
+        } catch (recaptchaError) {
+          console.error('reCAPTCHA error:', recaptchaError);
+          // Continue without token if reCAPTCHA fails
+        }
+      }
+
       // Generate username from email
       const username = formData.email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
       
@@ -61,7 +74,12 @@ export default function RegisterPage() {
         email: formData.email,
         username: username,
         password: formData.password,
+        recaptchaToken,
+        marketingOptIn,
       });
+      
+      // Redirect to verification pending page
+      router.push(`/verify-email-pending?email=${encodeURIComponent(formData.email)}`);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.detail);
@@ -71,7 +89,7 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [acceptTerms, formData, executeRecaptcha, register, marketingOptIn]);
 
   const handleSocialLogin = async (provider: 'google' | 'linkedin') => {
     setSocialLoading(provider);

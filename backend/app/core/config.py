@@ -128,6 +128,10 @@ class Settings(BaseSettings):
     # File Upload
     MAX_FILE_SIZE_MB: int = 10
     
+    # Google reCAPTCHA
+    RECAPTCHA_SECRET_KEY: Optional[str] = None
+    RECAPTCHA_ENABLED: bool = True
+    
     model_config = SettingsConfigDict(
         case_sensitive=True,
         env_file=".env",

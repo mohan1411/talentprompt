@@ -130,6 +130,8 @@ export const authApi = {
     full_name?: string;
     company?: string;
     job_title?: string;
+    recaptchaToken?: string;
+    marketingOptIn?: boolean;
   }) {
     return makeRequest('/auth/register', {
       method: 'POST',
@@ -149,6 +151,20 @@ export const authApi = {
     return makeRequest('/users/me', {
       method: 'PUT',
       body: data,
+    });
+  },
+
+  async verifyEmail(token: string) {
+    return makeRequest('/auth/verify-email', {
+      method: 'POST',
+      params: { token },
+    });
+  },
+
+  async resendVerification(email: string) {
+    return makeRequest('/auth/resend-verification', {
+      method: 'POST',
+      params: { email },
     });
   },
 };

@@ -15,6 +15,8 @@ interface RegisterData {
   full_name?: string;
   company?: string;
   job_title?: string;
+  recaptchaToken?: string;
+  marketingOptIn?: boolean;
 }
 
 interface AuthContextType {
@@ -85,8 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const register = async (data: RegisterData) => {
     try {
       await authApi.register(data);
-      // Auto-login after registration
-      await login(data.username, data.password);
+      // Don't auto-login - user needs to verify email first
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;

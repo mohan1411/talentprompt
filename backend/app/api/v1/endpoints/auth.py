@@ -13,6 +13,9 @@ from app.core.security import create_access_token
 from app.crud.user import authenticate_user, create_user, get_user_by_email
 from app.schemas.token import Token
 from app.schemas.user import User, UserCreate
+from app.services.recaptcha import recaptcha_service
+from app.services.email_verification import email_verification_service
+from app.services.email import email_service
 
 router = APIRouter()
 
@@ -23,6 +26,18 @@ async def register(
     db: AsyncSession = Depends(get_db)
 ) -> Any:
     """Register new user."""
+    # Verify reCAPTCHA token
+    if user_in.recaptcha_token:
+        is_valid = await recaptcha_service.verify_token(
+            token=user_in.recaptcha_token,
+            action="register"
+        )
+        if not is_valid:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="reCAPTCHA verification failed. Please try again."
+            )
+    
     # Check if user already exists
     user = await get_user_by_email(db, email=user_in.email)
     if user:
@@ -33,6 +48,25 @@ async def register(
     
     # Create new user
     user = await create_user(db, user_create=user_in)
+    
+    # Generate verification token and send email
+    verification_token = await email_verification_service.create_verification_token(
+        db=db,
+        user_id=str(user.id)
+    )
+    
+    # Build verification URL
+    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={verification_token}"
+    
+    # Send verification email
+    await email_service.send_verification_email(
+        to_email=user.email,
+        full_name=user.full_name or user.username,
+        verification_url=verification_url
+    )
+    
+    # TODO: Store marketing_opt_in preference in user preferences table
+    
     return user
 
 
@@ -77,3 +111,57 @@ async def refresh_token() -> Any:
         status_code=status.HTTP_501_NOT_IMPLEMENTED,
         detail="Token refresh not yet implemented",
     )
+
+
+@router.post("/verify-email")
+async def verify_email(
+    token: str,
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    """Verify user's email address."""
+    user = await email_verification_service.verify_token(db, token)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification token"
+        )
+    
+    # Send welcome email
+    await email_service.send_welcome_email(
+        to_email=user.email,
+        full_name=user.full_name or user.username
+    )
+    
+    return {"message": "Email verified successfully"}
+
+
+@router.post("/resend-verification")
+async def resend_verification(
+    email: str,
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    """Resend verification email."""
+    # Get user by email
+    user = await get_user_by_email(db, email=email)
+    
+    if not user:
+        # Don't reveal if email exists or not
+        return {"message": "If the email exists, a verification email has been sent"}
+    
+    if user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email is already verified"
+        )
+    
+    # Resend verification email
+    success = await email_verification_service.resend_verification_email(db, user)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email"
+        )
+    
+    return {"message": "Verification email has been sent"}
