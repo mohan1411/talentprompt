@@ -77,16 +77,6 @@ export default function ProfilePage() {
             </span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Email Verified</span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              user?.is_verified 
-                ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' 
-                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-            }`}>
-              {user?.is_verified ? 'Verified' : 'Unverified'}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -125,18 +115,6 @@ export default function ProfilePage() {
             )}
           </div>
 
-          {/* OAuth Connections */}
-          {user?.oauth_provider && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">Connected Accounts</p>
-              <div className="flex items-center space-x-2">
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm capitalize">
-                  {user.oauth_provider}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">connected</span>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>
