@@ -717,8 +717,8 @@
     document.body.appendChild(debugBtn);
   }
   
-  // Add debug button after a delay
-  setTimeout(addDebugButton, 3000);
+  // Debug button disabled for production
+  // setTimeout(addDebugButton, 3000);
   
   console.log('🎯 Bulk Import Sidebar: Ready');
 })();

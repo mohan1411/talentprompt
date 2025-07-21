@@ -1,22 +1,20 @@
 {
   "manifest_version": 3,
-  "name": "Promtitude LinkedIn Integration",
+  "name": "Promtitude - LinkedIn Profile Importer",
   "version": "1.0.0",
-  "description": "Import LinkedIn profiles to Promtitude with one click",
+  "description": "Import LinkedIn profiles to Promtitude with one click. Build your talent database effortlessly while browsing LinkedIn.",
   "permissions": [
     "storage",
     "activeTab",
     "scripting",
     "alarms",
     "notifications",
-    "tabs",
-    "windows"
+    "tabs"
   ],
   "host_permissions": [
     "https://*.linkedin.com/*",
-    "https://talentprompt-production.up.railway.app/*",
-    "http://localhost:3000/*",
-    "http://localhost:8000/*"
+    "https://promtitude.com/*",
+    "https://talentprompt-production.up.railway.app/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"
