@@ -44,6 +44,10 @@ class User(Base):
     oauth_provider_id = Column(String, nullable=True)  # Provider's user ID
     oauth_data = Column(String, nullable=True)  # JSON string for additional OAuth data
     
+    # Email verification fields
+    email_verification_token = Column(String, nullable=True)
+    email_verification_sent_at = Column(DateTime(timezone=True), nullable=True)
+    
     # Relationships
     conducted_interviews = relationship("InterviewSession", back_populates="interviewer")
     interview_reviews = relationship("InterviewFeedback", back_populates="reviewer")

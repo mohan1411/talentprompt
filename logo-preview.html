@@ -147,7 +147,7 @@
     </div>
 
     <script>
-        function exportLogo(logoId, size, variant) {
+        async function exportLogo(logoId, size, variant) {
             const img = document.getElementById(logoId);
             const canvas = document.getElementById('exportCanvas');
             const ctx = canvas.getContext('2d');
@@ -155,34 +155,61 @@
             canvas.width = size;
             canvas.height = size;
             
-            // Create temporary image for SVG
-            const tempImg = new Image();
-            tempImg.onload = function() {
-                // Clear canvas
-                ctx.clearRect(0, 0, size, size);
+            try {
+                // Fetch the SVG content
+                const response = await fetch(img.src);
+                const svgText = await response.text();
                 
-                // Draw white background for non-dark variants
-                if (variant !== 'dark') {
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, 0, size, size);
-                }
+                // Create a blob from the SVG
+                const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
                 
-                // Draw image
-                ctx.drawImage(tempImg, 0, 0, size, size);
+                // Create image from blob
+                const tempImg = new Image();
+                tempImg.onload = function() {
+                    // Clear canvas
+                    ctx.clearRect(0, 0, size, size);
+                    
+                    // Draw white background for non-dark variants
+                    if (variant !== 'dark') {
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, 0, size, size);
+                    }
+                    
+                    // Calculate scaling to fit
+                    const scale = size / 200; // Original SVG is 200x200 (except LinkedIn version)
+                    const scaledSize = variant === 'linkedin' ? size : 200 * scale;
+                    const offset = (size - scaledSize) / 2;
+                    
+                    // Draw image centered
+                    ctx.drawImage(tempImg, offset, offset, scaledSize, scaledSize);
+                    
+                    // Download
+                    canvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `promtitude-logo-${variant}-${size}px.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 'image/png');
+                    
+                    URL.revokeObjectURL(svgUrl);
+                };
                 
-                // Download
-                canvas.toBlob(function(blob) {
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `promtitude-logo-${variant}-${size}px.png`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                });
-            };
-            
-            // For SVG files, we need to set the source differently
-            tempImg.src = img.src;
+                tempImg.onerror = function() {
+                    console.error('Failed to load SVG');
+                    alert('Failed to export image. Please try again.');
+                };
+                
+                tempImg.src = svgUrl;
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export image. Please check the console for details.');
+            }
         }
     </script>
 </body>

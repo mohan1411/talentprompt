@@ -10,6 +10,7 @@ from sqlalchemy import select, update
 from app.models.user import User
 from app.core.config import settings
 from app.core.security import verify_password, get_password_hash
+from app.services.email import email_service
 import logging
 
 logger = logging.getLogger(__name__)
@@ -42,15 +43,12 @@ class EmailVerificationService:
         token_hash = get_password_hash(token)
         
         # Store token hash and expiry in database
-        # For now, we'll use a simple approach storing in the user table
-        # In production, you might want a separate verification_tokens table
         stmt = (
             update(User)
             .where(User.id == user_id)
             .values(
-                # These fields need to be added to the User model
-                # email_verification_token=token_hash,
-                # email_verification_sent_at=datetime.utcnow()
+                email_verification_token=token_hash,
+                email_verification_sent_at=datetime.utcnow()
             )
         )
         await db.execute(stmt)
@@ -73,24 +71,29 @@ class EmailVerificationService:
         Returns:
             The user if token is valid, None otherwise
         """
-        # Get all unverified users (in production, you'd query by token hash)
-        stmt = select(User).where(User.is_verified == False)
+        # Get all unverified users with tokens
+        stmt = select(User).where(
+            User.is_verified == False,
+            User.email_verification_token.isnot(None)
+        )
         result = await db.execute(stmt)
         unverified_users = result.scalars().all()
         
-        # For now, we'll validate against user creation time
-        # In production, validate against stored token hash
+        # Check each user's token
         for user in unverified_users:
-            # Check if token was created within valid timeframe
-            if user.created_at:
-                token_age = datetime.utcnow() - user.created_at.replace(tzinfo=None)
-                if token_age < timedelta(hours=TOKEN_EXPIRY_HOURS):
-                    # In production, verify token hash here
-                    # For now, mark user as verified
-                    user.is_verified = True
-                    await db.commit()
-                    return user
-                    
+            # Verify the token matches
+            if user.email_verification_token and verify_password(token, user.email_verification_token):
+                # Check if token is not expired
+                if user.email_verification_sent_at:
+                    token_age = datetime.utcnow() - user.email_verification_sent_at.replace(tzinfo=None)
+                    if token_age < timedelta(hours=TOKEN_EXPIRY_HOURS):
+                        # Mark user as verified
+                        user.is_verified = True
+                        user.email_verification_token = None  # Clear the token
+                        user.email_verification_sent_at = None
+                        await db.commit()
+                        return user
+                        
         return None
     
     @staticmethod
@@ -160,11 +163,14 @@ class EmailVerificationService:
         # Generate new token
         token = await EmailVerificationService.create_verification_token(db, str(user.id))
         
+        # Build verification URL
+        verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+        
         # Send email
-        return await EmailVerificationService.send_verification_email(
-            email=user.email,
+        return await email_service.send_verification_email(
+            to_email=user.email,
             full_name=user.full_name or user.username,
-            verification_token=token
+            verification_url=verification_url
         )
 
 

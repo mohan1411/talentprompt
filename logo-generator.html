@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Promtitude Logo Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 40px;
+        }
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .logo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .logo-card h3 {
+            margin: 0 0 20px 0;
+            color: #333;
+        }
+        .logo-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .logo-preview.dark {
+            background: #0a0a0a;
+        }
+        .export-sizes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .export-btn {
+            padding: 8px 16px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .export-btn:hover {
+            background: #4338CA;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Promtitude Ultra-Thin Logo Generator</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 40px;">Click on a logo design, then click the size you want to download</p>
+        
+        <div class="logo-grid">
+            <!-- Logo 1: Geometric P with AI Nodes -->
+            <div class="logo-card">
+                <h3>Geometric P with AI Nodes</h3>
+                <div class="logo-preview">
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 50 40 L 50 160 M 50 40 L 110 40 C 140 40 160 60 160 90 C 160 120 140 140 110 140 L 50 140" 
+                              stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                        <circle cx="50" cy="40" r="3" fill="#1a1a1a"/>
+                        <circle cx="110" cy="40" r="3" fill="#1a1a1a"/>
+                        <circle cx="160" cy="90" r="3" fill="#1a1a1a"/>
+                        <circle cx="110" cy="140" r="3" fill="#1a1a1a"/>
+                        <circle cx="50" cy="140" r="3" fill="#1a1a1a"/>
+                        <circle cx="50" cy="160" r="3" fill="#1a1a1a"/>
+                        <line x1="50" y1="40" x2="110" y2="40" stroke="#1a1a1a" stroke-width="0.5" opacity="0.3"/>
+                        <line x1="110" y1="40" x2="160" y2="90" stroke="#1a1a1a" stroke-width="0.5" opacity="0.3"/>
+                        <line x1="160" y1="90" x2="110" y2="140" stroke="#1a1a1a" stroke-width="0.5" opacity="0.3"/>
+                        <line x1="110" y1="140" x2="50" y2="140" stroke="#1a1a1a" stroke-width="0.5" opacity="0.3"/>
+                    </svg>
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo(1, 512)">512px</button>
+                    <button class="export-btn" onclick="exportLogo(1, 256)">256px</button>
+                    <button class="export-btn" onclick="exportLogo(1, 128)">128px</button>
+                    <button class="export-btn" onclick="exportLogo(1, 64)">64px</button>
+                </div>
+            </div>
+
+            <!-- Logo 2: Abstract P with Data Flow -->
+            <div class="logo-card">
+                <h3>Abstract P with Data Flow</h3>
+                <div class="logo-preview">
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 60 50 L 60 150" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <path d="M 60 50 Q 120 50 120 80 T 60 110" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        <circle cx="60" cy="50" r="1.5" fill="#4F46E5"/>
+                        <circle cx="80" cy="50" r="1" fill="#4F46E5" opacity="0.7"/>
+                        <circle cx="100" cy="55" r="1" fill="#4F46E5" opacity="0.5"/>
+                        <circle cx="115" cy="65" r="1" fill="#4F46E5" opacity="0.3"/>
+                        <circle cx="120" cy="80" r="1.5" fill="#4F46E5"/>
+                        <circle cx="115" cy="95" r="1" fill="#4F46E5" opacity="0.7"/>
+                        <circle cx="100" cy="105" r="1" fill="#4F46E5" opacity="0.5"/>
+                        <circle cx="80" cy="110" r="1" fill="#4F46E5" opacity="0.3"/>
+                        <circle cx="60" cy="110" r="1.5" fill="#4F46E5"/>
+                        <circle cx="60" cy="130" r="1" fill="#4F46E5" opacity="0.7"/>
+                        <circle cx="60" cy="150" r="1.5" fill="#4F46E5"/>
+                        <path d="M 60 50 Q 90 50 120 80 Q 90 110 60 110" 
+                              stroke="#4F46E5" stroke-width="0.5" opacity="0.2" fill="none" stroke-dasharray="2,2"/>
+                    </svg>
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo(2, 512)">512px</button>
+                    <button class="export-btn" onclick="exportLogo(2, 256)">256px</button>
+                    <button class="export-btn" onclick="exportLogo(2, 128)">128px</button>
+                    <button class="export-btn" onclick="exportLogo(2, 64)">64px</button>
+                </div>
+            </div>
+
+            <!-- Logo 3: Minimalist P with Circuit -->
+            <div class="logo-card">
+                <h3>Minimalist P with Circuit</h3>
+                <div class="logo-preview">
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 70 60 L 70 140 M 70 60 L 110 60 M 110 60 L 110 100 M 110 100 L 70 100" 
+                              stroke="#1a1a1a" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+                        <rect x="69" y="59" width="2" height="2" fill="#1a1a1a"/>
+                        <rect x="109" y="59" width="2" height="2" fill="#1a1a1a"/>
+                        <rect x="109" y="99" width="2" height="2" fill="#1a1a1a"/>
+                        <rect x="69" y="99" width="2" height="2" fill="#1a1a1a"/>
+                        <rect x="69" y="139" width="2" height="2" fill="#1a1a1a"/>
+                        <line x1="111" y1="60" x2="125" y2="60" stroke="#1a1a1a" stroke-width="0.5"/>
+                        <line x1="125" y1="60" x2="125" y2="45" stroke="#1a1a1a" stroke-width="0.5"/>
+                        <circle cx="125" cy="45" r="1" fill="#1a1a1a"/>
+                        <line x1="111" y1="100" x2="125" y2="100" stroke="#1a1a1a" stroke-width="0.5"/>
+                        <circle cx="125" cy="100" r="1" fill="#1a1a1a"/>
+                        <line x1="70" y1="140" x2="70" y2="155" stroke="#1a1a1a" stroke-width="0.5"/>
+                        <circle cx="70" cy="155" r="1" fill="#1a1a1a"/>
+                    </svg>
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo(3, 512)">512px</button>
+                    <button class="export-btn" onclick="exportLogo(3, 256)">256px</button>
+                    <button class="export-btn" onclick="exportLogo(3, 128)">128px</button>
+                    <button class="export-btn" onclick="exportLogo(3, 64)">64px</button>
+                </div>
+            </div>
+
+            <!-- Logo 4: LinkedIn Special -->
+            <div class="logo-card">
+                <h3>LinkedIn Version (with padding)</h3>
+                <div class="logo-preview">
+                    <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="200" height="200" fill="white"/>
+                        <g transform="translate(50, 40) scale(0.4)">
+                            <path d="M 0 0 L 0 300 M 0 0 L 150 0 C 220 0 256 50 256 120 C 256 190 220 240 150 240 L 0 240" 
+                                  stroke="#1a1a1a" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            <circle cx="0" cy="0" r="8" fill="#4F46E5"/>
+                            <circle cx="150" cy="0" r="8" fill="#4F46E5"/>
+                            <circle cx="256" cy="120" r="8" fill="#4F46E5"/>
+                            <circle cx="150" cy="240" r="8" fill="#4F46E5"/>
+                            <circle cx="0" cy="240" r="8" fill="#4F46E5"/>
+                            <circle cx="0" cy="300" r="8" fill="#4F46E5"/>
+                        </g>
+                    </svg>
+                </div>
+                <div class="export-sizes">
+                    <button class="export-btn" onclick="exportLogo(4, 512)">512px (LinkedIn)</button>
+                    <button class="export-btn" onclick="exportLogo(4, 256)">256px</button>
+                    <button class="export-btn" onclick="exportLogo(4, 128)">128px</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden canvases for export -->
+        <canvas id="exportCanvas" class="hidden"></canvas>
+    </div>
+
+    <script>
+        function exportLogo(logoNum, size) {
+            const canvas = document.getElementById('exportCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = size;
+            canvas.height = size;
+            
+            // Clear canvas with white background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Scale factor
+            const scale = size / 200;
+            
+            // Draw based on logo number
+            ctx.save();
+            ctx.scale(scale, scale);
+            
+            if (logoNum === 1) {
+                drawGeometricLogo(ctx);
+            } else if (logoNum === 2) {
+                drawDataFlowLogo(ctx);
+            } else if (logoNum === 3) {
+                drawCircuitLogo(ctx);
+            } else if (logoNum === 4) {
+                drawLinkedInLogo(ctx);
+            }
+            
+            ctx.restore();
+            
+            // Export as PNG
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `promtitude-logo-${logoNum}-${size}px.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        }
+        
+        function drawGeometricLogo(ctx) {
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // P shape
+            ctx.beginPath();
+            ctx.moveTo(50, 40);
+            ctx.lineTo(50, 160);
+            ctx.moveTo(50, 40);
+            ctx.lineTo(110, 40);
+            ctx.arc(110, 90, 50, -Math.PI/2, Math.PI/2, false);
+            ctx.lineTo(50, 140);
+            ctx.stroke();
+            
+            // Nodes
+            ctx.fillStyle = '#1a1a1a';
+            const nodes = [[50, 40], [110, 40], [160, 90], [110, 140], [50, 140], [50, 160]];
+            nodes.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Connections
+            ctx.strokeStyle = 'rgba(26, 26, 26, 0.3)';
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(50, 40);
+            ctx.lineTo(110, 40);
+            ctx.moveTo(110, 40);
+            ctx.lineTo(160, 90);
+            ctx.moveTo(160, 90);
+            ctx.lineTo(110, 140);
+            ctx.moveTo(110, 140);
+            ctx.lineTo(50, 140);
+            ctx.stroke();
+        }
+        
+        function drawDataFlowLogo(ctx) {
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            
+            // P paths
+            ctx.beginPath();
+            ctx.moveTo(60, 50);
+            ctx.lineTo(60, 150);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(60, 50);
+            ctx.quadraticCurveTo(120, 50, 120, 80);
+            ctx.quadraticCurveTo(120, 110, 60, 110);
+            ctx.stroke();
+            
+            // Data dots
+            const dots = [
+                {x: 60, y: 50, r: 1.5, op: 1},
+                {x: 80, y: 50, r: 1, op: 0.7},
+                {x: 100, y: 55, r: 1, op: 0.5},
+                {x: 115, y: 65, r: 1, op: 0.3},
+                {x: 120, y: 80, r: 1.5, op: 1},
+                {x: 115, y: 95, r: 1, op: 0.7},
+                {x: 100, y: 105, r: 1, op: 0.5},
+                {x: 80, y: 110, r: 1, op: 0.3},
+                {x: 60, y: 110, r: 1.5, op: 1},
+                {x: 60, y: 130, r: 1, op: 0.7},
+                {x: 60, y: 150, r: 1.5, op: 1}
+            ];
+            
+            ctx.fillStyle = '#4F46E5';
+            dots.forEach(dot => {
+                ctx.globalAlpha = dot.op;
+                ctx.beginPath();
+                ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+        
+        function drawCircuitLogo(ctx) {
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'square';
+            ctx.lineJoin = 'miter';
+            
+            // P shape
+            ctx.beginPath();
+            ctx.moveTo(70, 60);
+            ctx.lineTo(70, 140);
+            ctx.moveTo(70, 60);
+            ctx.lineTo(110, 60);
+            ctx.moveTo(110, 60);
+            ctx.lineTo(110, 100);
+            ctx.moveTo(110, 100);
+            ctx.lineTo(70, 100);
+            ctx.stroke();
+            
+            // Circuit nodes
+            ctx.fillStyle = '#1a1a1a';
+            const rects = [[69, 59], [109, 59], [109, 99], [69, 99], [69, 139]];
+            rects.forEach(([x, y]) => {
+                ctx.fillRect(x, y, 2, 2);
+            });
+            
+            // Circuit traces
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(111, 60);
+            ctx.lineTo(125, 60);
+            ctx.lineTo(125, 45);
+            ctx.moveTo(111, 100);
+            ctx.lineTo(125, 100);
+            ctx.moveTo(70, 140);
+            ctx.lineTo(70, 155);
+            ctx.stroke();
+            
+            // Circuit dots
+            [[125, 45], [125, 100], [70, 155]].forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 1, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function drawLinkedInLogo(ctx) {
+            // White background already drawn
+            ctx.save();
+            ctx.translate(50, 40);
+            ctx.scale(0.4, 0.4);
+            
+            ctx.strokeStyle = '#1a1a1a';
+            ctx.lineWidth = 5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // P shape
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, 300);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(150, 0);
+            ctx.bezierCurveTo(220, 0, 256, 50, 256, 120);
+            ctx.bezierCurveTo(256, 190, 220, 240, 150, 240);
+            ctx.lineTo(0, 240);
+            ctx.stroke();
+            
+            // Nodes
+            ctx.fillStyle = '#4F46E5';
+            const nodes = [[0, 0], [150, 0], [256, 120], [150, 240], [0, 240], [0, 300]];
+            nodes.forEach(([x, y]) => {
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            ctx.restore();
+        }
+    </script>
+</body>
+</html>
