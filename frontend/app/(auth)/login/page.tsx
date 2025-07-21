@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { ApiError } from '@/lib/api/client';
 import { Eye, EyeOff, Mail, Lock, Target, Zap, Search } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -59,8 +60,15 @@ export default function LoginPage() {
       {/* Left side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-600 to-purple-700 text-white p-12 flex-col justify-between">
         <div>
-          <Link href="/" className="text-2xl font-bold">
-            Promtitude
+          <Link href="/" className="inline-block">
+            <Image 
+              src="/logo-promtitude.svg" 
+              alt="Promtitude" 
+              width={180} 
+              height={40}
+              className="h-10 w-auto"
+              priority
+            />
           </Link>
         </div>
         
@@ -119,6 +127,19 @@ export default function LoginPage() {
       {/* Right side - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md">
+          {/* Logo for mobile */}
+          <div className="lg:hidden mb-8 flex justify-center">
+            <Link href="/" className="inline-block">
+              <Image 
+                src="/logo-promtitude.svg" 
+                alt="Promtitude" 
+                width={160} 
+                height={36}
+                className="h-9 w-auto"
+              />
+            </Link>
+          </div>
+          
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               Sign in to your account

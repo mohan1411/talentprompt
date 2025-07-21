@@ -1,5 +1,23 @@
 # Promtitude TODO List
 
+### Dashboard :
+```
+### Task: [Brief task description]
+**Platforms:** Web
+**Priority:** High
+**Description:** 
+
+- Dashboard
+    - Show an information in Dashboard, what the tool does, like find the right candidate with Natural Language Search or somethign similar.
+    - When logged in first time and/or no source for the resumes are mentioned, there should be a messgae that, No resumes are available to screen.
+    - Give a hint, a resume source can be a local folder, google drive etc.
+    - Show a bar chart, to indicate the number of resumes added, day wise, weekly wise, monthly wise and yearly, this can be as a filter
+
+- Profile
+  - When the Profile button is cliked on the menu side bar, the site is crashing (Safari)
+    - Console Log: Failed to load resource: the server responded with a status of 404 ()
+    
+
 ## 🔴 CRITICAL SECURITY FIXES (DO THESE FIRST!)
 
 ### User Data Isolation - PRIVACY BREACH ✅ COMPLETELY FIXED! 

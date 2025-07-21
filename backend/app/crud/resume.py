@@ -5,7 +5,7 @@ import logging
 from typing import List, Optional, Union, Dict, Any
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, func, extract, cast, Date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.base import CRUDBase
@@ -207,6 +207,151 @@ class CRUDResume(CRUDBase[Resume, ResumeCreate, ResumeUpdate]):
         
         logger.info(f"Hard deleted resume {id} from database")
         return resume
+    
+    async def get_upload_statistics(
+        self,
+        db: AsyncSession,
+        *,
+        aggregation: str = "daily",
+        start_date: Optional[datetime] = None,
+        end_date: Optional[datetime] = None,
+        user_id: Optional[UUID] = None
+    ) -> List[Dict[str, Any]]:
+        """Get resume upload statistics grouped by date.
+        
+        Args:
+            db: Database session
+            aggregation: One of 'daily', 'weekly', 'monthly', 'yearly'
+            start_date: Filter start date (optional)
+            end_date: Filter end date (optional)
+            user_id: Filter by specific user (optional)
+        
+        Returns:
+            List of dictionaries with date and count
+        """
+        # Build base query
+        query = select(Resume).where(Resume.status != 'deleted')
+        
+        # Apply date filters
+        if start_date:
+            query = query.where(Resume.created_at >= start_date)
+        if end_date:
+            query = query.where(Resume.created_at <= end_date)
+        
+        # Apply user filter if provided
+        if user_id:
+            query = query.where(Resume.user_id == user_id)
+        
+        # Apply aggregation based on type
+        if aggregation == "yearly":
+            # Group by year
+            date_expr = extract('year', Resume.created_at).label('date')
+            query = (
+                select(
+                    date_expr,
+                    func.count(Resume.id).label('count')
+                )
+                .select_from(Resume)
+                .where(Resume.status != 'deleted')
+            )
+            if start_date:
+                query = query.where(Resume.created_at >= start_date)
+            if end_date:
+                query = query.where(Resume.created_at <= end_date)
+            if user_id:
+                query = query.where(Resume.user_id == user_id)
+            query = query.group_by(date_expr).order_by(date_expr)
+            
+        elif aggregation == "monthly":
+            # Group by year and month
+            year_expr = extract('year', Resume.created_at)
+            month_expr = extract('month', Resume.created_at)
+            query = (
+                select(
+                    year_expr.label('year'),
+                    month_expr.label('month'),
+                    func.count(Resume.id).label('count')
+                )
+                .select_from(Resume)
+                .where(Resume.status != 'deleted')
+            )
+            if start_date:
+                query = query.where(Resume.created_at >= start_date)
+            if end_date:
+                query = query.where(Resume.created_at <= end_date)
+            if user_id:
+                query = query.where(Resume.user_id == user_id)
+            query = query.group_by(year_expr, month_expr).order_by(year_expr, month_expr)
+            
+        elif aggregation == "weekly":
+            # Group by year and week
+            year_expr = extract('year', Resume.created_at)
+            week_expr = extract('week', Resume.created_at)
+            query = (
+                select(
+                    year_expr.label('year'),
+                    week_expr.label('week'),
+                    func.count(Resume.id).label('count')
+                )
+                .select_from(Resume)
+                .where(Resume.status != 'deleted')
+            )
+            if start_date:
+                query = query.where(Resume.created_at >= start_date)
+            if end_date:
+                query = query.where(Resume.created_at <= end_date)
+            if user_id:
+                query = query.where(Resume.user_id == user_id)
+            query = query.group_by(year_expr, week_expr).order_by(year_expr, week_expr)
+            
+        else:  # daily
+            # Group by date (cast to date to remove time)
+            date_expr = cast(Resume.created_at, Date).label('date')
+            query = (
+                select(
+                    date_expr,
+                    func.count(Resume.id).label('count')
+                )
+                .select_from(Resume)
+                .where(Resume.status != 'deleted')
+            )
+            if start_date:
+                query = query.where(Resume.created_at >= start_date)
+            if end_date:
+                query = query.where(Resume.created_at <= end_date)
+            if user_id:
+                query = query.where(Resume.user_id == user_id)
+            query = query.group_by(date_expr).order_by(date_expr)
+        
+        # Execute query
+        result = await db.execute(query)
+        rows = result.all()
+        
+        # Format results based on aggregation type
+        statistics = []
+        for row in rows:
+            if aggregation == "yearly":
+                statistics.append({
+                    "date": str(int(row.date)),
+                    "count": row.count
+                })
+            elif aggregation == "monthly":
+                statistics.append({
+                    "date": f"{int(row.year)}-{int(row.month):02d}",
+                    "count": row.count
+                })
+            elif aggregation == "weekly":
+                statistics.append({
+                    "date": f"{int(row.year)}-W{int(row.week):02d}",
+                    "count": row.count
+                })
+            else:  # daily
+                statistics.append({
+                    "date": row.date.isoformat() if hasattr(row.date, 'isoformat') else str(row.date),
+                    "count": row.count
+                })
+        
+        return statistics
 
 
 resume = CRUDResume(Resume)

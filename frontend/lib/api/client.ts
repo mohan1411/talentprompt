@@ -245,6 +245,14 @@ export const resumeApi = {
       body: { resume_ids: resumeIds, job_position: jobPosition },
     });
   },
+
+  async getStatistics(aggregation: 'daily' | 'weekly' | 'monthly' | 'yearly' = 'daily', startDate?: string, endDate?: string) {
+    const params: any = { aggregation };
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+    
+    return makeRequest('/resumes/statistics', { params });
+  },
 };
 
 // Search endpoints

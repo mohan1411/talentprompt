@@ -104,3 +104,20 @@ class ResumeSearchResult(BaseModel):
     summary_snippet: Optional[str] = None
     job_position: Optional[str] = None
     linkedin_url: Optional[str] = None
+
+
+class ResumeStatisticsItem(BaseModel):
+    """Schema for a single statistics item."""
+    
+    date: str  # Format depends on aggregation: YYYY-MM-DD, YYYY-WW, YYYY-MM, YYYY
+    count: int
+
+
+class ResumeStatistics(BaseModel):
+    """Schema for resume upload statistics response."""
+    
+    aggregation: str  # daily, weekly, monthly, yearly
+    data: List[ResumeStatisticsItem]
+    total_count: int
+    start_date: str
+    end_date: str

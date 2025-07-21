@@ -6,6 +6,8 @@ from .resume import (
     ResumeInDBBase,
     ResumeSearchResult,
     ResumeUpdate,
+    ResumeStatistics,
+    ResumeStatisticsItem,
 )
 from .token import Token, TokenPayload
 from .user import User, UserCreate, UserInDB, UserInDBBase, UserUpdate
@@ -23,4 +25,6 @@ __all__ = [
     "ResumeInDBBase",
     "ResumeSearchResult",
     "ResumeUpdate",
+    "ResumeStatistics",
+    "ResumeStatisticsItem",
 ]

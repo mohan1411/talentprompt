@@ -1,9 +1,10 @@
 """Resume endpoints."""
 
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, File, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, File, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -243,3 +244,60 @@ async def bulk_update_position(
         response["errors"] = errors
     
     return response
+
+
+@router.get("/statistics", response_model=schemas.ResumeStatistics)
+async def get_resume_statistics(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    aggregation: str = Query("daily", regex="^(daily|weekly|monthly|yearly)$"),
+    start_date: Optional[datetime] = Query(None, description="Filter start date (ISO format)"),
+    end_date: Optional[datetime] = Query(None, description="Filter end date (ISO format)"),
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> schemas.ResumeStatistics:
+    """Get resume upload statistics grouped by date.
+    
+    Returns data suitable for bar charts with counts grouped by:
+    - daily: Each day (YYYY-MM-DD)
+    - weekly: Each week (YYYY-WW)
+    - monthly: Each month (YYYY-MM)
+    - yearly: Each year (YYYY)
+    
+    Admin users get statistics for all resumes.
+    Regular users get statistics only for their own resumes.
+    """
+    # Determine if we should filter by user
+    user_id = None if current_user.is_superuser else current_user.id
+    
+    # Get statistics from database
+    statistics_data = await crud.resume.get_upload_statistics(
+        db,
+        aggregation=aggregation,
+        start_date=start_date,
+        end_date=end_date,
+        user_id=user_id
+    )
+    
+    # Calculate total count
+    total_count = sum(item["count"] for item in statistics_data)
+    
+    # Determine date range
+    if statistics_data:
+        dates = [item["date"] for item in statistics_data]
+        start_date_str = min(dates)
+        end_date_str = max(dates)
+    else:
+        start_date_str = start_date.isoformat() if start_date else ""
+        end_date_str = end_date.isoformat() if end_date else ""
+    
+    # Convert to response schema
+    return schemas.ResumeStatistics(
+        aggregation=aggregation,
+        data=[
+            schemas.ResumeStatisticsItem(date=item["date"], count=item["count"])
+            for item in statistics_data
+        ],
+        total_count=total_count,
+        start_date=start_date_str,
+        end_date=end_date_str
+    )

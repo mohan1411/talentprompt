@@ -9,12 +9,20 @@ import {
   Users,
   TrendingUp,
   Clock,
-  ChevronRight
+  ChevronRight,
+  FolderOpen,
+  HardDrive,
+  Cloud,
+  Info,
+  Target,
+  Zap,
+  Brain
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/context';
 import { resumeApi } from '@/lib/api/client';
 import type { Resume } from '@/lib/api/client';
 import { searchHistory } from '@/lib/search-history';
+import { ResumeStatisticsChart } from '@/components/dashboard/resume-statistics-chart';
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -116,6 +124,9 @@ export default function DashboardPage() {
     },
   ];
 
+  // Check if user has no resumes at all
+  const hasNoResumes = !isLoading && stats.totalResumes === 0;
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -124,33 +135,153 @@ export default function DashboardPage() {
           Welcome back, {user?.full_name || user?.username}!
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Here's what's happening with your talent search today.
+          {hasNoResumes 
+            ? "Let's get started with your AI-powered recruitment journey."
+            : "Here's what's happening with your talent search today."}
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {statCards.map((stat) => (
-          <div key={stat.title} className="card p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {stat.title}
-                </p>
-                <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-                  {stat.value}
-                </p>
-                {stat.trend !== '-' && (
-                  <p className="mt-1 text-sm text-green-600">
-                    {stat.trend} from last month
-                  </p>
-                )}
+      {/* Welcome Section - Show when user is new or has no resumes */}
+      {(hasNoResumes || stats.totalResumes < 5) && (
+        <div className="mb-8 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6 border border-primary/20">
+          <div className="flex items-start space-x-4">
+            <div className="flex-shrink-0">
+              <Brain className="h-8 w-8 text-primary" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Find the Right Candidate with Natural Language Search
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Promtitude uses advanced AI to help you search through resumes using everyday language. 
+                Simply describe your ideal candidate, and our AI will find the best matches from your resume database.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-start space-x-2">
+                  <Target className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Precise Matching</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Find candidates that match your exact requirements</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Zap className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Lightning Fast</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Search through thousands of resumes in seconds</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <Brain className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">AI-Powered</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Understands context and finds hidden gems</p>
+                  </div>
+                </div>
               </div>
-              <stat.icon className={`h-12 w-12 ${stat.color} opacity-20`} />
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
+
+      {/* Empty State - When user has no resumes */}
+      {hasNoResumes ? (
+        <div className="space-y-8">
+          {/* No Resumes Message */}
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-dashed border-yellow-300 dark:border-yellow-700 rounded-lg p-8 text-center">
+            <FileText className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
+              No resumes available to screen
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
+              Start building your resume database by uploading resumes from various sources. 
+              Once you have resumes, you can use our powerful AI search to find the perfect candidates.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard/upload" className="btn-primary">
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Resume
+              </Link>
+              <Link href="/dashboard/bulk-upload" className="btn-secondary">
+                <Zap className="h-4 w-4 mr-2" />
+                Bulk Upload
+              </Link>
+            </div>
+          </div>
+
+          {/* Resume Sources Hint */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start space-x-3">
+              <Info className="h-6 w-6 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  Resume Sources You Can Use
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex items-start space-x-3">
+                    <FolderOpen className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">Local Folder</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Upload resumes from your computer in PDF, DOCX, or TXT format
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <Cloud className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">Google Drive</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Import resumes directly from your Google Drive (coming soon)
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <HardDrive className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">ATS Systems</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Integrate with popular ATS platforms (enterprise feature)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {statCards.map((stat) => (
+              <div key={stat.title} className="card p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {stat.title}
+                    </p>
+                    <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+                      {stat.value}
+                    </p>
+                    {stat.trend !== '-' && (
+                      <p className="mt-1 text-sm text-green-600">
+                        {stat.trend} from last month
+                      </p>
+                    )}
+                  </div>
+                  <stat.icon className={`h-12 w-12 ${stat.color} opacity-20`} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Resume Statistics Chart */}
+          <div className="mb-8">
+            <ResumeStatisticsChart />
+          </div>
+        </>
+      )}
 
       {/* Quick Actions */}
       <div className="mb-8">
@@ -202,8 +333,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Recent Resumes */}
-      <div>
+      {/* Recent Resumes - Only show when user has resumes */}
+      {!hasNoResumes && (
+        <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             Recent Resumes
@@ -269,6 +401,7 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 }
