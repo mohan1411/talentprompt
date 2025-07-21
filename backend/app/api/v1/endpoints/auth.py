@@ -84,6 +84,13 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    # Check if user's email is verified
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please verify your email before logging in. Check your inbox for the verification link.",
+        )
+    
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         subject=str(user.id), expires_delta=access_token_expires
