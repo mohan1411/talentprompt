@@ -236,12 +236,15 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <HardDrive className="h-5 w-5 text-gray-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start space-x-3 opacity-60">
+                    <HardDrive className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">ATS Systems</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Integrate with popular ATS platforms (enterprise feature)
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        ATS Systems 
+                        <span className="ml-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded-full">Coming Soon</span>
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">
+                        Integration with Greenhouse, Lever, and other ATS platforms
                       </p>
                     </div>
                   </div>
