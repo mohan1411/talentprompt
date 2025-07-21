@@ -1,0 +1,15 @@
+<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Promtitude Icon Only (Square format for app icons) -->
+  <g transform="translate(20, 20) scale(0.75)">
+    <!-- Main P shape -->
+    <path d="M 0 0 L 0 80 M 0 0 L 40 0 M 40 0 L 40 40 M 40 40 L 0 40" 
+          stroke="currentColor" stroke-width="2.67" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+    
+    <!-- Circuit nodes -->
+    <rect fill="currentColor" x="-1" y="-1" width="2.67" height="2.67"/>
+    <rect fill="currentColor" x="39" y="-1" width="2.67" height="2.67"/>
+    <rect fill="currentColor" x="39" y="39" width="2.67" height="2.67"/>
+    <rect fill="currentColor" x="-1" y="39" width="2.67" height="2.67"/>
+    <rect fill="currentColor" x="-1" y="79" width="2.67" height="2.67"/>
+  </g>
+</svg>

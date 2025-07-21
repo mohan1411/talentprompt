@@ -140,8 +140,12 @@ export default function HomePage() {
       {/* Header */}
       <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <Link href="/" className="text-2xl font-bold text-primary">
-            Promtitude
+          <Link href="/" className="flex items-center">
+            <img 
+              src="/logo-horizontal.svg" 
+              alt="Promtitude" 
+              className="h-10 w-auto"
+            />
           </Link>
           <nav className="flex gap-4 items-center">
             <a 

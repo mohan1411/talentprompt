@@ -9,6 +9,11 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Promtitude - Where AI Meets Aptitude | AI-Powered Recruitment Platform',
   description: 'Complete AI-powered recruitment platform with natural language search, live interview transcription, intelligent scoring, and real-time coaching. Find, interview, and hire better with AI.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/logo-icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,32 @@
+<svg width="400" height="100" viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Promtitude Horizontal Logo -->
+  <g>
+    <!-- Logo Icon -->
+    <g transform="translate(20, 20) scale(0.6)">
+      <!-- Main P shape -->
+      <path d="M 0 0 L 0 80 M 0 0 L 40 0 M 40 0 L 40 40 M 40 40 L 0 40" 
+            stroke="currentColor" stroke-width="3.33" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+      
+      <!-- Circuit nodes -->
+      <rect fill="currentColor" x="-1.67" y="-1.67" width="3.33" height="3.33"/>
+      <rect fill="currentColor" x="38.33" y="-1.67" width="3.33" height="3.33"/>
+      <rect fill="currentColor" x="38.33" y="38.33" width="3.33" height="3.33"/>
+      <rect fill="currentColor" x="-1.67" y="38.33" width="3.33" height="3.33"/>
+      <rect fill="currentColor" x="-1.67" y="78.33" width="3.33" height="3.33"/>
+      
+      <!-- Circuit traces -->
+      <line x1="41.67" y1="0" x2="55" y2="0" stroke="currentColor" stroke-width="0.83"/>
+      <line x1="55" y1="0" x2="55" y2="-13.33" stroke="currentColor" stroke-width="0.83"/>
+      <circle fill="currentColor" cx="55" cy="-13.33" r="1.67"/>
+      
+      <line x1="41.67" y1="40" x2="55" y2="40" stroke="currentColor" stroke-width="0.83"/>
+      <circle fill="currentColor" cx="55" cy="40" r="1.67"/>
+      
+      <line x1="0" y1="80" x2="0" y2="93.33" stroke="currentColor" stroke-width="0.83"/>
+      <circle fill="currentColor" cx="0" cy="93.33" r="1.67"/>
+    </g>
+    
+    <!-- Company Name -->
+    <text x="90" y="58" font-family="Arial, sans-serif" font-size="36" font-weight="300" fill="currentColor">PROMTITUDE</text>
+  </g>
+</svg>

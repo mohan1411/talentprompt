@@ -124,8 +124,16 @@ async def exchange_oauth_token(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Unexpected OAuth error: {str(e)}", exc_info=True)
+        # Return more detailed error in development
+        if settings.DEBUG:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"OAuth error: {str(e)}"
+            )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to complete OAuth authentication"

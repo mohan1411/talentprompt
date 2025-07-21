@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Promtitude"
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
+    DEBUG: bool = True  # Set to False in production
     
     # Security
     SECRET_KEY: str = Field(default="local-dev-secret-key-change-in-production", min_length=32)

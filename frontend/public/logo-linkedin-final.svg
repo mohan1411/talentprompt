@@ -1,0 +1,28 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- LinkedIn Optimized Logo (400x400 with padding) -->
+  <rect width="400" height="400" fill="white"/>
+  
+  <g transform="translate(100, 100)">
+    <!-- Main P shape -->
+    <path d="M 0 0 L 0 160 M 0 0 L 80 0 M 80 0 L 80 80 M 80 80 L 0 80" 
+          stroke="#1a1a1a" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+    
+    <!-- Circuit nodes -->
+    <rect fill="#1a1a1a" x="-2" y="-2" width="4" height="4"/>
+    <rect fill="#1a1a1a" x="78" y="-2" width="4" height="4"/>
+    <rect fill="#1a1a1a" x="78" y="78" width="4" height="4"/>
+    <rect fill="#1a1a1a" x="-2" y="78" width="4" height="4"/>
+    <rect fill="#1a1a1a" x="-2" y="158" width="4" height="4"/>
+    
+    <!-- Circuit traces -->
+    <line x1="82" y1="0" x2="110" y2="0" stroke="#1a1a1a" stroke-width="1"/>
+    <line x1="110" y1="0" x2="110" y2="-28" stroke="#1a1a1a" stroke-width="1"/>
+    <circle fill="#4F46E5" cx="110" cy="-28" r="3"/>
+    
+    <line x1="82" y1="80" x2="110" y2="80" stroke="#1a1a1a" stroke-width="1"/>
+    <circle fill="#4F46E5" cx="110" cy="80" r="3"/>
+    
+    <line x1="0" y1="162" x2="0" y2="190" stroke="#1a1a1a" stroke-width="1"/>
+    <circle fill="#4F46E5" cx="0" cy="190" r="3"/>
+  </g>
+</svg>

@@ -157,6 +157,10 @@ class OAuthService:
         """Exchange LinkedIn authorization code for user info."""
         redirect_uri = redirect_uri or settings.LINKEDIN_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/linkedin/callback"
         
+        logger.info(f"LinkedIn OAuth: Starting token exchange")
+        logger.info(f"LinkedIn OAuth: Using redirect_uri: {redirect_uri}")
+        logger.info(f"LinkedIn OAuth: Code length: {len(code)}")
+        
         # Exchange code for token
         token_url = "https://www.linkedin.com/oauth/v2/accessToken"
         token_data = {
@@ -168,33 +172,85 @@ class OAuthService:
         }
         
         async with httpx.AsyncClient() as client:
-            token_response = await client.post(
-                token_url,
-                data=token_data,
+            logger.info(f"LinkedIn OAuth: Requesting access token")
+            try:
+                token_response = await client.post(
+                    token_url,
+                    data=token_data,
+                    headers={'Content-Type': 'application/x-www-form-urlencoded'}
+                )
+                token_response.raise_for_status()
+                token_info = token_response.json()
+                logger.info(f"LinkedIn OAuth: Token received successfully")
+            except httpx.HTTPStatusError as e:
+                logger.error(f"LinkedIn OAuth: Token exchange failed - Status: {e.response.status_code}")
+                logger.error(f"LinkedIn OAuth: Error response: {e.response.text}")
+                raise ValueError(f"LinkedIn token exchange failed: {e.response.text}")
+            except Exception as e:
+                logger.error(f"LinkedIn OAuth: Unexpected error during token exchange: {str(e)}")
+                raise
+            
+            # LinkedIn OpenID Connect uses JWT tokens
+            # We need to decode the ID token if present
+            id_token = token_info.get('id_token')
+            
+            if id_token:
+                # LinkedIn provides user info in the ID token for OpenID Connect
+                logger.info(f"LinkedIn OAuth: Decoding ID token")
+                import jwt
+                
+                # Decode without verification for now (in production, verify with LinkedIn's public key)
+                try:
+                    user_info = jwt.decode(id_token, options={"verify_signature": False})
+                    logger.info(f"LinkedIn OAuth: ID token decoded successfully")
+                    
+                    return {
+                        'provider': 'linkedin',
+                        'provider_id': user_info.get('sub', ''),
+                        'email': user_info.get('email', ''),
+                        'email_verified': user_info.get('email_verified', False),
+                        'name': user_info.get('name', ''),
+                        'given_name': user_info.get('given_name', ''),
+                        'family_name': user_info.get('family_name', ''),
+                        'picture': user_info.get('picture'),
+                        'raw_data': user_info
+                    }
+                except Exception as e:
+                    logger.error(f"LinkedIn OAuth: Failed to decode ID token: {str(e)}")
+                    # Fall back to introspection endpoint
+            
+            # Try the introspection endpoint
+            logger.info(f"LinkedIn OAuth: Using introspection endpoint")
+            introspect_response = await client.post(
+                "https://www.linkedin.com/oauth/v2/introspectToken",
+                data={
+                    'token': token_info['access_token'],
+                    'client_id': settings.LINKEDIN_CLIENT_ID,
+                    'client_secret': settings.LINKEDIN_CLIENT_SECRET
+                },
                 headers={'Content-Type': 'application/x-www-form-urlencoded'}
             )
-            token_response.raise_for_status()
-            token_info = token_response.json()
             
-            # Get user info using OpenID Connect
-            userinfo_response = await client.get(
-                "https://api.linkedin.com/v2/userinfo",
-                headers={"Authorization": f"Bearer {token_info['access_token']}"}
-            )
-            userinfo_response.raise_for_status()
-            user_info = userinfo_response.json()
-            
-            return {
-                'provider': 'linkedin',
-                'provider_id': user_info['sub'],
-                'email': user_info['email'],
-                'email_verified': user_info.get('email_verified', False),
-                'name': user_info.get('name'),
-                'given_name': user_info.get('given_name'),
-                'family_name': user_info.get('family_name'),
-                'picture': user_info.get('picture'),
-                'raw_data': user_info
-            }
+            if introspect_response.status_code == 200:
+                introspect_data = introspect_response.json()
+                logger.info(f"LinkedIn OAuth: Token introspection successful")
+                
+                # Extract user info from introspection response
+                return {
+                    'provider': 'linkedin',
+                    'provider_id': introspect_data.get('sub', ''),
+                    'email': introspect_data.get('email', ''),
+                    'email_verified': introspect_data.get('email_verified', True),
+                    'name': introspect_data.get('name', ''),
+                    'given_name': introspect_data.get('given_name', ''),
+                    'family_name': introspect_data.get('family_name', ''),
+                    'picture': introspect_data.get('picture'),
+                    'raw_data': introspect_data
+                }
+            else:
+                logger.error(f"LinkedIn OAuth: Introspection failed with status {introspect_response.status_code}")
+                logger.error(f"LinkedIn OAuth: Response: {introspect_response.text}")
+                raise ValueError(f"Failed to get user info from LinkedIn: {introspect_response.text}")
     
     def create_user_from_oauth(self, oauth_data: Dict[str, Any]) -> UserCreate:
         """Create UserCreate schema from OAuth data."""

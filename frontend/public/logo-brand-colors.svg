@@ -1,0 +1,26 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brand Colors Version -->
+  <g>
+    <!-- Main P shape in brand purple -->
+    <path d="M 70 60 L 70 140 M 70 60 L 110 60 M 110 60 L 110 100 M 110 100 L 70 100" 
+          stroke="#4F46E5" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"/>
+    
+    <!-- Circuit nodes in purple -->
+    <rect fill="#4F46E5" x="69" y="59" width="2" height="2"/>
+    <rect fill="#4F46E5" x="109" y="59" width="2" height="2"/>
+    <rect fill="#4F46E5" x="109" y="99" width="2" height="2"/>
+    <rect fill="#4F46E5" x="69" y="99" width="2" height="2"/>
+    <rect fill="#4F46E5" x="69" y="139" width="2" height="2"/>
+    
+    <!-- Circuit traces in lighter purple -->
+    <line x1="111" y1="60" x2="125" y2="60" stroke="#818CF8" stroke-width="0.5"/>
+    <line x1="125" y1="60" x2="125" y2="45" stroke="#818CF8" stroke-width="0.5"/>
+    <circle fill="#818CF8" cx="125" cy="45" r="1"/>
+    
+    <line x1="111" y1="100" x2="125" y2="100" stroke="#818CF8" stroke-width="0.5"/>
+    <circle fill="#818CF8" cx="125" cy="100" r="1"/>
+    
+    <line x1="70" y1="140" x2="70" y2="155" stroke="#818CF8" stroke-width="0.5"/>
+    <circle fill="#818CF8" cx="70" cy="155" r="1"/>
+  </g>
+</svg>
