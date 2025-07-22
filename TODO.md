@@ -234,6 +234,12 @@ Focus on user acquisition and Chrome extension publishing to start building user
 
 **Production Status**: All systems operational! Email verification working perfectly.
 
+### Updates - July 22, 2025
+- ✅ Updated FAQ Pricing section to reflect free early access model
+- ✅ Clarified early user grandfather benefits (lifetime discounts, priority features)
+- ✅ Fixed FAQ hosting information (Railway instead of AWS)
+- ✅ Corrected GDPR compliance status to be transparent about current state
+
 ### Strategic Decision - July 22, 2025
 **Removed 14-day trial language** - Following the successful startup playbook:
 - Give users full access for free initially
