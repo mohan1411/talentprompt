@@ -261,6 +261,10 @@ Focus on user acquisition and Chrome extension publishing to start building user
   - Added "Complete Without Recording" button for flexible interview completion
   - Updated database schema to support both mode and category
   - Added mode-aware UI elements in interview session page
+- ✅ Fixed speaker confidence display in transcript analysis
+  - Updated transcription service to calculate average confidence per speaker
+  - Separated role assignment confidence from transcription confidence
+  - Now correctly displays AssemblyAI's actual transcription confidence values
 
 ### Strategic Decision - July 22, 2025
 **Removed 14-day trial language** - Following the successful startup playbook:
