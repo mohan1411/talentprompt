@@ -73,12 +73,12 @@ const faqs: FAQItem[] = [
   {
     category: 'Privacy & Security',
     question: 'Are you GDPR compliant?',
-    answer: 'Yes, we are GDPR compliant. We have comprehensive privacy policies, data processing agreements, and give users full control over their data. You can export or delete your data at any time from your account settings.'
+    answer: 'We\'re committed to GDPR compliance and data privacy. We have a comprehensive privacy policy and cookie consent system in place. We\'re actively building additional features like automated data export and account deletion to give you complete control over your data. As an early-stage platform, we\'re implementing these features based on user feedback and regulatory requirements.'
   },
   {
     category: 'Privacy & Security',
     question: 'Where is my data stored?',
-    answer: 'Your data is securely stored in AWS data centers in the US and EU regions, with automatic backups and disaster recovery. We comply with data residency requirements and can provide region-specific storage for enterprise customers. All data transfers are encrypted and we maintain strict access controls.'
+    answer: 'Your data is securely stored on Railway\'s cloud infrastructure with automatic backups and disaster recovery. All data transfers are encrypted and we maintain strict access controls. As we grow, we\'re evaluating additional data center locations to better serve our global users and meet specific compliance requirements.'
   },
   // Technical
   {
