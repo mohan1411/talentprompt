@@ -1211,13 +1211,59 @@ async def upload_interview_recording(
             logger.info(f"Session {session_id} updated with transcript")
             logger.info(f"Transcript length: {len(session.transcript) if session.transcript else 0}")
             
+            # Automatically trigger analysis
+            try:
+                logger.info(f"Triggering automatic analysis for session {session_id}")
+                
+                analysis = await interview_ai_service.analyze_transcript_content(
+                    transcript_data=transcript_data,
+                    session_data={
+                        "job_position": session.job_position,
+                        "interview_type": session.interview_type,
+                        "interview_category": session.interview_category,
+                        "duration_minutes": session.duration_minutes
+                    }
+                )
+                
+                # Generate scorecard from analysis
+                scorecard_data = await interview_ai_service.generate_interview_scorecard(
+                    session_data={
+                        "job_position": session.job_position,
+                        "duration_minutes": session.duration_minutes or 30
+                    },
+                    responses=analysis["responses_for_scorecard"]
+                )
+                
+                # Update session with analysis results
+                session.scorecard = scorecard_data
+                session.overall_rating = scorecard_data.get("overall_rating", 0)
+                session.recommendation = scorecard_data.get("recommendation", "maybe")
+                session.strengths = scorecard_data.get("strengths", [])
+                session.concerns = scorecard_data.get("concerns", [])
+                
+                # Store detailed analysis
+                if not session.preparation_notes:
+                    session.preparation_notes = {}
+                session.preparation_notes["transcript_analysis"] = analysis["qa_analysis"]
+                session.preparation_notes["transcript_insights"] = analysis["transcript_insights"]
+                
+                await db.commit()
+                await db.refresh(session)
+                
+                logger.info(f"Analysis completed for session {session_id}")
+                
+            except Exception as analysis_error:
+                logger.error(f"Auto-analysis failed: {str(analysis_error)}")
+                # Don't fail the upload if analysis fails
+            
             # Clean up temp file
             os.unlink(tmp_file_path)
             
             return {
                 "message": "Recording uploaded and processed successfully",
                 "transcript": transcript_data,
-                "status": "completed"
+                "status": "completed",
+                "analysis_available": bool(session.scorecard)
             }
             
         except Exception as e:
@@ -1240,3 +1286,79 @@ async def upload_interview_recording(
         if os.path.exists(tmp_file_path):
             os.unlink(tmp_file_path)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/sessions/{session_id}/analyze-transcript")
+async def analyze_interview_transcript(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Analyze interview transcript and generate AI insights."""
+    
+    # Get session with transcript
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    if not session.transcript_data:
+        raise HTTPException(status_code=400, detail="No transcript available for analysis")
+    
+    try:
+        # Analyze transcript
+        logger.info(f"Analyzing transcript for session {session_id}")
+        
+        analysis = await interview_ai_service.analyze_transcript_content(
+            transcript_data=session.transcript_data,
+            session_data={
+                "job_position": session.job_position,
+                "interview_type": session.interview_type,
+                "interview_category": session.interview_category,
+                "duration_minutes": session.duration_minutes
+            }
+        )
+        
+        # Generate scorecard from analysis
+        scorecard_data = await interview_ai_service.generate_interview_scorecard(
+            session_data={
+                "job_position": session.job_position,
+                "duration_minutes": session.duration_minutes or 30
+            },
+            responses=analysis["responses_for_scorecard"]
+        )
+        
+        # Update session with analysis results
+        session.scorecard = scorecard_data
+        session.overall_rating = scorecard_data.get("overall_rating", 0)
+        session.recommendation = scorecard_data.get("recommendation", "maybe")
+        session.strengths = scorecard_data.get("strengths", [])
+        session.concerns = scorecard_data.get("concerns", [])
+        
+        # Store detailed analysis
+        if not session.preparation_notes:
+            session.preparation_notes = {}
+        session.preparation_notes["transcript_analysis"] = analysis["qa_analysis"]
+        session.preparation_notes["transcript_insights"] = analysis["transcript_insights"]
+        
+        await db.commit()
+        await db.refresh(session)
+        
+        return {
+            "message": "Transcript analyzed successfully",
+            "scorecard": scorecard_data,
+            "qa_analysis": analysis["qa_analysis"],
+            "insights": analysis["transcript_insights"]
+        }
+        
+    except Exception as e:
+        logger.error(f"Error analyzing transcript: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

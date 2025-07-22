@@ -896,6 +896,173 @@ class InterviewAIService:
                 "is_followup": True
             }
         }
+    
+    async def analyze_transcript_content(
+        self,
+        transcript_data: Dict[str, Any],
+        session_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Analyze interview transcript and extract Q&A pairs with ratings."""
+        
+        # Extract transcript text and speakers
+        transcript_text = transcript_data.get("transcript_text", "")
+        speakers_data = transcript_data.get("speakers", {})
+        
+        # Build conversation flow
+        utterances = transcript_data.get("utterances", [])
+        if not utterances:
+            # Extract from speakers data if utterances not at top level
+            utterances = []
+            for speaker_id, speaker_info in speakers_data.items():
+                for utt in speaker_info.get("utterances", []):
+                    utterances.append({
+                        **utt,
+                        "speaker": speaker_id,
+                        "role": speaker_info.get("likely_role", "unknown")
+                    })
+        
+        # Sort by timestamp
+        utterances.sort(key=lambda x: x.get("start", 0))
+        
+        prompt = f"""
+        Analyze this interview transcript and extract Q&A pairs with detailed evaluation.
+        
+        Interview Context:
+        - Position: {session_data.get('job_position')}
+        - Interview Type: {session_data.get('interview_type', 'general')}
+        - Duration: {transcript_data.get('duration', 0)} seconds
+        
+        Transcript:
+        {self._format_transcript_for_analysis(utterances)}
+        
+        For each question-answer pair:
+        1. Identify the question asked by the interviewer
+        2. Extract the candidate's complete response
+        3. Evaluate the response quality (1-5 scale)
+        4. Identify technical skills mentioned
+        5. Assess communication clarity
+        6. Note any red flags or exceptional points
+        
+        Also provide:
+        - Overall interview assessment
+        - Key strengths demonstrated
+        - Areas of concern
+        - Hiring recommendation
+        
+        Return a JSON object with this exact structure:
+        {{
+            "qa_pairs": [
+                {{
+                    "question": "interviewer question",
+                    "answer": "candidate response",
+                    "rating": 4,
+                    "category": "technical/behavioral/situational",
+                    "skills_mentioned": ["skill1", "skill2"],
+                    "evaluation": "brief evaluation of response quality",
+                    "red_flags": [],
+                    "positive_signals": ["signal1"]
+                }}
+            ],
+            "overall_assessment": {{
+                "communication_score": 4.5,
+                "technical_depth": 4.0,
+                "cultural_fit": 4.2,
+                "enthusiasm": 4.3,
+                "overall_rating": 4.2
+            }},
+            "key_strengths": ["strength1", "strength2"],
+            "areas_of_concern": ["concern1", "concern2"],
+            "recommendation": "hire/no_hire/maybe",
+            "summary": "2-3 sentence summary"
+        }}
+        """
+        
+        try:
+            response = await self.openai_service.generate_completion(prompt)
+            
+            try:
+                analysis = json.loads(response)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse transcript analysis as JSON")
+                return self._get_default_transcript_analysis(transcript_data, session_data)
+            
+            # Calculate aggregated scores for scorecard
+            qa_pairs = analysis.get("qa_pairs", [])
+            responses = []
+            
+            for i, qa in enumerate(qa_pairs):
+                responses.append({
+                    "question_text": qa.get("question", ""),
+                    "response_summary": qa.get("answer", "")[:500],  # Truncate long answers
+                    "response_rating": qa.get("rating", 3),
+                    "category": qa.get("category", "general"),
+                    "skills_mentioned": qa.get("skills_mentioned", []),
+                    "evaluation": qa.get("evaluation", "")
+                })
+            
+            return {
+                "qa_analysis": analysis,
+                "responses_for_scorecard": responses,
+                "transcript_insights": {
+                    "total_questions": len(qa_pairs),
+                    "average_rating": sum(qa.get("rating", 0) for qa in qa_pairs) / len(qa_pairs) if qa_pairs else 0,
+                    "skills_identified": list(set(
+                        skill for qa in qa_pairs 
+                        for skill in qa.get("skills_mentioned", [])
+                    )),
+                    "interview_flow": "structured" if len(qa_pairs) > 5 else "conversational"
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing transcript: {e}")
+            return self._get_default_transcript_analysis(transcript_data, session_data)
+    
+    def _format_transcript_for_analysis(self, utterances: List[Dict]) -> str:
+        """Format utterances for analysis prompt."""
+        formatted_lines = []
+        
+        for utt in utterances[:100]:  # Limit to prevent token overflow
+            speaker_role = utt.get("role", "unknown")
+            if not speaker_role or speaker_role == "unknown":
+                # Try to infer from speaker ID
+                speaker_id = utt.get("speaker", "")
+                speaker_role = "interviewer" if speaker_id == "A" else "candidate"
+            
+            text = utt.get("text", "")
+            formatted_lines.append(f"[{speaker_role}]: {text}")
+        
+        return "\n".join(formatted_lines)
+    
+    def _get_default_transcript_analysis(
+        self, 
+        transcript_data: Dict[str, Any],
+        session_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Return default analysis if AI fails."""
+        return {
+            "qa_analysis": {
+                "qa_pairs": [],
+                "overall_assessment": {
+                    "communication_score": 3.0,
+                    "technical_depth": 3.0,
+                    "cultural_fit": 3.0,
+                    "enthusiasm": 3.0,
+                    "overall_rating": 3.0
+                },
+                "key_strengths": ["Unable to analyze - manual review needed"],
+                "areas_of_concern": ["Transcript analysis failed"],
+                "recommendation": "maybe",
+                "summary": "Automated analysis unavailable. Please review transcript manually."
+            },
+            "responses_for_scorecard": [],
+            "transcript_insights": {
+                "total_questions": 0,
+                "average_rating": 0,
+                "skills_identified": [],
+                "interview_flow": "unknown"
+            }
+        }
 
 
 # Singleton instance

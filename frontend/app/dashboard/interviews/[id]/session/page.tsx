@@ -42,6 +42,7 @@ import { LiveInsightsPanel } from '@/components/interview/LiveInsightsPanel'
 import { CoachingSuggestionsPanel } from '@/components/interview/CoachingSuggestionsPanel'
 import { WebSocketDebug } from '@/components/interview/WebSocketDebug'
 import { UploadRecordingDialog } from '@/components/interview/UploadRecordingDialog'
+import { InterviewScorecard } from '@/components/interview/InterviewScorecard'
 
 export default function InterviewSessionPage() {
   const params = useParams()
@@ -533,36 +534,97 @@ export default function InterviewSessionPage() {
             </CardContent>
           </Card>
 
-          {/* Transcript Display */}
-          {session?.transcript && (
+          {/* Transcript and Analysis */}
+          {(session?.transcript || session?.scorecard) && (
             <Card>
               <CardHeader>
-                <CardTitle>Interview Transcript</CardTitle>
-                <CardDescription>Uploaded recording transcription</CardDescription>
+                <CardTitle>Interview Results</CardTitle>
+                <CardDescription>Transcript and AI analysis</CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-                  <div className="space-y-4">
-                    {session.transcript_data?.speakers ? (
-                      // Show speaker-separated transcript if available
-                      Object.entries(session.transcript_data.speakers).map(([speakerId, speaker]: [string, any]) => (
-                        <div key={speakerId} className="space-y-2">
-                          <h4 className="font-medium text-sm">
-                            Speaker {speakerId} ({speaker.likely_role})
-                          </h4>
-                          {speaker.utterances?.map((utterance: any, idx: number) => (
-                            <p key={idx} className="text-sm text-muted-foreground ml-4">
-                              {utterance.text}
-                            </p>
-                          ))}
+                <Tabs defaultValue={session?.scorecard ? "analysis" : "transcript"}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="transcript">Transcript</TabsTrigger>
+                    <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="transcript" className="mt-4">
+                    {session?.transcript ? (
+                      <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+                        <div className="space-y-4">
+                          {session.transcript_data?.speakers ? (
+                            // Show speaker-separated transcript if available
+                            Object.entries(session.transcript_data.speakers).map(([speakerId, speaker]: [string, any]) => (
+                              <div key={speakerId} className="space-y-2">
+                                <h4 className="font-medium text-sm">
+                                  Speaker {speakerId} ({speaker.likely_role})
+                                </h4>
+                                {speaker.utterances?.map((utterance: any, idx: number) => (
+                                  <p key={idx} className="text-sm text-muted-foreground ml-4">
+                                    {utterance.text}
+                                  </p>
+                                ))}
+                              </div>
+                            ))
+                          ) : (
+                            // Show plain transcript
+                            <p className="text-sm whitespace-pre-wrap">{session.transcript}</p>
+                          )}
                         </div>
-                      ))
+                      </ScrollArea>
                     ) : (
-                      // Show plain transcript
-                      <p className="text-sm whitespace-pre-wrap">{session.transcript}</p>
+                      <div className="text-center py-8 text-muted-foreground">
+                        No transcript available. Upload a recording to generate transcript.
+                      </div>
                     )}
-                  </div>
-                </ScrollArea>
+                  </TabsContent>
+                  
+                  <TabsContent value="analysis" className="mt-4">
+                    {session?.scorecard ? (
+                      <InterviewScorecard 
+                        scorecard={session.scorecard}
+                        qaAnalysis={session.preparation_notes?.transcript_analysis}
+                      />
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground mb-4">
+                          No analysis available yet. 
+                          {session?.transcript ? 'Analysis will be generated automatically after upload.' : 'Upload a recording to generate analysis.'}
+                        </p>
+                        {session?.transcript && (
+                          <Button 
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(
+                                  `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/interviews/sessions/${sessionId}/analyze-transcript`,
+                                  {
+                                    method: 'POST',
+                                    headers: {
+                                      'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                                    }
+                                  }
+                                )
+                                if (response.ok) {
+                                  // Reload session data
+                                  await loadSessionData()
+                                } else {
+                                  alert('Failed to generate analysis')
+                                }
+                              } catch (error) {
+                                console.error('Analysis error:', error)
+                                alert('Failed to generate analysis')
+                              }
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <BrainIcon className="h-4 w-4" />
+                            Generate Analysis
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                  </TabsContent>
+                </Tabs>
               </CardContent>
             </Card>
           )}
