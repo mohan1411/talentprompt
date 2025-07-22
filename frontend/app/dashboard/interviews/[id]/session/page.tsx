@@ -43,6 +43,7 @@ import { CoachingSuggestionsPanel } from '@/components/interview/CoachingSuggest
 import { WebSocketDebug } from '@/components/interview/WebSocketDebug'
 import { UploadRecordingDialog } from '@/components/interview/UploadRecordingDialog'
 import { InterviewScorecard } from '@/components/interview/InterviewScorecard'
+import { DualTrackAnalysis } from '@/components/interview/DualTrackAnalysis'
 
 export default function InterviewSessionPage() {
   const params = useParams()
@@ -120,6 +121,41 @@ export default function InterviewSessionPage() {
     concerns: session.preparation_notes?.analysis?.areas_to_explore || [],
     talkingPoints: session.preparation_notes?.analysis?.key_talking_points || []
   } : null
+
+  // Calculate human assessment data from rated questions
+  const humanAssessment = questions.length > 0 ? (() => {
+    const ratedQuestions = questions.filter(q => q.response_rating !== null && q.response_rating !== undefined)
+    const categoryRatings: Record<string, { total: number; count: number }> = {}
+    
+    // Calculate ratings by category
+    ratedQuestions.forEach(q => {
+      const category = q.category || 'general'
+      if (!categoryRatings[category]) {
+        categoryRatings[category] = { total: 0, count: 0 }
+      }
+      categoryRatings[category].total += q.response_rating || 0
+      categoryRatings[category].count += 1
+    })
+    
+    // Convert to averages
+    const categoryAverages: Record<string, number> = {}
+    Object.entries(categoryRatings).forEach(([category, data]) => {
+      if (data.count > 0) {
+        categoryAverages[category] = data.total / data.count
+      }
+    })
+    
+    const totalRating = ratedQuestions.reduce((sum, q) => sum + (q.response_rating || 0), 0)
+    const averageRating = ratedQuestions.length > 0 ? totalRating / ratedQuestions.length : 0
+    
+    return {
+      questionsRated: ratedQuestions.length,
+      totalQuestions: questions.length,
+      averageRating,
+      categoryRatings: categoryAverages,
+      completionRate: (ratedQuestions.length / questions.length) * 100
+    }
+  })() : null
 
 
   useEffect(() => {
@@ -584,10 +620,34 @@ export default function InterviewSessionPage() {
                   
                   <TabsContent value="analysis" className="mt-4">
                     {session?.scorecard ? (
-                      <InterviewScorecard 
-                        scorecard={session.scorecard}
-                        qaAnalysis={session.preparation_notes?.transcript_analysis}
-                      />
+                      <div className="space-y-6">
+                        {/* Dual Track Analysis - Human vs AI */}
+                        <DualTrackAnalysis
+                          humanAssessment={humanAssessment}
+                          aiAnalysis={session.scorecard ? {
+                            overall_rating: session.scorecard.overall_rating,
+                            recommendation: session.scorecard.recommendation,
+                            technical_skills: session.scorecard.technical_skills || {},
+                            soft_skills: session.scorecard.soft_skills || {},
+                            confidence: session.transcript_data?.confidence || 0.95,
+                            questionsAnalyzed: session.preparation_notes?.transcript_analysis?.qa_pairs?.length
+                          } : undefined}
+                          sessionData={{
+                            job_position: session.job_position,
+                            interview_type: session.interview_type,
+                            duration_minutes: session.duration_minutes || 0
+                          }}
+                        />
+                        
+                        {/* Detailed AI Scorecard */}
+                        <div>
+                          <h3 className="text-lg font-semibold mb-4">Detailed AI Analysis</h3>
+                          <InterviewScorecard 
+                            scorecard={session.scorecard}
+                            qaAnalysis={session.preparation_notes?.transcript_analysis}
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-muted-foreground mb-4">
