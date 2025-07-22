@@ -38,7 +38,8 @@ export default function PrepareInterviewPage() {
   const [displayLimit, setDisplayLimit] = useState(10)
   const [jobPosition, setJobPosition] = useState('')
   const [jobRequirements, setJobRequirements] = useState('')
-  const [interviewType, setInterviewType] = useState('general')
+  const [interviewMode, setInterviewMode] = useState<string | null>(null)  // IN_PERSON, VIRTUAL, PHONE
+  const [interviewCategory, setInterviewCategory] = useState('general')  // general, technical, behavioral, final
   const [difficultyLevel, setDifficultyLevel] = useState([3])
   const [numQuestions, setNumQuestions] = useState([10])
   const [focusAreas, setFocusAreas] = useState<string[]>([])
@@ -66,7 +67,7 @@ export default function PrepareInterviewPage() {
     }
     
     if (type) {
-      setInterviewType(type)
+      setInterviewCategory(type)
     }
     
     if (focusAreasParam) {
@@ -199,6 +200,11 @@ export default function PrepareInterviewPage() {
       return
     }
     
+    if (!interviewMode) {
+      setError('Please select an interview mode')
+      return
+    }
+    
     // Validate resume ID is a proper UUID
     if (!selectedResume.id || selectedResume.id.length < 32) {
       console.error('Invalid resume ID:', selectedResume)
@@ -217,7 +223,8 @@ export default function PrepareInterviewPage() {
         resume_id: selectedResume.id,
         job_position: jobPosition,
         job_requirements: jobRequirements ? { description: jobRequirements } : undefined,
-        interview_type: interviewType,
+        interview_type: interviewMode,  // Mode: IN_PERSON, VIRTUAL, PHONE
+        interview_category: interviewCategory,  // Category: general, technical, behavioral, final
         difficulty_level: difficultyLevel[0],
         num_questions: numQuestions[0],
         focus_areas: focusAreas,
@@ -459,10 +466,24 @@ export default function PrepareInterviewPage() {
               </div>
 
               <div>
-                <Label htmlFor="interview-type">Interview Type</Label>
-                <Select value={interviewType} onValueChange={setInterviewType}>
+                <Label htmlFor="interview-mode">Interview Mode</Label>
+                <Select value={interviewMode || ''} onValueChange={setInterviewMode}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select interview type" />
+                    <SelectValue placeholder="Select interview mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IN_PERSON">In-Person Interview</SelectItem>
+                    <SelectItem value="VIRTUAL">Virtual Interview (Video)</SelectItem>
+                    <SelectItem value="PHONE">Phone Interview</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="interview-category">Interview Category</Label>
+                <Select value={interviewCategory} onValueChange={setInterviewCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select interview category" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="general">General Interview</SelectItem>

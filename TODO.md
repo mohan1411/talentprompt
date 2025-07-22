@@ -67,6 +67,14 @@ Implement Captcha and email verification when user register through email and pa
 - [ ] Check if analytics dashboard is showing real data
 - [ ] Monitor OpenAI usage dashboard daily
 
+## 🔧 Configuration Needed
+
+### Environment Variables
+- [ ] Add ASSEMBLYAI_API_KEY to backend .env for interview transcription
+  - Sign up at https://www.assemblyai.com/
+  - Free tier includes 5 hours/month
+  - Without key, uses mock transcription for testing
+
 ## 📈 Growth & Marketing
 
 ### User Acquisition
@@ -241,6 +249,18 @@ Focus on user acquisition and Chrome extension publishing to start building user
 - ✅ Fixed FAQ hosting information (Railway instead of AWS)
 - ✅ Corrected GDPR compliance status to be transparent about current state
 - ✅ Updated all email addresses to promtitude@gmail.com (contact, FAQ, privacy, terms, brand guide)
+- ✅ Implemented interview recording upload feature with transcription
+  - Added upload endpoint for audio/video files (up to 500MB)
+  - Created transcription service with speaker diarization
+  - Built upload UI in interview session page
+  - Added automatic speaker role detection (interviewer vs candidate)
+- ✅ Implemented flexible interview workflow (Phase 1)
+  - Added interview mode selection (In-Person, Virtual, Phone)
+  - Separated interview type (mode) from interview category (general, technical, etc)
+  - Allow upload recording button for IN_PROGRESS interviews
+  - Added "Complete Without Recording" button for flexible interview completion
+  - Updated database schema to support both mode and category
+  - Added mode-aware UI elements in interview session page
 
 ### Strategic Decision - July 22, 2025
 **Removed 14-day trial language** - Following the successful startup playbook:

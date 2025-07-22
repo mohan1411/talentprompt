@@ -14,10 +14,11 @@ from app.db.base_class import Base
 
 class InterviewStatus(str, enum.Enum):
     """Interview session status."""
-    SCHEDULED = "scheduled"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
+    SCHEDULED = "SCHEDULED"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+    PROCESSING = "PROCESSING"  # Processing uploaded recording
 
 
 class QuestionCategory(str, enum.Enum):
@@ -28,6 +29,13 @@ class QuestionCategory(str, enum.Enum):
     CULTURE_FIT = "culture_fit"
     EXPERIENCE = "experience"
     PROBLEM_SOLVING = "problem_solving"
+
+
+class InterviewMode(str, enum.Enum):
+    """Interview mode - how the interview is conducted."""
+    IN_PERSON = "IN_PERSON"
+    VIRTUAL = "VIRTUAL"
+    PHONE = "PHONE"
 
 
 class InterviewSession(Base):
@@ -41,7 +49,8 @@ class InterviewSession(Base):
     # Session details
     job_position = Column(String, nullable=False)
     job_requirements = Column(JSON)  # Skills, experience needed
-    interview_type = Column(String)  # phone, video, onsite
+    interview_type = Column(Enum(InterviewMode))  # IN_PERSON, VIRTUAL, PHONE
+    interview_category = Column(String)  # general, technical, behavioral, final
     scheduled_at = Column(DateTime)
     duration_minutes = Column(Integer)
     
@@ -56,6 +65,7 @@ class InterviewSession(Base):
     
     # Interview data
     transcript = Column(Text)  # Live transcription
+    transcript_data = Column(JSON)  # Full transcript analysis with speakers
     notes = Column(Text)  # Interviewer notes
     recordings = Column(JSON)  # Audio/video recording URLs
     

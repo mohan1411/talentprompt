@@ -30,7 +30,9 @@ import {
   FileTextIcon,
   Loader2Icon,
   ArrowLeftIcon,
-  HeadphonesIcon
+  HeadphonesIcon,
+  PhoneIcon,
+  UsersIcon
 } from 'lucide-react'
 import { interviewsApi, InterviewSession, InterviewQuestion } from '@/lib/api/interviews'
 import { resumeApi, Resume } from '@/lib/api/client'
@@ -39,6 +41,7 @@ import { TranscriptionPanel } from '@/components/interview/TranscriptionPanel'
 import { LiveInsightsPanel } from '@/components/interview/LiveInsightsPanel'
 import { CoachingSuggestionsPanel } from '@/components/interview/CoachingSuggestionsPanel'
 import { WebSocketDebug } from '@/components/interview/WebSocketDebug'
+import { UploadRecordingDialog } from '@/components/interview/UploadRecordingDialog'
 
 export default function InterviewSessionPage() {
   const params = useParams()
@@ -48,6 +51,7 @@ export default function InterviewSessionPage() {
   const [isLive, setIsLive] = useState(false)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
   const [notes, setNotes] = useState('')
   const [candidateResponse, setCandidateResponse] = useState('')
   const [showLiveAssist, setShowLiveAssist] = useState(false)
@@ -134,7 +138,7 @@ export default function InterviewSessionPage() {
     // Update session status to in_progress
     try {
       await interviewsApi.updateSession(sessionId, {
-        status: 'in_progress'
+        status: 'IN_PROGRESS'
       })
     } catch (error) {
       console.error('Failed to update session status:', error)
@@ -164,7 +168,7 @@ export default function InterviewSessionPage() {
     // Update session status to completed
     try {
       await interviewsApi.updateSession(sessionId, {
-        status: 'completed',
+        status: 'COMPLETED',
         notes: notes,
         duration_minutes: duration
       })
@@ -173,6 +177,28 @@ export default function InterviewSessionPage() {
       router.push('/dashboard/interviews')
     } catch (error) {
       console.error('Failed to update session status:', error)
+    }
+  }
+
+  const handleCompleteWithoutRecording = async () => {
+    if (!confirm('Complete this interview without uploading a recording? You can still upload a recording later.')) {
+      return
+    }
+
+    try {
+      await interviewsApi.updateSession(sessionId, {
+        status: 'COMPLETED',
+        notes: notes || 'Interview completed without recording.'
+      })
+      
+      // Show success message
+      alert('Interview marked as completed!')
+      
+      // Reload session data
+      await loadSessionData()
+    } catch (error) {
+      console.error('Failed to complete interview:', error)
+      alert('Failed to complete interview. Please try again.')
     }
   }
 
@@ -311,7 +337,7 @@ export default function InterviewSessionPage() {
                 LIVE
               </Badge>
             )}
-            {session?.status === 'completed' && (
+            {session?.status === 'COMPLETED' && (
               <Badge variant="outline" className="text-green-600">
                 <CheckCircleIcon className="h-4 w-4 mr-1" />
                 Completed
@@ -324,18 +350,46 @@ export default function InterviewSessionPage() {
               {formatTime(elapsedTime)}
             </span>
             <span>Progress: {Math.round(progress)}%</span>
+            {session?.interview_type && (
+              <Badge variant="secondary" className="text-xs">
+                {session.interview_type === 'IN_PERSON' && <UsersIcon className="h-3 w-3 mr-1" />}
+                {session.interview_type === 'VIRTUAL' && <VideoIcon className="h-3 w-3 mr-1" />}
+                {session.interview_type === 'PHONE' && <PhoneIcon className="h-3 w-3 mr-1" />}
+                {session.interview_type.replace('_', ' ')}
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex gap-2">
-          {session?.status === 'completed' ? (
-            <Button 
-              variant="outline" 
-              onClick={() => router.push('/dashboard/interviews')}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeftIcon className="h-4 w-4" />
-              Back to Interviews
-            </Button>
+          {(session?.status === 'COMPLETED' || session?.status === 'IN_PROGRESS') ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={() => router.push('/dashboard/interviews')}
+                className="flex items-center gap-2"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+                Back to Interviews
+              </Button>
+              <Button 
+                variant="default" 
+                onClick={() => setShowUploadDialog(true)}
+                className="flex items-center gap-2"
+              >
+                <FileTextIcon className="h-4 w-4" />
+                Upload Recording
+              </Button>
+              {session?.status === 'IN_PROGRESS' && (
+                <Button 
+                  variant="secondary" 
+                  onClick={handleCompleteWithoutRecording}
+                  className="flex items-center gap-2"
+                >
+                  <CheckCircleIcon className="h-4 w-4" />
+                  Complete Without Recording
+                </Button>
+              )}
+            </>
           ) : !isLive ? (
             <Button onClick={handleStartInterview} className="flex items-center gap-2">
               <PlayIcon className="h-4 w-4" />
@@ -635,6 +689,19 @@ export default function InterviewSessionPage() {
       
       {/* Debug component - remove in production */}
       {showLiveAssist && <WebSocketDebug sessionId={sessionId} />}
+      
+      {/* Upload Dialog */}
+      {showUploadDialog && (
+        <UploadRecordingDialog
+          sessionId={sessionId}
+          onClose={() => setShowUploadDialog(false)}
+          onUploadComplete={(transcript) => {
+            // Refresh the session data
+            loadSession()
+            setShowUploadDialog(false)
+          }}
+        />
+      )}
     </div>
   )
 }

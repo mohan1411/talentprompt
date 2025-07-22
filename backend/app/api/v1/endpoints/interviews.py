@@ -5,7 +5,7 @@ from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, func
 
@@ -58,7 +58,7 @@ async def prepare_interview(
         focus_areas=request.focus_areas,
         difficulty_level=request.difficulty_level,
         num_questions=request.num_questions,
-        interview_type=request.interview_type
+        interview_type=request.interview_category  # Pass category to AI service
     )
     
     # Create interview session
@@ -67,7 +67,8 @@ async def prepare_interview(
         interviewer_id=current_user.id,
         job_position=request.job_position,
         job_requirements=request.job_requirements,
-        interview_type=request.interview_type,
+        interview_type=request.interview_type,  # Mode: IN_PERSON, VIRTUAL, PHONE
+        interview_category=request.interview_category,  # Category: general, technical, etc
         preparation_notes={
             "analysis": analysis,
             "company_culture": request.company_culture,
@@ -1113,3 +1114,100 @@ async def get_extended_analytics(
         "question_effectiveness": basic_analytics.question_effectiveness,
         "interviewer_consistency": basic_analytics.interviewer_consistency
     }
+
+
+@router.post("/sessions/{session_id}/upload-recording")
+async def upload_interview_recording(
+    session_id: UUID,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Upload an interview recording for transcription and analysis."""
+    
+    # Get session
+    session = await get_interview_session(session_id, db, current_user)
+    
+    # Validate file type
+    allowed_extensions = ['mp3', 'mp4', 'wav', 'm4a', 'webm', 'ogg', 'mpeg']
+    file_extension = file.filename.split('.')[-1].lower()
+    
+    if file_extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}"
+        )
+    
+    # Check file size (max 500MB)
+    if file.size > 500 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size exceeds 500MB limit")
+    
+    # Save file temporarily
+    import tempfile
+    import os
+    
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as tmp_file:
+        content = await file.read()
+        tmp_file.write(content)
+        tmp_file_path = tmp_file.name
+    
+    try:
+        # Process the recording
+        from app.services.transcription import transcription_service
+        
+        # Update session with processing status
+        session.status = InterviewStatus.PROCESSING
+        session.recordings = session.recordings or []
+        session.recordings.append({
+            "filename": file.filename,
+            "uploaded_at": datetime.utcnow().isoformat(),
+            "status": "processing"
+        })
+        
+        await db.commit()
+        
+        # Process transcription in background (for now, doing it synchronously)
+        try:
+            transcript_data = await transcription_service.transcribe_with_speakers(tmp_file_path)
+            
+            # Update session with transcript
+            session.transcript = transcript_data["transcript_text"]
+            session.transcript_data = transcript_data  # Store full analysis
+            session.status = InterviewStatus.COMPLETED
+            
+            # Update recording status
+            if session.recordings:
+                session.recordings[-1]["status"] = "completed"
+                session.recordings[-1]["transcript_id"] = datetime.utcnow().isoformat()
+            
+            await db.commit()
+            
+            # Clean up temp file
+            os.unlink(tmp_file_path)
+            
+            return {
+                "message": "Recording uploaded and processed successfully",
+                "transcript": transcript_data,
+                "status": "completed"
+            }
+            
+        except Exception as e:
+            logger.error(f"Transcription processing failed: {str(e)}")
+            # Update status to show error
+            session.status = InterviewStatus.COMPLETED
+            if session.recordings:
+                session.recordings[-1]["status"] = "error"
+                session.recordings[-1]["error"] = str(e)
+            await db.commit()
+            
+            return {
+                "message": "Recording uploaded but transcription failed",
+                "error": str(e),
+                "status": "error"
+            }
+        
+    except Exception as e:
+        # Clean up temp file on error
+        if os.path.exists(tmp_file_path):
+            os.unlink(tmp_file_path)
+        raise HTTPException(status_code=500, detail=str(e))

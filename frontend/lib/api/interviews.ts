@@ -6,16 +6,19 @@ export interface InterviewSession {
   interviewer_id: string
   job_position: string
   job_requirements?: any
-  interview_type: string
+  interview_type?: 'IN_PERSON' | 'VIRTUAL' | 'PHONE'  // Mode
+  interview_category?: string  // general, technical, behavioral, final
   scheduled_at?: string
   duration_minutes?: number
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled'
+  status: 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'PROCESSING'
   started_at?: string
   ended_at?: string
   preparation_notes?: any
   suggested_questions?: any[]
   transcript?: string
+  transcript_data?: any
   notes?: string
+  recordings?: any[]
   scorecard?: any
   overall_rating?: number
   recommendation?: string
@@ -50,7 +53,8 @@ export interface InterviewPreparationRequest {
   resume_id: string
   job_position: string
   job_requirements?: any
-  interview_type: string
+  interview_type?: 'IN_PERSON' | 'VIRTUAL' | 'PHONE' | null  // Mode
+  interview_category: string  // general, technical, behavioral, final
   difficulty_level: number
   num_questions: number
   focus_areas?: string[]

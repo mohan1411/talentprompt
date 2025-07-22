@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field, validator
 
-from app.models.interview import InterviewStatus, QuestionCategory
+from app.models.interview import InterviewStatus, QuestionCategory, InterviewMode
 
 
 # Base schemas
@@ -23,7 +23,8 @@ class InterviewSessionBase(BaseModel):
     resume_id: UUID
     job_position: str
     job_requirements: Optional[Dict[str, Any]] = None
-    interview_type: Optional[str] = None
+    interview_type: Optional[InterviewMode] = None  # IN_PERSON, VIRTUAL, PHONE
+    interview_category: Optional[str] = None  # general, technical, behavioral, final
     scheduled_at: Optional[datetime] = None
     duration_minutes: Optional[int] = Field(default=60, ge=1, le=480)
 
@@ -35,7 +36,8 @@ class InterviewPrepareRequest(BaseModel):
     job_position: str
     job_requirements: Optional[Dict[str, Any]] = None
     company_culture: Optional[str] = None
-    interview_type: str = "general"  # general, technical, behavioral, final
+    interview_type: Optional[InterviewMode] = None  # IN_PERSON, VIRTUAL, PHONE
+    interview_category: str = "general"  # general, technical, behavioral, final
     focus_areas: Optional[List[str]] = None
     difficulty_level: int = Field(default=3, ge=1, le=5)
     num_questions: int = Field(default=10, ge=5, le=30)

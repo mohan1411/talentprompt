@@ -84,15 +84,15 @@ export default function InterviewsPage() {
 
   // Filter interviews by status
   const upcomingInterviews = interviews.filter(i => 
-    i.status === 'scheduled' || i.status === 'in_progress'
+    i.status === 'SCHEDULED' || i.status === 'IN_PROGRESS'
   )
   const pastInterviews = interviews.filter(i => 
-    i.status === 'completed' || i.status === 'cancelled'
+    i.status === 'COMPLETED' || i.status === 'CANCELLED'
   )
   
   // Calculate stats
   const totalInterviews = interviews.length
-  const completedInterviews = interviews.filter(i => i.status === 'completed')
+  const completedInterviews = interviews.filter(i => i.status === 'COMPLETED')
   const avgDuration = completedInterviews.length > 0
     ? Math.round(completedInterviews.reduce((sum, i) => sum + (i.duration_minutes || 0), 0) / completedInterviews.length)
     : 0
@@ -240,7 +240,7 @@ export default function InterviewsPage() {
                           <h3 className="text-lg font-semibold">{candidateName}</h3>
                           <p className="text-sm text-muted-foreground">{interview.job_position}</p>
                           <div className="flex items-center gap-4 mt-2">
-                            {interview.status === 'in_progress' && (
+                            {interview.status === 'IN_PROGRESS' && (
                               <Badge variant="destructive" className="animate-pulse">
                                 <div className="w-2 h-2 bg-white rounded-full mr-2" />
                                 In Progress
