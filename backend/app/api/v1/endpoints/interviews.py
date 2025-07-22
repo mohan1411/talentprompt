@@ -1362,3 +1362,168 @@ async def analyze_interview_transcript(
     except Exception as e:
         logger.error(f"Error analyzing transcript: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@router.post("/sessions/{session_id}/manual-transcript")
+async def save_manual_transcript(
+    session_id: UUID,
+    request: Dict[str, str],
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Save manually entered transcript and trigger analysis."""
+    
+    # Get session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    # Get transcript text from request
+    transcript_text = request.get("transcript", "").strip()
+    if not transcript_text:
+        raise HTTPException(status_code=400, detail="No transcript provided")
+    
+    try:
+        # Parse the manual transcript into speaker format
+        utterances = []
+        speakers = {"A": {"utterances": [], "likely_role": "interviewer"}, 
+                   "B": {"utterances": [], "likely_role": "candidate_1"}}
+        
+        # Split by lines and parse speaker labels
+        lines = transcript_text.split('\n')
+        current_speaker = None
+        current_text = []
+        timestamp = 0
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Check for speaker label
+            if line.startswith('[interviewer]:'):
+                # Save previous utterance if any
+                if current_speaker and current_text:
+                    utterance = {
+                        "text": ' '.join(current_text),
+                        "start": timestamp,
+                        "end": timestamp + 5000,  # Mock 5 second utterances
+                        "confidence": 0.95,
+                        "speaker": current_speaker
+                    }
+                    utterances.append(utterance)
+                    speakers[current_speaker]["utterances"].append(utterance)
+                    timestamp += 5000
+                
+                current_speaker = "A"
+                current_text = [line[14:].strip()]  # Remove [interviewer]: prefix
+                
+            elif line.startswith('[candidate]:'):
+                # Save previous utterance if any
+                if current_speaker and current_text:
+                    utterance = {
+                        "text": ' '.join(current_text),
+                        "start": timestamp,
+                        "end": timestamp + 5000,
+                        "confidence": 0.95,
+                        "speaker": current_speaker
+                    }
+                    utterances.append(utterance)
+                    speakers[current_speaker]["utterances"].append(utterance)
+                    timestamp += 5000
+                
+                current_speaker = "B"
+                current_text = [line[12:].strip()]  # Remove [candidate]: prefix
+                
+            else:
+                # Continue current speaker's text
+                if current_text:
+                    current_text.append(line)
+        
+        # Save final utterance
+        if current_speaker and current_text:
+            utterance = {
+                "text": ' '.join(current_text),
+                "start": timestamp,
+                "end": timestamp + 5000,
+                "confidence": 0.95,
+                "speaker": current_speaker
+            }
+            utterances.append(utterance)
+            speakers[current_speaker]["utterances"].append(utterance)
+        
+        # Create transcript data structure
+        transcript_data = {
+            "transcript_text": transcript_text,
+            "speakers": speakers,
+            "utterances": utterances,
+            "duration": (timestamp + 5000) / 1000,  # Convert to seconds
+            "confidence": 0.95
+        }
+        
+        # Update session with transcript
+        session.transcript = transcript_text
+        session.transcript_data = transcript_data
+        session.status = InterviewStatus.COMPLETED
+        
+        # Set a duration if not set
+        if not session.duration_minutes:
+            session.duration_minutes = int(transcript_data["duration"] / 60) or 1
+        
+        await db.commit()
+        await db.refresh(session)
+        
+        # Trigger analysis
+        logger.info(f"Triggering analysis for manual transcript in session {session_id}")
+        
+        analysis = await interview_ai_service.analyze_transcript_content(
+            transcript_data=transcript_data,
+            session_data={
+                "job_position": session.job_position,
+                "interview_type": session.interview_type,
+                "interview_category": session.interview_category,
+                "duration_minutes": session.duration_minutes
+            }
+        )
+        
+        # Generate scorecard
+        scorecard_data = await interview_ai_service.generate_interview_scorecard(
+            session_data={
+                "job_position": session.job_position,
+                "duration_minutes": session.duration_minutes
+            },
+            responses=analysis["responses_for_scorecard"]
+        )
+        
+        # Update session with analysis
+        session.scorecard = scorecard_data
+        session.overall_rating = scorecard_data.get("overall_rating", 0)
+        session.recommendation = scorecard_data.get("recommendation", "maybe")
+        session.strengths = scorecard_data.get("strengths", [])
+        session.concerns = scorecard_data.get("concerns", [])
+        
+        if not session.preparation_notes:
+            session.preparation_notes = {}
+        session.preparation_notes["transcript_analysis"] = analysis["qa_analysis"]
+        session.preparation_notes["transcript_insights"] = analysis["transcript_insights"]
+        session.preparation_notes["manual_entry"] = True
+        
+        await db.commit()
+        
+        return {
+            "message": "Manual transcript saved and analyzed successfully",
+            "analysis_available": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing manual transcript: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process transcript: {str(e)}")

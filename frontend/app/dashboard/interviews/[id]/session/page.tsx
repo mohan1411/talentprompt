@@ -56,6 +56,8 @@ export default function InterviewSessionPage() {
   const [notes, setNotes] = useState('')
   const [candidateResponse, setCandidateResponse] = useState('')
   const [showLiveAssist, setShowLiveAssist] = useState(false)
+  const [manualTranscript, setManualTranscript] = useState('')
+  const [savingManualTranscript, setSavingManualTranscript] = useState(false)
   
   // API data states
   const [session, setSession] = useState<InterviewSession | null>(null)
@@ -543,9 +545,10 @@ export default function InterviewSessionPage() {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue={session?.scorecard ? "analysis" : "transcript"}>
-                  <TabsList className="grid w-full grid-cols-2">
+                  <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="transcript">Transcript</TabsTrigger>
                     <TabsTrigger value="analysis">Analysis</TabsTrigger>
+                    <TabsTrigger value="manual">Manual Entry</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="transcript" className="mt-4">
@@ -623,6 +626,121 @@ export default function InterviewSessionPage() {
                         )}
                       </div>
                     )}
+                  </TabsContent>
+                  
+                  <TabsContent value="manual" className="mt-4">
+                    <div className="space-y-4">
+                      <Alert>
+                        <AlertCircleIcon className="h-4 w-4" />
+                        <AlertDescription>
+                          <strong>Format Guide:</strong> Enter the transcript with speaker labels like:
+                          <br />
+                          <code className="text-xs">[interviewer]: Question here...</code>
+                          <br />
+                          <code className="text-xs">[candidate]: Answer here...</code>
+                        </AlertDescription>
+                      </Alert>
+                      
+                      <Textarea
+                        placeholder="Paste or type the interview transcript here...
+
+Example:
+[interviewer]: Tell me about your experience with React and component libraries.
+[candidate]: I have 7 years of experience building user interfaces with React. At Web Works, I led the development of a comprehensive component library that's now used across 5 different products. I focused on creating reusable, accessible components with proper documentation and testing.
+[interviewer]: Can you describe the design system you implemented?
+[candidate]: The design system I implemented at Web Works was built on atomic design principles..."
+                        value={manualTranscript}
+                        onChange={(e) => setManualTranscript(e.target.value)}
+                        className="min-h-[400px] font-mono text-sm"
+                      />
+                      
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            // Sample transcript for Betty Taylor
+                            const sampleTranscript = `[interviewer]: Hi Betty, thank you for joining us today. Can you tell me about your experience with React and component libraries?
+[candidate]: Thank you for having me! I have 7 years of experience building user interfaces, with the last 5 years focused heavily on React. At Web Works, I led the development of a comprehensive component library that's now used across 5 different products. I focused on creating reusable, accessible components with proper documentation and testing. The library included over 50 components ranging from basic UI elements to complex data visualization components.
+
+[interviewer]: That's impressive. Can you describe the design system you implemented and the impact it had?
+[candidate]: The design system I implemented at Web Works was built on atomic design principles. We started by defining our design tokens - colors, typography, spacing, and shadows. Then we built atoms like buttons and inputs, molecules like form fields with labels, and organisms like complete forms and navigation menus. The impact was significant - we reduced UI development time by 40% and achieved 100% consistency across all our products. We also saw a 30% reduction in CSS bundle size due to the systematic approach.
+
+[interviewer]: You mentioned improving page load speed by 50%. Can you walk me through how you achieved that?
+[candidate]: Absolutely. When I joined Cloud Systems, the main application had a page load time of over 8 seconds. I conducted a performance audit and identified several issues. First, I implemented code splitting and lazy loading for React components, which reduced the initial bundle size by 60%. Second, I optimized our image loading with lazy loading and WebP format, saving another 30% in bandwidth. Third, I implemented service workers for caching static assets. Finally, I reduced render-blocking resources and optimized our webpack configuration. The combination of these improvements brought our load time down to under 4 seconds.
+
+[interviewer]: How do you approach making components accessible?
+[candidate]: Accessibility is a core requirement, not an afterthought. I follow WCAG 2.1 AA standards. For every component, I ensure proper semantic HTML, ARIA labels where needed, keyboard navigation support, and screen reader compatibility. I use tools like axe-core for automated testing and conduct manual testing with screen readers. At Web Works, I also created an accessibility checklist that became part of our component review process. This helped us achieve and maintain an accessibility score of 98% across our applications.
+
+[interviewer]: Tell me about a challenging technical problem you've solved recently.
+[candidate]: Recently at Web Works, we faced a challenge with our data table component that needed to handle 10,000+ rows efficiently. The virtual scrolling solution we initially tried had issues with dynamic row heights. I researched and implemented a hybrid approach using react-window with a custom solution for dynamic heights. I created a height cache that pre-calculated and stored row heights, updating them only when content changed. This solution maintained smooth 60fps scrolling even with complex cell content and reduced memory usage by 80% compared to rendering all rows.
+
+[interviewer]: How do you stay updated with the rapidly changing frontend ecosystem?
+[candidate]: I have a structured approach to continuous learning. I follow key thought leaders and official blogs for React, Vue, and Angular. I participate in frontend communities on Discord and Reddit. I also dedicate time each week to explore new tools and techniques - recently I've been exploring React Server Components and the new React compiler. I contribute to open source projects which helps me learn from other developers' code. Additionally, I attend virtual conferences and have spoken at two local meetups about performance optimization.
+
+[interviewer]: What interests you most about this Senior Frontend Engineer position?
+[candidate]: I'm excited about the opportunity to work on products that directly impact users' daily workflows. Your focus on creating intuitive, performant applications aligns perfectly with my passion for user experience and technical excellence. I'm particularly interested in the AI-powered features you're building - I believe the intersection of AI and frontend development is where the most innovative user experiences will emerge. Also, the collaborative culture you've described, where engineers have input on product decisions, is exactly the environment where I thrive.
+
+[interviewer]: Do you have any questions for me about the role or the company?
+[candidate]: Yes, I have a few questions. First, can you tell me more about the tech stack beyond what's in the job description? Second, how does the team approach testing - do you use TDD or another methodology? Third, what are the biggest technical challenges the team is currently facing? And finally, what does the career progression look like for senior engineers at your company?`;
+                            setManualTranscript(sampleTranscript);
+                          }}
+                        >
+                          Load Sample Transcript
+                        </Button>
+                        
+                        <Button
+                          onClick={async () => {
+                            if (!manualTranscript.trim()) {
+                              alert('Please enter a transcript');
+                              return;
+                            }
+                            
+                            setSavingManualTranscript(true);
+                            try {
+                              const response = await fetch(
+                                `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/interviews/sessions/${sessionId}/manual-transcript`,
+                                {
+                                  method: 'POST',
+                                  headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                                    'Content-Type': 'application/json'
+                                  },
+                                  body: JSON.stringify({ transcript: manualTranscript })
+                                }
+                              );
+                              
+                              if (response.ok) {
+                                // Reload session data to show the transcript and analysis
+                                await loadSessionData();
+                                alert('Transcript saved and analysis generated!');
+                              } else {
+                                const error = await response.text();
+                                alert(`Failed to save transcript: ${error}`);
+                              }
+                            } catch (error) {
+                              console.error('Error saving transcript:', error);
+                              alert('Failed to save transcript');
+                            } finally {
+                              setSavingManualTranscript(false);
+                            }
+                          }}
+                          disabled={savingManualTranscript || !manualTranscript.trim()}
+                          className="flex items-center gap-2"
+                        >
+                          {savingManualTranscript ? (
+                            <>
+                              <Loader2Icon className="h-4 w-4 animate-spin" />
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircleIcon className="h-4 w-4" />
+                              Save & Analyze
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </TabsContent>
                 </Tabs>
               </CardContent>
