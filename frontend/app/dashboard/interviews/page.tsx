@@ -359,7 +359,10 @@ export default function InterviewsPage() {
                               </span>
                             )}
                             {interview.overall_rating && (
-                              <span className="text-sm">Rating: {interview.overall_rating}/5</span>
+                              <span className="text-sm font-medium">
+                                <BrainIcon className="h-3 w-3 inline mr-1" />
+                                AI: {interview.overall_rating.toFixed(1)}/5
+                              </span>
                             )}
                             {interview.duration_minutes && (
                               <span className="text-sm text-muted-foreground">

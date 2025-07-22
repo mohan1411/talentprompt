@@ -1236,7 +1236,7 @@ async def upload_interview_recording(
                 
                 # Update session with analysis results
                 session.scorecard = scorecard_data
-                session.overall_rating = scorecard_data.get("overall_rating", 0)
+                session.overall_rating = float(scorecard_data.get("overall_rating", 0))
                 session.recommendation = scorecard_data.get("recommendation", "maybe")
                 session.strengths = scorecard_data.get("strengths", [])
                 session.concerns = scorecard_data.get("concerns", [])
@@ -1338,7 +1338,7 @@ async def analyze_interview_transcript(
         
         # Update session with analysis results
         session.scorecard = scorecard_data
-        session.overall_rating = scorecard_data.get("overall_rating", 0)
+        session.overall_rating = float(scorecard_data.get("overall_rating", 0))
         session.recommendation = scorecard_data.get("recommendation", "maybe")
         session.strengths = scorecard_data.get("strengths", [])
         session.concerns = scorecard_data.get("concerns", [])
@@ -1506,7 +1506,7 @@ async def save_manual_transcript(
         
         # Update session with analysis
         session.scorecard = scorecard_data
-        session.overall_rating = scorecard_data.get("overall_rating", 0)
+        session.overall_rating = float(scorecard_data.get("overall_rating", 0))
         session.recommendation = scorecard_data.get("recommendation", "maybe")
         session.strengths = scorecard_data.get("strengths", [])
         session.concerns = scorecard_data.get("concerns", [])
@@ -1527,3 +1527,53 @@ async def save_manual_transcript(
     except Exception as e:
         logger.error(f"Error processing manual transcript: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process transcript: {str(e)}")
+
+
+@router.post("/sessions/{session_id}/refresh-rating")
+async def refresh_interview_rating(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Refresh the overall rating from the scorecard data."""
+    
+    # Get session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    if not session.scorecard:
+        raise HTTPException(status_code=400, detail="No scorecard data available")
+    
+    try:
+        # Update rating from scorecard
+        if isinstance(session.scorecard, dict):
+            new_rating = float(session.scorecard.get("overall_rating", 0))
+            session.overall_rating = new_rating
+            
+            # Also update recommendation if available
+            if "recommendation" in session.scorecard:
+                session.recommendation = session.scorecard["recommendation"]
+            
+            await db.commit()
+            
+            return {
+                "message": "Rating refreshed successfully",
+                "overall_rating": new_rating,
+                "recommendation": session.recommendation
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Invalid scorecard format")
+            
+    except Exception as e:
+        logger.error(f"Error refreshing rating: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to refresh rating: {str(e)}")
