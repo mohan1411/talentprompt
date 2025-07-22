@@ -20,7 +20,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Getting Started',
     question: 'How do I get started with Promtitude?',
-    answer: 'Getting started is easy! Simply sign up for a free 14-day trial, upload your first resumes, and start searching using natural language. No credit card required. Our onboarding wizard will guide you through the setup process.'
+    answer: 'Getting started is easy! Simply sign up for free, upload your first resumes, and start searching using natural language. No credit card required. Our onboarding wizard will guide you through the setup process.'
   },
   {
     category: 'Getting Started',
@@ -56,8 +56,8 @@ const faqs: FAQItem[] = [
   },
   {
     category: 'Pricing & Plans',
-    question: 'Is there a free trial?',
-    answer: 'Yes! We offer a 14-day free trial with full access to all features. No credit card required. You can upload up to 100 resumes and conduct unlimited searches during the trial period.'
+    question: 'Is Promtitude free to use?',
+    answer: 'Yes! You can start using Promtitude for free. Upload resumes, conduct searches, and explore all our features. We\'ll introduce paid plans in the future for teams that need advanced features and higher limits.'
   },
   {
     category: 'Pricing & Plans',

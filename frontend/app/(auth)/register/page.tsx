@@ -196,7 +196,7 @@ export default function RegisterPage() {
               Create your account
             </h2>
             <p className="text-gray-600 dark:text-gray-400">
-              Get started with a free 14-day trial
+              Start free and find amazing talent
             </p>
           </div>
 
@@ -372,7 +372,7 @@ export default function RegisterPage() {
               ) : (
                 <>
                   <Zap className="h-5 w-5" />
-                  Start free trial
+                  Create account
                 </>
               )}
             </button>
