@@ -272,6 +272,16 @@ Focus on user acquisition and Chrome extension publishing to start building user
   - Added Analysis tab to interview session page
   - Automatic analysis triggers after recording upload
   - Manual analysis available via "Generate Analysis" button
+- ✅ Added manual transcript entry for testing (July 22, 2025)
+  - Created Manual Entry tab for typing/pasting transcripts
+  - Added sample Betty Taylor Frontend Developer interview
+  - Enables testing AI analysis without audio recordings
+- ✅ Implemented dual-track analysis (Human vs AI)
+  - Side-by-side comparison of human ratings and AI analysis
+  - Automatic discrepancy detection with alerts
+  - Transparency for EU AI Act compliance
+  - Helps identify potential interviewer bias
+  - Recommended actions based on assessment alignment
 
 ### Strategic Decision - July 22, 2025
 **Removed 14-day trial language** - Following the successful startup playbook:
