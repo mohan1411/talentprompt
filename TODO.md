@@ -119,9 +119,10 @@ Implement Captcha and email verification when user register through email and pa
 ### Legal/Compliance
 - [ ] Register business entity
 - [ ] Get business insurance
-- [ ] Create customer service email (support@promtitude.com)
-- [ ] Add cookie consent functionality
+- [x] Create customer service email - Using promtitude@gmail.com for now
+- [x] Add cookie consent functionality - ✅ COMPLETED
 - [ ] Create data processing agreement template
+- [ ] Set up professional email addresses (@promtitude.com)
 
 ## 🐛 Known Issues to Fix
 
@@ -239,6 +240,7 @@ Focus on user acquisition and Chrome extension publishing to start building user
 - ✅ Clarified early user grandfather benefits (lifetime discounts, priority features)
 - ✅ Fixed FAQ hosting information (Railway instead of AWS)
 - ✅ Corrected GDPR compliance status to be transparent about current state
+- ✅ Updated all email addresses to promtitude@gmail.com (contact, FAQ, privacy, terms, brand guide)
 
 ### Strategic Decision - July 22, 2025
 **Removed 14-day trial language** - Following the successful startup playbook:
