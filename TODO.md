@@ -92,7 +92,7 @@ Implement Captcha and email verification when user register through email and pa
 - [ ] Add loading skeletons for better perceived performance
 
 ### Features (Next Sprint)
-- [ ] Email verification for new users
+- [x] Email verification for new users - ✅ COMPLETED
 - [ ] Password reset functionality
 - [ ] User profile completion flow
 - [ ] Resume bulk operations UI improvements
@@ -108,12 +108,13 @@ Implement Captcha and email verification when user register through email and pa
 
 ## 💼 Business Development
 
-### Revenue
+### Revenue (After 100+ Active Users)
+- [ ] Track usage patterns to inform pricing
+- [ ] Design pricing tiers based on actual usage data
 - [ ] Implement Stripe payment integration
 - [ ] Create pricing page
 - [ ] Add subscription management
-- [ ] Create upgrade prompts for free users
-- [ ] Design pricing tiers (Free, Pro, Enterprise)
+- [ ] Grandfather early users with lifetime deals
 
 ### Legal/Compliance
 - [ ] Register business entity
@@ -188,7 +189,7 @@ Implement Captcha and email verification when user register through email and pa
 
 ---
 
-**Last Updated**: July 21, 2025  
+**Last Updated**: July 22, 2025  
 **Priority Levels**: 🔴 Critical | 🟡 Important | 🟢 Nice-to-have
 
 ## Notes
@@ -232,3 +233,13 @@ Focus on user acquisition and Chrome extension publishing to start building user
 - ✅ Removed debug features from production extension
 
 **Production Status**: All systems operational! Email verification working perfectly.
+
+### Strategic Decision - July 22, 2025
+**Removed 14-day trial language** - Following the successful startup playbook:
+- Give users full access for free initially
+- Focus on user growth over early monetization
+- Learn what features users actually value
+- Implement pricing only after product-market fit
+- Current approach: "Start free" with no restrictions
+
+This reduces friction and accelerates user acquisition at this critical early stage.

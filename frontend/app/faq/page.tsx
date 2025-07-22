@@ -52,7 +52,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Pricing & Plans',
     question: 'What pricing plans do you offer?',
-    answer: 'We offer flexible pricing plans starting from $99/month for small teams. All plans include core features like natural language search and AI assistance. Enterprise plans include advanced features like API access and dedicated support. Contact sales for custom pricing.'
+    answer: 'Promtitude is currently free to use while we\'re in early access. We\'re gathering feedback from users like you to design the best pricing plans. In the future, we\'ll offer flexible plans for teams of all sizes, with advanced features like API access and dedicated support for enterprise customers.'
   },
   {
     category: 'Pricing & Plans',
@@ -62,13 +62,13 @@ const faqs: FAQItem[] = [
   {
     category: 'Pricing & Plans',
     question: 'Can I change or cancel my plan anytime?',
-    answer: 'Absolutely! You can upgrade, downgrade, or cancel your subscription at any time from your account settings. If you cancel, you\'ll retain access until the end of your billing period.'
+    answer: 'When we introduce paid plans in the future, you\'ll be able to upgrade, downgrade, or cancel at any time. As an early user, you\'ll receive special benefits including lifetime discounts, priority access to new features, and recognition as a founding member who helped shape Promtitude.'
   },
   // Privacy & Security
   {
     category: 'Privacy & Security',
     question: 'How secure is my data?',
-    answer: 'We take security seriously. All data is encrypted in transit and at rest. We use industry-standard security practices, regular security audits, and are working towards SOC 2 compliance. Your candidate data is never shared or sold.'
+    answer: 'We take security seriously. All data is encrypted in transit and at rest. We use industry-standard security practices, regular security audits, and are implementing SOC 2 security controls. Your candidate data is never shared or sold, and you maintain complete ownership of your data.'
   },
   {
     category: 'Privacy & Security',
@@ -78,7 +78,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Privacy & Security',
     question: 'Where is my data stored?',
-    answer: 'Your data is securely stored in AWS data centers with automatic backups and disaster recovery. We use industry-leading infrastructure providers to ensure high availability and data protection.'
+    answer: 'Your data is securely stored in AWS data centers in the US and EU regions, with automatic backups and disaster recovery. We comply with data residency requirements and can provide region-specific storage for enterprise customers. All data transfers are encrypted and we maintain strict access controls.'
   },
   // Technical
   {
