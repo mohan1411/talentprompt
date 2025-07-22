@@ -317,16 +317,6 @@ function LoginContent() {
               </Link>
             </p>
           </div>
-
-          {/* Demo account info */}
-          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
-              Demo Account
-            </p>
-            <p className="text-xs text-blue-600 dark:text-blue-400">
-              Email: demo@example.com | Password: demo123
-            </p>
-          </div>
         </div>
       </div>
     </div>
