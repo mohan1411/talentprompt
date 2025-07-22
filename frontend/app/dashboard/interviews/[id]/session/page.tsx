@@ -537,7 +537,7 @@ export default function InterviewSessionPage() {
           </Card>
 
           {/* Transcript and Analysis */}
-          {(session?.transcript || session?.scorecard) && (
+          {(session?.transcript || session?.scorecard || session?.status === 'COMPLETED') && (
             <Card>
               <CardHeader>
                 <CardTitle>Interview Results</CardTitle>
