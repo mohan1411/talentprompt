@@ -100,7 +100,7 @@ const faqs: FAQItem[] = [
   {
     category: 'Support',
     question: 'How can I get help?',
-    answer: 'We offer multiple support channels: email support at support@promtitude.com, comprehensive documentation, and live chat for paid plans. Enterprise customers get dedicated account managers and priority support.'
+    answer: 'We offer multiple support channels: email support at promtitude@gmail.com, comprehensive documentation, and live chat for paid plans. Enterprise customers get dedicated account managers and priority support.'
   },
   {
     category: 'Support',
@@ -237,7 +237,7 @@ export default function FAQPage() {
               Contact Support
             </Link>
             <a
-              href="mailto:support@promtitude.com"
+              href="mailto:promtitude@gmail.com"
               className="btn-secondary px-6 py-2"
             >
               Email Us

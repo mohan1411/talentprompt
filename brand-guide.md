@@ -128,7 +128,7 @@ The Promtitude logo should always be presented in contexts that reinforce:
 
 ## Contact
 
-For brand-related questions or custom logo applications, contact: brand@promtitude.com
+For brand-related questions or custom logo applications, contact: promtitude@gmail.com
 
 ---
 

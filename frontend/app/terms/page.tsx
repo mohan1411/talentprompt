@@ -166,7 +166,7 @@ export default function TermsOfServicePage() {
               For questions about these Terms, please contact us:
             </p>
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg text-gray-700 dark:text-gray-300">
-              <p><strong>Email:</strong> legal@promtitude.com</p>
+              <p><strong>Email:</strong> promtitude@gmail.com</p>
               <p><strong>Phone:</strong> +91 98867 90146</p>
             </div>
           </section>

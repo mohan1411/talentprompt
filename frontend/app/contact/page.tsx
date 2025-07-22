@@ -30,7 +30,7 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">Email</h3>
-                  <p className="text-gray-600 dark:text-gray-400">support@promtitude.com</p>
+                  <p className="text-gray-600 dark:text-gray-400">promtitude@gmail.com</p>
                   <p className="text-sm text-gray-500 dark:text-gray-500">We'll respond within 24 hours</p>
                 </div>
               </div>
@@ -42,9 +42,9 @@ export default function ContactPage() {
                   </div>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Sales Inquiries</h3>
-                  <p className="text-gray-600 dark:text-gray-400">sales@promtitude.com</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-500">For enterprise plans and pricing</p>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">General Inquiries</h3>
+                  <p className="text-gray-600 dark:text-gray-400">promtitude@gmail.com</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-500">For all questions and feedback</p>
                 </div>
               </div>
               
