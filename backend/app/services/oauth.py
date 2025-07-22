@@ -105,6 +105,8 @@ class OAuthService:
         redirect_uri = redirect_uri or settings.GOOGLE_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/google/callback"
         
         logger.info(f"Google OAuth: Using redirect_uri: {redirect_uri}")
+        logger.info(f"Google OAuth: Code (first 10 chars): {code[:10]}...")
+        logger.info(f"Google OAuth: Client ID: {settings.GOOGLE_CLIENT_ID}")
         
         # Exchange code for token
         token_url = "https://oauth2.googleapis.com/token"

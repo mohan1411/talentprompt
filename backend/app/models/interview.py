@@ -49,7 +49,7 @@ class InterviewSession(Base):
     # Session details
     job_position = Column(String, nullable=False)
     job_requirements = Column(JSON)  # Skills, experience needed
-    interview_type = Column(Enum(InterviewMode))  # IN_PERSON, VIRTUAL, PHONE
+    interview_type = Column(String)  # IN_PERSON, VIRTUAL, PHONE
     interview_category = Column(String)  # general, technical, behavioral, final
     scheduled_at = Column(DateTime)
     duration_minutes = Column(Integer)

@@ -13,8 +13,15 @@ class TranscriptionService:
     """Service for transcribing audio/video files with speaker diarization."""
     
     def __init__(self):
-        self.assemblyai_key = settings.ASSEMBLYAI_API_KEY if hasattr(settings, 'ASSEMBLYAI_API_KEY') else None
+        self.assemblyai_key = getattr(settings, 'ASSEMBLYAI_API_KEY', None)
         self.api_base = "https://api.assemblyai.com/v2"
+        self.active_sessions = {}  # Track active transcription sessions
+        
+        # Log the API key status
+        if self.assemblyai_key:
+            logger.info(f"AssemblyAI API key configured (first 10 chars): {self.assemblyai_key[:10]}...")
+        else:
+            logger.warning("AssemblyAI API key not found in settings")
         
     async def transcribe_with_speakers(self, file_path: str) -> Dict[str, Any]:
         """
@@ -25,6 +32,8 @@ class TranscriptionService:
         """
         if not self.assemblyai_key:
             logger.warning("AssemblyAI API key not configured, using mock transcription")
+            logger.warning(f"Settings ASSEMBLYAI_API_KEY value: {getattr(settings, 'ASSEMBLYAI_API_KEY', 'NOT_FOUND')}")
+            logger.warning(f"All settings attributes: {[attr for attr in dir(settings) if 'ASSEMBLY' in attr.upper()]}")
             return self._mock_transcription()
             
         try:
@@ -171,11 +180,18 @@ class TranscriptionService:
                 ])
             )
             
+            # Calculate average transcription confidence
+            avg_confidence = 0
+            if data["utterances"]:
+                confidences = [u.get("confidence", 0) for u in data["utterances"]]
+                avg_confidence = sum(confidences) / len(confidences) if confidences else 0
+            
             speaker_stats.append({
                 "speaker_id": speaker_id,
                 "avg_utterance_length": avg_utterance_length,
                 "question_ratio": question_count / len(data["utterances"]) if data["utterances"] else 0,
-                "speaking_time_ratio": data["total_time"]
+                "speaking_time_ratio": data["total_time"],
+                "avg_confidence": avg_confidence
             })
             
         # Sort by question ratio (higher = more likely interviewer)
@@ -188,7 +204,8 @@ class TranscriptionService:
             result[stat["speaker_id"]] = {
                 **speakers[stat["speaker_id"]],
                 "likely_role": role,
-                "confidence": stat["question_ratio"]  # How confident we are in role assignment
+                "role_confidence": stat["question_ratio"],  # How confident we are in role assignment
+                "transcription_confidence": stat["avg_confidence"]  # Average transcription confidence
             }
             
         return result
@@ -209,7 +226,8 @@ class TranscriptionService:
                         }
                     ],
                     "likely_role": "interviewer",
-                    "confidence": 0.9
+                    "role_confidence": 0.9,
+                    "transcription_confidence": 0.95
                 },
                 "B": {
                     "utterances": [
@@ -222,11 +240,42 @@ class TranscriptionService:
                         }
                     ],
                     "likely_role": "candidate_1",
-                    "confidence": 0.85
+                    "role_confidence": 0.85,
+                    "transcription_confidence": 0.92
                 }
             },
             "duration": 20,
             "confidence": 0.93
+        }
+    
+    async def start_session(self, session_id: str, config: Dict[str, Any]) -> None:
+        """Start a real-time transcription session."""
+        logger.info(f"Starting transcription session for {session_id}")
+        self.active_sessions[session_id] = {
+            "status": "active",
+            "config": config,
+            "transcript": ""
+        }
+    
+    async def stop_session(self, session_id: str) -> None:
+        """Stop a real-time transcription session."""
+        logger.info(f"Stopping transcription session for {session_id}")
+        if session_id in self.active_sessions:
+            del self.active_sessions[session_id]
+    
+    async def process_audio_chunk(self, session_id: str, audio_data: bytes) -> Optional[Dict[str, Any]]:
+        """Process an audio chunk and return transcription if available."""
+        if session_id not in self.active_sessions:
+            logger.warning(f"Session {session_id} not found")
+            return None
+            
+        # Mock real-time transcription response
+        # In production, this would send audio to a streaming API
+        return {
+            "partial": False,
+            "text": "Mock real-time transcription",
+            "speaker": "A",
+            "confidence": 0.9
         }
 
 

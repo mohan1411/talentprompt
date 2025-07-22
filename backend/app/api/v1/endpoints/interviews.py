@@ -152,7 +152,7 @@ async def get_interview_sessions(
             "job_requirements": session.job_requirements,
             "interview_type": session.interview_type,
             "scheduled_at": session.scheduled_at,
-            "duration_minutes": session.duration_minutes,
+            "duration_minutes": max(1, session.duration_minutes or 1),  # Ensure minimum 1 minute
             "status": session.status,
             "started_at": session.started_at,
             "ended_at": session.ended_at,
@@ -203,15 +203,18 @@ async def get_interview_session(
         "job_position": session.job_position,
         "job_requirements": session.job_requirements,
         "interview_type": session.interview_type,
+        "interview_category": session.interview_category,
         "scheduled_at": session.scheduled_at,
-        "duration_minutes": session.duration_minutes,
+        "duration_minutes": max(1, session.duration_minutes or 1),  # Ensure minimum 1 minute
         "status": session.status,
         "started_at": session.started_at,
         "ended_at": session.ended_at,
         "preparation_notes": session.preparation_notes,
         "suggested_questions": session.suggested_questions,
         "transcript": session.transcript,
+        "transcript_data": session.transcript_data,
         "notes": session.notes,
+        "recordings": session.recordings,
         "scorecard": session.scorecard,
         "overall_rating": session.overall_rating,
         "recommendation": session.recommendation,
@@ -268,8 +271,12 @@ async def update_interview_session(
             session.ended_at = datetime.utcnow()
             # Calculate duration if we have both timestamps
             if session.started_at:
-                duration = (session.ended_at - session.started_at).total_seconds() / 60
-                session.duration_minutes = int(duration)
+                # Ensure both timestamps are timezone-naive for comparison
+                started = session.started_at.replace(tzinfo=None) if session.started_at.tzinfo else session.started_at
+                ended = session.ended_at.replace(tzinfo=None) if session.ended_at.tzinfo else session.ended_at
+                duration = (ended - started).total_seconds() / 60
+                # Ensure minimum duration of 1 minute
+                session.duration_minutes = max(1, int(duration))
     
     for field, value in update_dict.items():
         setattr(session, field, value)
@@ -285,15 +292,18 @@ async def update_interview_session(
         "job_position": session.job_position,
         "job_requirements": session.job_requirements,
         "interview_type": session.interview_type,
+        "interview_category": session.interview_category,
         "scheduled_at": session.scheduled_at,
-        "duration_minutes": session.duration_minutes,
+        "duration_minutes": max(1, session.duration_minutes or 1),  # Ensure minimum 1 minute
         "status": session.status,
         "started_at": session.started_at,
         "ended_at": session.ended_at,
         "preparation_notes": session.preparation_notes,
         "suggested_questions": session.suggested_questions,
         "transcript": session.transcript,
+        "transcript_data": session.transcript_data,
         "notes": session.notes,
+        "recordings": session.recordings,
         "scorecard": session.scorecard,
         "overall_rating": session.overall_rating,
         "recommendation": session.recommendation,
@@ -1125,8 +1135,22 @@ async def upload_interview_recording(
 ):
     """Upload an interview recording for transcription and analysis."""
     
+    logger.info(f"Upload recording request for session {session_id} by user {current_user.id}")
+    logger.info(f"File details: name={file.filename}, content_type={file.content_type}")
+    
     # Get session
-    session = await get_interview_session(session_id, db, current_user)
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
     
     # Validate file type
     allowed_extensions = ['mp3', 'mp4', 'wav', 'm4a', 'webm', 'ogg', 'mpeg']
@@ -1138,16 +1162,17 @@ async def upload_interview_recording(
             detail=f"Invalid file type. Allowed types: {', '.join(allowed_extensions)}"
         )
     
-    # Check file size (max 500MB)
-    if file.size > 500 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="File size exceeds 500MB limit")
-    
-    # Save file temporarily
+    # Save file temporarily and check size
     import tempfile
     import os
     
     with tempfile.NamedTemporaryFile(delete=False, suffix=f".{file_extension}") as tmp_file:
         content = await file.read()
+        
+        # Check file size after reading (max 500MB)
+        if len(content) > 500 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File size exceeds 500MB limit")
+            
         tmp_file.write(content)
         tmp_file_path = tmp_file.name
     
@@ -1181,6 +1206,10 @@ async def upload_interview_recording(
                 session.recordings[-1]["transcript_id"] = datetime.utcnow().isoformat()
             
             await db.commit()
+            await db.refresh(session)
+            
+            logger.info(f"Session {session_id} updated with transcript")
+            logger.info(f"Transcript length: {len(session.transcript) if session.transcript else 0}")
             
             # Clean up temp file
             os.unlink(tmp_file_path)

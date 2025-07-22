@@ -19,10 +19,19 @@ function GoogleCallbackContent() {
     if (hasProcessed) return;
     
     const handleCallback = async () => {
-      setHasProcessed(true);
       const code = searchParams.get('code');
       const state = searchParams.get('state');
       const error = searchParams.get('error');
+      
+      // Check if we've already processed this code
+      const processedCode = sessionStorage.getItem('processed_oauth_code');
+      if (processedCode === code) {
+        console.log('OAuth code already processed, skipping...');
+        return;
+      }
+      
+      setHasProcessed(true);
+      sessionStorage.setItem('processed_oauth_code', code || '');
 
       if (error) {
         setError('Authentication was cancelled or failed. Please try again.');
@@ -50,8 +59,9 @@ function GoogleCallbackContent() {
         const response = await oauthApi.exchangeToken(code, 'google');
         console.log('Token exchange response:', response);
         
-        // Clear state token
+        // Clear state token and processed code
         sessionStorage.removeItem('oauth_state');
+        sessionStorage.removeItem('processed_oauth_code');
         
         // Handle the authentication
         console.log('Handling OAuth callback with token...');

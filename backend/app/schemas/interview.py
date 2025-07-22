@@ -130,7 +130,9 @@ class InterviewSessionResponse(InterviewSessionBase):
     preparation_notes: Optional[Dict[str, Any]] = None
     suggested_questions: Optional[List[Dict[str, Any]]] = None
     transcript: Optional[str] = None
+    transcript_data: Optional[Dict[str, Any]] = None
     notes: Optional[str] = None
+    recordings: Optional[List[Dict[str, Any]]] = None
     scorecard: Optional[Dict[str, Any]] = None
     overall_rating: Optional[float] = None
     recommendation: Optional[str] = None

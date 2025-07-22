@@ -82,6 +82,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: str = "claude-3-sonnet-20240229"
     EMBEDDING_MODEL: str = "text-embedding-ada-002"
+    ASSEMBLYAI_API_KEY: Optional[str] = None
     
     # Vector Database (Qdrant)
     QDRANT_URL: str = "http://localhost:6333"
@@ -141,3 +142,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Debug logging for environment variables
+import logging
+logger = logging.getLogger(__name__)
+logger.info(f"ASSEMBLYAI_API_KEY loaded: {'Yes' if settings.ASSEMBLYAI_API_KEY else 'No'}")
+if settings.ASSEMBLYAI_API_KEY:
+    logger.info(f"ASSEMBLYAI_API_KEY first 10 chars: {settings.ASSEMBLYAI_API_KEY[:10]}...")

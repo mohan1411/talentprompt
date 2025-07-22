@@ -88,6 +88,9 @@ export default function InterviewSessionPage() {
       
       // Fetch interview session
       const sessionData = await interviewsApi.getSession(sessionId)
+      console.log('Session data loaded:', sessionData)
+      console.log('Transcript:', sessionData.transcript)
+      console.log('Transcript data:', sessionData.transcript_data)
       setSession(sessionData)
       setQuestions(sessionData.questions || [])
       
@@ -529,6 +532,40 @@ export default function InterviewSessionPage() {
               />
             </CardContent>
           </Card>
+
+          {/* Transcript Display */}
+          {session?.transcript && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Interview Transcript</CardTitle>
+                <CardDescription>Uploaded recording transcription</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+                  <div className="space-y-4">
+                    {session.transcript_data?.speakers ? (
+                      // Show speaker-separated transcript if available
+                      Object.entries(session.transcript_data.speakers).map(([speakerId, speaker]: [string, any]) => (
+                        <div key={speakerId} className="space-y-2">
+                          <h4 className="font-medium text-sm">
+                            Speaker {speakerId} ({speaker.likely_role})
+                          </h4>
+                          {speaker.utterances?.map((utterance: any, idx: number) => (
+                            <p key={idx} className="text-sm text-muted-foreground ml-4">
+                              {utterance.text}
+                            </p>
+                          ))}
+                        </div>
+                      ))
+                    ) : (
+                      // Show plain transcript
+                      <p className="text-sm whitespace-pre-wrap">{session.transcript}</p>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Right Sidebar */}
@@ -697,7 +734,7 @@ export default function InterviewSessionPage() {
           onClose={() => setShowUploadDialog(false)}
           onUploadComplete={(transcript) => {
             // Refresh the session data
-            loadSession()
+            loadSessionData()
             setShowUploadDialog(false)
           }}
         />

@@ -20,7 +20,10 @@ import {
   AlertCircleIcon,
   Loader2Icon,
   CheckCircleIcon,
-  BrainIcon
+  BrainIcon,
+  UsersIcon,
+  VideoIcon,
+  PhoneIcon
 } from 'lucide-react'
 import { interviewsApi, InterviewSession } from '@/lib/api/interviews'
 import { resumeApi } from '@/lib/api/client'
@@ -270,7 +273,7 @@ export default function InterviewsPage() {
                             className="flex items-center gap-2"
                           >
                             <PlayIcon className="h-4 w-4" />
-                            {interview.status === 'in_progress' ? 'Continue' : 'Start'} Interview
+                            {interview.status === 'IN_PROGRESS' ? 'Continue' : 'Start'} Interview
                           </Button>
                         </div>
                       </div>
@@ -321,14 +324,26 @@ export default function InterviewsPage() {
                                 : new Date(interview.created_at).toLocaleDateString()
                               }
                             </span>
-                            {interview.status === 'completed' ? (
+                            {interview.status === 'COMPLETED' ? (
                               <Badge variant="outline" className="text-green-600">
                                 <CheckCircleIcon className="h-3 w-3 mr-1" />
                                 Completed
                               </Badge>
-                            ) : (
+                            ) : interview.status === 'CANCELLED' ? (
                               <Badge variant="outline" className="text-gray-600">
                                 Cancelled
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-blue-600">
+                                {interview.status}
+                              </Badge>
+                            )}
+                            {interview.interview_type && (
+                              <Badge variant="secondary" className="text-xs">
+                                {interview.interview_type === 'IN_PERSON' && <UsersIcon className="h-3 w-3 mr-1" />}
+                                {interview.interview_type === 'VIRTUAL' && <VideoIcon className="h-3 w-3 mr-1" />}
+                                {interview.interview_type === 'PHONE' && <PhoneIcon className="h-3 w-3 mr-1" />}
+                                {interview.interview_type.replace('_', ' ')}
                               </Badge>
                             )}
                             {interview.recommendation && (

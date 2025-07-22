@@ -68,18 +68,36 @@ export function UploadRecordingDialog({
       const formData = new FormData()
       formData.append('file', file)
 
+      // Get API URL from environment or use localhost for development
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      
       // Upload with progress tracking
-      const response = await fetch(`/api/v1/interviews/sessions/${sessionId}/upload-recording`, {
+      const response = await fetch(`${API_URL}/api/v1/interviews/sessions/${sessionId}/upload-recording`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         },
         body: formData
       })
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.detail || 'Upload failed')
+        // Try to parse JSON error, but handle HTML error pages
+        let errorMessage = 'Upload failed'
+        const contentType = response.headers.get('content-type')
+        
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            const data = await response.json()
+            errorMessage = data.detail || errorMessage
+          } catch (e) {
+            errorMessage = `Server error: ${response.status} ${response.statusText}`
+          }
+        } else {
+          // Got HTML error page instead of JSON
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -98,9 +116,7 @@ export function UploadRecordingDialog({
         setUploadProgress(100)
         setSuccess(true)
         setTranscript(result.transcript)
-        setTimeout(() => {
-          onUploadComplete(result.transcript)
-        }, 2000)
+        // Don't auto-close - let user click "View Analysis"
       } else if (result.status === 'error') {
         throw new Error(result.error || 'Transcription failed')
       }
@@ -213,7 +229,7 @@ export function UploadRecordingDialog({
                     <div key={id} className="text-sm">
                       <span className="font-medium">Speaker {id}:</span>{' '}
                       <span className="text-muted-foreground">
-                        {speaker.likely_role} (confidence: {(speaker.confidence * 100).toFixed(0)}%)
+                        {speaker.likely_role} (confidence: {((speaker.transcription_confidence || speaker.confidence || 0) * 100).toFixed(0)}%)
                       </span>
                     </div>
                   ))}
