@@ -51,14 +51,15 @@ Implement Captcha and email verification when user register through email and pa
 
 ## 🚀 Immediate Priorities
 
-### Chrome Extension Publishing ✅ SUBMITTED - July 21, 2025
+### Chrome Extension Publishing ✅ PUBLISHED - July 23, 2025
 - [x] Create 128x128px PNG icon for Chrome Web Store
 - [x] Take 3-4 screenshots of extension in action
 - [x] Pay $5 Chrome Web Store developer fee
 - [x] Create production ZIP file from `/chrome-extension/`
 - [x] Write store description (132 char summary + full description)
 - [x] Submit to Chrome Web Store for review
-- [ ] **STATUS**: Awaiting review from Google (1-3 business days)
+- [x] **STATUS**: Published and available in Chrome Web Store!
+- [x] OAuth user authentication implemented for extension users
 
 ### Critical Fixes
 - [x] Test all features in production after recent deployments - ✅ All working
@@ -198,7 +199,7 @@ Implement Captcha and email verification when user register through email and pa
 
 ---
 
-**Last Updated**: July 22, 2025  
+**Last Updated**: July 23, 2025  
 **Priority Levels**: 🔴 Critical | 🟡 Important | 🟢 Nice-to-have
 
 ## Notes
@@ -292,3 +293,45 @@ Focus on user acquisition and Chrome extension publishing to start building user
 - Current approach: "Start free" with no restrictions
 
 This reduces friction and accelerates user acquisition at this critical early stage.
+
+### Updates - July 23, 2025
+
+#### Interview Scorecard Improvements ✅ COMPLETED
+- ✅ Fixed scoring scale inconsistency (standardized to 5-point scale)
+- ✅ Implemented proper handling for audio mismatch detection
+- ✅ Enabled interview results display for human-only assessments (without audio)
+- ✅ Fixed manual transcript parsing to handle variable speaker tag formatting
+- ✅ Resolved scorecard showing wrong ratings (human vs AI confusion)
+- ✅ Fixed duplicate sections in scorecard display
+- ✅ Improved AI Insights to show appropriate content based on assessment type
+- ✅ Added clear distinction between Human and AI ratings throughout the application
+
+#### Chrome Extension OAuth Authentication ✅ COMPLETED
+**Major Feature**: Enable OAuth users (Google/LinkedIn) to use the Chrome extension
+- ✅ Implemented Redis-based temporary access code system
+  - 6-character alphanumeric codes (excluding confusing characters)
+  - One-time use only for security
+  - 10-minute expiration
+  - Rate limiting (3 attempts per hour)
+- ✅ Created extension token service with comprehensive security features
+- ✅ Modified login endpoint to accept both passwords and access codes
+- ✅ Built dedicated extension-auth page for code generation
+  - Visual countdown timer
+  - Copy-to-clipboard functionality
+  - Clear instructions for users
+- ✅ Enhanced profile page with Chrome Extension section
+  - Different UI for OAuth vs regular users
+  - Direct access to code generation
+- ✅ Configured CORS to support Chrome extension origins
+  - Added regex pattern for chrome-extension://* URLs
+- ✅ Implemented JWT token persistence in extension
+  - Stores JWT for 8 days (no need for new codes during this period)
+  - Validates token on extension startup
+  - Graceful handling of expired tokens
+- ✅ Created comprehensive deployment documentation
+
+#### AI Interview Features
+- ✅ Verified AI-generated interview questions are unique per session
+- ✅ Confirmed job requirements textbox is used by AI for question generation
+
+**Production Deployment**: All OAuth authentication features deployed and working!
