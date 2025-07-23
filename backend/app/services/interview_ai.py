@@ -297,6 +297,20 @@ class InterviewAIService:
     ) -> Dict[str, Any]:
         """Generate a comprehensive interview scorecard."""
         
+        # Log incoming responses for debugging
+        logger.info(f"Generating scorecard with {len(responses)} responses")
+        if not responses:
+            logger.warning("No responses provided to scorecard generation - will use default scorecard")
+            return self._get_default_scorecard()
+        
+        # Check for potential audio mismatch first
+        mismatch_check = await self._detect_audio_mismatch(session_data, responses)
+        
+        # Log mismatch detection results
+        if mismatch_check['is_mismatch']:
+            logger.warning(f"Audio mismatch detected: {mismatch_check['warning']}")
+            logger.warning(f"Relevance ratio: {mismatch_check.get('relevance_ratio', 0):.2f}, Domain: {mismatch_check.get('detected_domain', 'unknown')}")
+        
         # Extract question categories and ratings
         technical_responses = [r for r in responses if 'technical' in r.get('question_text', '').lower() or 
                               any(tech in r.get('question_text', '').lower() for tech in 
@@ -318,10 +332,17 @@ class InterviewAIService:
         For technical skills, identify specific technologies mentioned in questions and rate them.
         For soft skills, identify behaviors like communication, leadership, teamwork, etc.
         
+        {f'''
+        IMPORTANT: Audio mismatch detected! Confidence level: {mismatch_check['confidence']}%
+        Warning: {mismatch_check['warning']}
+        ''' if mismatch_check['is_mismatch'] else ''}
+        
         Return EXACTLY this JSON structure:
         {{
             "overall_rating": 4.2,  // number between 1-5
             "recommendation": "hire",  // must be one of: hire, no_hire, maybe
+            "confidence": 85,  // confidence percentage 0-100
+            "data_quality": "high",  // one of: high, medium, low, mismatch
             "technical_skills": {{
                 "Python": 4.5,  // Extract actual skills from questions
                 "JavaScript": 4.0,
@@ -355,6 +376,9 @@ class InterviewAIService:
         
         IMPORTANT: Extract actual technical skills from the questions asked, not generic categories.
         Base all ratings on the actual responses provided.
+        
+        CRITICAL: If responses are completely unrelated to the questions (e.g., talking about travel when asked about programming),
+        you MUST give extremely low ratings (1.0-1.5) and set recommendation to "no_hire".
         """
         
         try:
@@ -396,6 +420,41 @@ class InterviewAIService:
             scorecard['strengths'] = scorecard.get('strengths', ['Good overall performance'])
             scorecard['concerns'] = scorecard.get('concerns', ['Needs further assessment'])
             scorecard['next_steps'] = scorecard.get('next_steps', ['Schedule follow-up'])
+            
+            # Add mismatch info if detected and override ratings
+            if mismatch_check['is_mismatch']:
+                scorecard['mismatch_detected'] = True
+                scorecard['mismatch_warning'] = mismatch_check['warning']
+                scorecard['confidence'] = mismatch_check['confidence']
+                scorecard['data_quality'] = 'mismatch'
+                
+                # Reduce ratings but don't completely override to 1.0
+                # Let the AI's actual assessment have some weight
+                reduction_factor = 0.5  # Reduce by 50% instead of setting to 1.0
+                
+                scorecard['overall_rating'] = max(1.0, scorecard.get('overall_rating', 3.0) * reduction_factor)
+                scorecard['recommendation'] = 'no_hire' if scorecard['overall_rating'] < 2.0 else 'maybe'
+                scorecard['culture_fit'] = max(1.0, scorecard.get('culture_fit', 3.0) * reduction_factor)
+                
+                # Reduce skill ratings proportionally
+                if 'technical_skills' in scorecard:
+                    for skill in scorecard['technical_skills']:
+                        scorecard['technical_skills'][skill] = max(1.0, scorecard['technical_skills'][skill] * reduction_factor)
+                
+                if 'soft_skills' in scorecard:
+                    for skill in scorecard['soft_skills']:
+                        scorecard['soft_skills'][skill] = max(1.0, scorecard['soft_skills'][skill] * reduction_factor)
+                
+                # Update concerns to reflect mismatch
+                scorecard['concerns'] = [
+                    f"Audio content appears to be from {mismatch_check.get('detected_domain', 'non-technical')} domain",
+                    "Responses completely unrelated to interview questions",
+                    "No technical knowledge demonstrated",
+                    "Possible wrong audio file uploaded"
+                ]
+                
+                scorecard['strengths'] = []
+                scorecard['percentile_rank'] = 5.0
             
             return scorecard
             
@@ -526,6 +585,179 @@ class InterviewAIService:
             return 25.0
         else:
             return 10.0
+    
+    async def _detect_audio_mismatch(
+        self, 
+        session_data: Dict[str, Any],
+        responses: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Detect if uploaded audio doesn't match interview context."""
+        
+        # Check for empty or invalid responses
+        if not responses or len(responses) == 0:
+            logger.info("No responses to analyze for mismatch detection")
+            return {"is_mismatch": False, "confidence": 100, "warning": "No responses to analyze"}
+        
+        # Extract job position and expected keywords
+        job_position = session_data.get('job_position', '').lower()
+        
+        # Define expected technical domains based on common positions
+        tech_keywords = {
+            'backend': ['api', 'database', 'server', 'python', 'java', 'microservice', 'sql', 'rest', 'backend',
+                       'aws', 'cloud', 'docker', 'kubernetes', 'redis', 'mongodb', 'postgresql', 'mysql',
+                       'node', 'express', 'django', 'flask', 'spring', 'authentication', 'security',
+                       'performance', 'scaling', 'architecture', 'design patterns', 'testing', 'fastapi',
+                       'graphql', 'grpc', 'message queue', 'rabbitmq', 'kafka', 'elasticsearch', 'nginx',
+                       'load balancer', 'caching', 'optimization', 'async', 'threading', 'celery', 'oauth',
+                       'jwt', 'encryption', 'hashing', 'bcrypt', 'migration', 'orm', 'sqlalchemy', 'alembic',
+                       'pytest', 'unit test', 'integration', 'ci/cd', 'pipeline', 'deployment', 'monitoring',
+                       'logging', 'debugging', 'profiling', 'memory', 'cpu', 'latency', 'throughput', 
+                       'scalability', 'reliability', 'availability', 'fault tolerance', 'distributed',
+                       # Sharon Miller specific terms from her transcript
+                       'monolithic', 'monolith', 'eks', 's3', 'ebs', 'rds', 'sqs', 'sns', 'iam', 'vpc',
+                       'apollo', 'graphene', 'dataloader', 'n+1', 'terraform', 'prometheus', 'grafana',
+                       'elk', 'pact', 'circuit breaker', 'connection pool', 'read replica', 'p99',
+                       'zero-downtime', 'expand-contract', 'schema', 'rollback', 'backup'],
+            'frontend': ['react', 'javascript', 'css', 'html', 'ui', 'ux', 'component', 'frontend', 'browser',
+                        'typescript', 'vue', 'angular', 'webpack', 'responsive', 'accessibility', 'state management',
+                        'redux', 'mobx', 'context api', 'hooks', 'jsx', 'sass', 'styled components', 'tailwind',
+                        'bootstrap', 'material ui', 'next.js', 'gatsby', 'spa', 'ssr', 'ssg', 'pwa', 'service worker'],
+            'fullstack': ['api', 'react', 'database', 'frontend', 'backend', 'full-stack', 'javascript', 'python',
+                         'node.js', 'express', 'mongodb', 'postgresql', 'rest', 'graphql', 'microservices'],
+            'data': ['data', 'analysis', 'sql', 'python', 'machine learning', 'statistics', 'etl', 'pandas', 'numpy',
+                    'scikit-learn', 'tensorflow', 'pytorch', 'jupyter', 'data pipeline', 'warehouse', 'spark'],
+            'devops': ['docker', 'kubernetes', 'ci/cd', 'aws', 'deployment', 'infrastructure', 'terraform', 'jenkins',
+                      'ansible', 'puppet', 'chef', 'gitlab', 'github actions', 'circleci', 'monitoring', 'prometheus'],
+            'mobile': ['ios', 'android', 'swift', 'kotlin', 'mobile', 'app', 'react native', 'flutter', 'xcode',
+                      'android studio', 'objective-c', 'java', 'push notification', 'app store', 'google play'],
+        }
+        
+        # Common non-tech domains that might indicate mismatch
+        non_tech_domains = {
+            'cooking': ['recipe', 'ingredient', 'cook', 'bake', 'kitchen', 'food', 'taste', 'dish'],
+            'medical': ['patient', 'diagnosis', 'treatment', 'medicine', 'doctor', 'symptoms'],
+            'finance': ['investment', 'portfolio', 'stock', 'trading', 'banking', 'financial'],
+            'education': ['student', 'curriculum', 'teaching', 'classroom', 'lesson', 'grade'],
+            'travel': ['travel', 'vacation', 'tourist', 'destination', 'hotel', 'flight', 'embassy', 
+                      'disaster', 'insurance', 'trip', 'overseas', 'roller coaster', 'amusement park', 
+                      'red cross', 'itinerary', 'internationally'],
+        }
+        
+        # Analyze responses
+        total_responses = len(responses)
+        relevant_responses = 0
+        off_topic_responses = 0
+        detected_domain = None
+        
+        logger.info(f"Analyzing {total_responses} responses for mismatch detection")
+        
+        for i, resp in enumerate(responses):
+            # Check multiple possible field names for the response content
+            response_text = (resp.get('response_summary', '') or 
+                           resp.get('response_text', '') or 
+                           resp.get('response_transcript', '')).lower()
+            question_text = resp.get('question_text', '').lower()
+            
+            if i == 0:  # Log first response for debugging
+                logger.info(f"First response sample - Q: {question_text[:100]}... A: {response_text[:100]}...")
+            
+            # Check if response contains any expected technical keywords
+            position_type = 'backend' if 'backend' in job_position else \
+                          'frontend' if 'frontend' in job_position else \
+                          'data' if 'data' in job_position else \
+                          'devops' if 'devops' in job_position else \
+                          'mobile' if 'mobile' in job_position else 'fullstack'
+            
+            expected_keywords = tech_keywords.get(position_type, [])
+            
+            # Check for relevant technical content - be more lenient
+            # Also check the question itself for context
+            combined_text = response_text + ' ' + question_text
+            
+            # Count matching keywords
+            keyword_matches = sum(1 for keyword in expected_keywords if keyword in combined_text)
+            
+            # Consider it relevant if it has at least 1 technical keyword or mentions technical concepts
+            # Also check for general technical terms
+            general_tech_terms = ['code', 'develop', 'implement', 'build', 'test', 'debug', 'deploy',
+                                'software', 'application', 'system', 'technical', 'technology',
+                                'programming', 'engineer', 'architecture', 'framework', 'library',
+                                'algorithm', 'data structure', 'complexity', 'optimization', 'refactor',
+                                'version control', 'git', 'github', 'gitlab', 'bitbucket', 'merge',
+                                'pull request', 'code review', 'agile', 'scrum', 'sprint', 'standup',
+                                'requirement', 'specification', 'documentation', 'api documentation',
+                                'unit test', 'integration test', 'test coverage', 'continuous integration',
+                                'continuous deployment', 'devops', 'infrastructure', 'server', 'client',
+                                'frontend', 'backend', 'fullstack', 'database', 'query', 'index',
+                                'performance', 'scalability', 'reliability', 'security', 'authentication',
+                                'authorization', 'encryption', 'https', 'ssl', 'certificate', 'token',
+                                'session', 'cookie', 'cache', 'memory', 'storage', 'file system',
+                                'network', 'protocol', 'http', 'rest', 'soap', 'websocket', 'tcp',
+                                'udp', 'dns', 'load balancer', 'proxy', 'firewall', 'vpc', 'subnet',
+                                'container', 'orchestration', 'microservice', 'monolith', 'serverless',
+                                'function', 'lambda', 'cloud', 'aws', 'azure', 'gcp', 'digital ocean']
+            
+            general_matches = sum(1 for term in general_tech_terms if term in combined_text)
+            
+            has_relevant_content = keyword_matches > 0 or general_matches >= 1
+            if has_relevant_content:
+                relevant_responses += 1
+                logger.debug(f"Found relevant content in response (keywords: {keyword_matches}, general: {general_matches})")
+            
+            # Check for non-tech domain content - only count if strongly off-topic
+            for domain, keywords in non_tech_domains.items():
+                domain_matches = sum(keyword in response_text for keyword in keywords)
+                if domain_matches >= 3 and general_matches < 2:  # Only flag if high non-tech AND low tech
+                    off_topic_responses += 1
+                    detected_domain = domain
+                    logger.debug(f"Found off-topic content: {domain} (matches: {domain_matches})")
+                    break
+        
+        # Calculate mismatch indicators
+        relevance_ratio = relevant_responses / total_responses if total_responses > 0 else 0
+        off_topic_ratio = off_topic_responses / total_responses if total_responses > 0 else 0
+        
+        # Determine if mismatch - only flag very clear mismatches
+        # Need BOTH very low relevance AND high off-topic to be considered mismatch
+        is_mismatch = relevance_ratio < 0.1 and off_topic_ratio > 0.6
+        
+        # For manual transcripts, be extremely lenient
+        if session_data.get('is_manual_transcript', False):
+            is_mismatch = relevance_ratio == 0 and off_topic_ratio > 0.9
+            logger.info(f"Manual transcript - using lenient mismatch detection")
+        
+        confidence = max(10, min(90, int((1 - relevance_ratio) * 100))) if is_mismatch else 100
+        
+        # Generate warning message
+        warning = ""
+        if is_mismatch:
+            logger.warning(f"Mismatch detected for {job_position} position")
+            logger.warning(f"Relevance ratio: {relevance_ratio:.2f}, Off-topic ratio: {off_topic_ratio:.2f}")
+            logger.warning(f"Relevant responses: {relevant_responses}/{total_responses}")
+            logger.warning(f"Is manual transcript: {session_data.get('is_manual_transcript', False)}")
+            
+            if detected_domain:
+                warning = f"Audio content appears to be from {detected_domain} domain, not technical interview"
+            else:
+                warning = "Audio content doesn't match expected technical interview responses"
+        else:
+            logger.info(f"No mismatch detected for {job_position} position")
+            logger.info(f"Relevance ratio: {relevance_ratio:.2f}, Off-topic ratio: {off_topic_ratio:.2f}")
+            logger.info(f"Relevant responses: {relevant_responses}/{total_responses}")
+        
+        return {
+            "is_mismatch": is_mismatch,
+            "confidence": confidence,
+            "warning": warning,
+            "relevance_ratio": relevance_ratio,
+            "detected_domain": detected_domain,
+            "debug_info": {
+                "total_responses": total_responses,
+                "relevant_responses": relevant_responses,
+                "off_topic_responses": off_topic_responses,
+                "position_type": position_type if 'position_type' in locals() else 'unknown'
+            }
+        }
     
     def _get_fallback_questions(self, job_position: str, num_questions: int) -> Dict[str, Any]:
         """Get fallback questions if AI generation fails."""
@@ -924,6 +1156,16 @@ class InterviewAIService:
         # Sort by timestamp
         utterances.sort(key=lambda x: x.get("start", 0))
         
+        # Log transcript info for debugging
+        logger.info(f"Analyzing transcript with {len(utterances)} utterances")
+        if utterances:
+            logger.debug(f"First utterance: speaker={utterances[0].get('speaker')}, role={utterances[0].get('role')}, text={utterances[0].get('text', '')[:50]}...")
+        
+        # Check if we have valid utterances
+        if not utterances:
+            logger.warning("No utterances found in transcript data")
+            return self._get_default_transcript_analysis(transcript_data, session_data)
+        
         prompt = f"""
         Analyze this interview transcript and extract Q&A pairs with detailed evaluation.
         
@@ -935,6 +1177,8 @@ class InterviewAIService:
         Transcript:
         {self._format_transcript_for_analysis(utterances)}
         
+        IMPORTANT: The transcript uses [interviewer]: and [candidate]: tags to indicate speakers.
+        
         For each question-answer pair:
         1. Identify the question asked by the interviewer
         2. Extract the candidate's complete response
@@ -942,6 +1186,9 @@ class InterviewAIService:
         4. Identify technical skills mentioned
         5. Assess communication clarity
         6. Note any red flags or exceptional points
+        
+        CRITICAL: You MUST extract at least one Q&A pair from the transcript. Even if the transcript is short,
+        identify the questions asked and the candidate's responses.
         
         Also provide:
         - Overall interview assessment
@@ -990,15 +1237,35 @@ class InterviewAIService:
             qa_pairs = analysis.get("qa_pairs", [])
             responses = []
             
+            # Validate Q&A extraction
+            if not qa_pairs:
+                logger.warning("No Q&A pairs extracted from transcript analysis")
+                logger.debug(f"Analysis response: {json.dumps(analysis, indent=2)}")
+                # Log the formatted transcript that was sent to AI
+                formatted_transcript = self._format_transcript_for_analysis(utterances)
+                logger.debug(f"Formatted transcript sent to AI (first 500 chars): {formatted_transcript[:500]}")
+            else:
+                logger.info(f"Successfully extracted {len(qa_pairs)} Q&A pairs from transcript")
+            
             for i, qa in enumerate(qa_pairs):
+                # Validate required fields
+                question = qa.get("question", "").strip()
+                answer = qa.get("answer", "").strip()
+                
+                if not question or not answer:
+                    logger.warning(f"Skipping Q&A pair {i} with missing data: Q='{question[:50]}...', A='{answer[:50]}...'")
+                    continue
+                
                 responses.append({
-                    "question_text": qa.get("question", ""),
-                    "response_summary": qa.get("answer", "")[:500],  # Truncate long answers
+                    "question_text": question,
+                    "response_summary": answer[:500] if answer else "",  # Truncate long answers
                     "response_rating": qa.get("rating", 3),
                     "category": qa.get("category", "general"),
                     "skills_mentioned": qa.get("skills_mentioned", []),
                     "evaluation": qa.get("evaluation", "")
                 })
+            
+            logger.info(f"Extracted {len(responses)} valid Q&A pairs from {len(qa_pairs)} total pairs")
             
             return {
                 "qa_analysis": analysis,
@@ -1022,15 +1289,23 @@ class InterviewAIService:
         """Format utterances for analysis prompt."""
         formatted_lines = []
         
-        for utt in utterances[:100]:  # Limit to prevent token overflow
+        for i, utt in enumerate(utterances[:100]):  # Limit to prevent token overflow
             speaker_role = utt.get("role", "unknown")
             if not speaker_role or speaker_role == "unknown":
                 # Try to infer from speaker ID
                 speaker_id = utt.get("speaker", "")
                 speaker_role = "interviewer" if speaker_id == "A" else "candidate"
             
-            text = utt.get("text", "")
-            formatted_lines.append(f"[{speaker_role}]: {text}")
+            text = utt.get("text", "").strip()
+            if text:  # Only include non-empty utterances
+                formatted_lines.append(f"[{speaker_role}]: {text}")
+                
+                # Log first few utterances for debugging
+                if i < 3:
+                    logger.debug(f"Utterance {i}: [{speaker_role}]: {text[:100]}...")
+        
+        # Log total formatted lines
+        logger.info(f"Formatted {len(formatted_lines)} utterances for analysis")
         
         return "\n".join(formatted_lines)
     

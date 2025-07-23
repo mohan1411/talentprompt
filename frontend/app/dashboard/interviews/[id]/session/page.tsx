@@ -156,6 +156,9 @@ export default function InterviewSessionPage() {
       completionRate: (ratedQuestions.length / questions.length) * 100
     }
   })() : null
+  
+  // Check if there are any human ratings
+  const hasHumanRatings = questions.some(q => q.response_rating !== null && q.response_rating !== undefined)
 
 
   useEffect(() => {
@@ -573,14 +576,19 @@ export default function InterviewSessionPage() {
           </Card>
 
           {/* Transcript and Analysis */}
-          {(session?.transcript || session?.scorecard || session?.status === 'COMPLETED') && (
+          {(session?.transcript || session?.scorecard || session?.status === 'COMPLETED' || hasHumanRatings) && (
             <Card>
               <CardHeader>
                 <CardTitle>Interview Results</CardTitle>
-                <CardDescription>Transcript and AI analysis</CardDescription>
+                <CardDescription>
+                  {session?.transcript && session?.scorecard ? 'Transcript and dual-track analysis' :
+                   session?.transcript ? 'Transcript and AI analysis' :
+                   hasHumanRatings ? 'Human assessment based on manual ratings' :
+                   'Interview analysis and results'}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue={session?.scorecard ? "analysis" : "transcript"}>
+                <Tabs defaultValue={session?.scorecard || (humanAssessment && humanAssessment.questionsRated > 0) ? "analysis" : "transcript"}>
                   <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="transcript">Transcript</TabsTrigger>
                     <TabsTrigger value="analysis">Analysis</TabsTrigger>
@@ -621,6 +629,17 @@ export default function InterviewSessionPage() {
                   <TabsContent value="analysis" className="mt-4">
                     {session?.scorecard ? (
                       <div className="space-y-6">
+                        {/* Show mismatch warning if detected */}
+                        {session.scorecard.mismatch_detected && (
+                          <Alert variant="destructive">
+                            <AlertCircleIcon className="h-4 w-4" />
+                            <AlertDescription>
+                              <strong>Warning:</strong> {session.scorecard.mismatch_warning || 'The transcript content appears to be unrelated to the interview questions.'}
+                              {session.scorecard.overall_rating <= 1.5 && ' The low rating may be due to this mismatch.'}
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                        
                         {/* Dual Track Analysis - Human vs AI */}
                         <DualTrackAnalysis
                           humanAssessment={humanAssessment}
@@ -641,18 +660,86 @@ export default function InterviewSessionPage() {
                         
                         {/* Detailed AI Scorecard */}
                         <div>
-                          <h3 className="text-lg font-semibold mb-4">Detailed AI Analysis</h3>
+                          <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-lg font-semibold">Detailed AI Analysis</h3>
+                            {session.scorecard?.overall_rating <= 1.5 && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={async () => {
+                                  if (confirm('Re-analyze this interview with updated AI logic? This may improve accuracy for technical interviews.')) {
+                                    try {
+                                      const response = await fetch(
+                                        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/interviews/sessions/${sessionId}/reanalyze`,
+                                        {
+                                          method: 'POST',
+                                          headers: {
+                                            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                                          }
+                                        }
+                                      )
+                                      if (response.ok) {
+                                        const result = await response.json()
+                                        alert(`Re-analysis complete! New rating: ${result.overall_rating}/5.0`)
+                                        await loadSessionData()
+                                      } else {
+                                        alert('Failed to re-analyze interview')
+                                      }
+                                    } catch (error) {
+                                      console.error('Re-analysis error:', error)
+                                      alert('Failed to re-analyze interview')
+                                    }
+                                  }
+                                }}
+                                className="flex items-center gap-2"
+                              >
+                                <BrainIcon className="h-4 w-4" />
+                                Re-analyze
+                              </Button>
+                            )}
+                          </div>
                           <InterviewScorecard 
                             scorecard={session.scorecard}
                             qaAnalysis={session.preparation_notes?.transcript_analysis}
                           />
                         </div>
                       </div>
+                    ) : humanAssessment && humanAssessment.questionsRated > 0 ? (
+                      <div className="space-y-6">
+                        {/* Human-only assessment */}
+                        <Alert>
+                          <AlertCircleIcon className="h-4 w-4" />
+                          <AlertDescription>
+                            Showing human assessment only. Upload audio recording for AI analysis.
+                          </AlertDescription>
+                        </Alert>
+                        
+                        <DualTrackAnalysis
+                          humanAssessment={humanAssessment}
+                          aiAnalysis={undefined}
+                          sessionData={{
+                            job_position: session.job_position,
+                            interview_type: session.interview_type,
+                            duration_minutes: session.duration_minutes || 0
+                          }}
+                        />
+                        
+                        {/* Option to generate human-only scorecard */}
+                        <div className="text-center pt-4 border-t">
+                          <Button 
+                            variant="outline"
+                            onClick={() => router.push(`/dashboard/interviews/${sessionId}/scorecard`)}
+                          >
+                            <FileTextIcon className="h-4 w-4 mr-2" />
+                            View Scorecard Based on Human Ratings
+                          </Button>
+                        </div>
+                      </div>
                     ) : (
                       <div className="text-center py-8">
                         <p className="text-muted-foreground mb-4">
                           No analysis available yet. 
-                          {session?.transcript ? 'Analysis will be generated automatically after upload.' : 'Upload a recording to generate analysis.'}
+                          {session?.transcript ? 'Analysis will be generated automatically. If using manual transcript, ensure it uses [interviewer]: and [candidate]: tags.' : hasHumanRatings ? 'Complete rating all questions to see human assessment.' : 'Rate interview questions or upload a recording to generate analysis.'}
                         </p>
                         {session?.transcript && (
                           <Button 

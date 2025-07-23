@@ -501,6 +501,37 @@ Note: This is a summary. Full scorecard requires system access.
         </div>
       </div>
 
+      {/* Audio Mismatch Warning */}
+      {scorecard.mismatch_detected && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangleIcon className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Audio Mismatch Detected</strong>
+            <p className="mt-1">{scorecard.mismatch_warning || 'Audio content appears unrelated to interview questions.'}</p>
+            <div className="mt-2 text-sm space-y-1">
+              <p>This may be due to:</p>
+              <ul className="list-disc list-inside ml-2">
+                <li>Wrong audio file uploaded</li>
+                <li>Technical transcription errors</li>
+                <li>Recording issues</li>
+                <li>Manual transcript formatting issues (ensure proper [interviewer]: and [candidate]: tags)</li>
+              </ul>
+            </div>
+            <div className="mt-3 pt-3 border-t border-red-200">
+              <p className="text-sm">
+                <strong>AI Confidence:</strong> {scorecard.confidence || 'Low'}% | 
+                <strong className="ml-2">Data Quality:</strong> {scorecard.data_quality || 'Mismatch'}
+              </p>
+              {scorecard.debug_info && (
+                <p className="text-xs mt-1 text-red-600">
+                  Debug: {scorecard.debug_info.relevant_responses || 0}/{scorecard.debug_info.total_responses || 0} responses matched expected content
+                </p>
+              )}
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Overall Summary */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card>
@@ -519,7 +550,8 @@ Note: This is a summary. Full scorecard requires system access.
                   />
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground">Overall Rating</p>
+              <p className="text-sm text-muted-foreground">Overall AI Rating</p>
+              <p className="text-xs text-muted-foreground mt-1">Post-interview analysis</p>
             </div>
           </CardContent>
         </Card>
@@ -959,7 +991,13 @@ Note: This is a summary. Full scorecard requires system access.
 
           <Card>
             <CardHeader>
-              <CardTitle>AI Analysis</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <BrainIcon className="h-5 w-5" />
+                AI Analysis
+              </CardTitle>
+              <CardDescription>
+                Comprehensive AI evaluation based on interview responses and candidate profile
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {session?.preparation_notes?.analysis ? (
@@ -973,12 +1011,36 @@ Note: This is a summary. Full scorecard requires system access.
                   </div>
                   
                   {session.preparation_notes.analysis.fit_assessment && (
-                    <div>
-                      <h4 className="font-medium mb-2">Fit Assessment</h4>
+                    <div className="border-l-4 border-purple-200 pl-4">
+                      <h4 className="font-medium mb-2 flex items-center gap-2">
+                        Role Fit Assessment
+                        <span className="text-xs text-muted-foreground font-normal">
+                          (AI evaluation of candidate-role alignment)
+                        </span>
+                      </h4>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="flex items-center gap-2">
+                          <p className="text-lg font-semibold">
+                            {(session.preparation_notes.analysis.fit_assessment.score / 2).toFixed(1)}/5
+                          </p>
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <StarIcon
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= Math.round(session.preparation_notes.analysis.fit_assessment.score / 2)
+                                    ? 'fill-purple-400 text-purple-400'
+                                    : 'fill-gray-200 text-gray-200'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <Badge variant="secondary" className="text-xs">
+                          Pre-interview Assessment
+                        </Badge>
+                      </div>
                       <p className="text-sm text-muted-foreground">
-                        Score: {session.preparation_notes.analysis.fit_assessment.score}/10
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
                         {session.preparation_notes.analysis.fit_assessment.reasoning}
                       </p>
                     </div>

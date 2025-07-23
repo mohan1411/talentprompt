@@ -174,10 +174,13 @@ export function DualTrackAnalysis({ humanAssessment, aiAnalysis, sessionData }: 
               <>
                 {/* Overall Rating & Recommendation */}
                 <div className="text-center p-4 bg-purple-50 rounded-lg">
-                  <h4 className="text-sm font-medium text-purple-600 mb-1">Overall Rating</h4>
+                  <h4 className="text-sm font-medium text-purple-600 mb-1">Overall AI Score</h4>
                   <div className="text-3xl font-bold text-purple-700">
                     {formatRating(aiAnalysis.overall_rating)}/5.0
                   </div>
+                  <p className="text-xs text-purple-600 mt-1 mb-2">
+                    Comprehensive transcript analysis
+                  </p>
                   <div className="mt-2">
                     <Badge className={getRecommendationColor(aiAnalysis.recommendation)}>
                       {getRecommendationText(aiAnalysis.recommendation)}
@@ -194,6 +197,12 @@ export function DualTrackAnalysis({ humanAssessment, aiAnalysis, sessionData }: 
                     </span>
                   </div>
                   <Progress value={(aiAnalysis.confidence || 0.85) * 100} className="h-2" />
+                  {aiAnalysis.confidence && aiAnalysis.confidence < 0.5 && (
+                    <p className="text-xs text-amber-600 mt-1">
+                      <AlertCircleIcon className="h-3 w-3 inline mr-1" />
+                      Low confidence - results may be unreliable
+                    </p>
+                  )}
                 </div>
 
                 {/* Skills Assessment */}

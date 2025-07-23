@@ -1,0 +1,102 @@
+[interviewer]: Hi Sharon, thank you for joining us today. Could you start by telling me about your experience as
+  a backend developer and what you've been working on recently?
+
+  [candidate]: Thank you for having me! I've been working as a backend developer for the past 4 years, primarily
+  focused on Python and API development. At Innovation Labs, I've been leading the design and implementation of our
+   core backend systems. Most recently, I architected a microservices-based system that handles over 10,000
+  requests per second. We migrated from a monolithic architecture, which was quite challenging but resulted in much
+   better scalability and maintainability.
+
+  [interviewer]: That's impressive scale. Can you walk me through the architecture decisions you made for handling
+  10K requests per second?
+
+  [candidate]: Absolutely. The key was breaking down our monolith into smaller, focused microservices. We used
+  Python with FastAPI for the services, which gave us excellent performance with async capabilities. For the data
+  layer, we implemented a combination of PostgreSQL for transactional data and MongoDB for document storage. We
+  also used Redis for caching frequently accessed data. The services communicate through a message queue - we chose
+   RabbitMQ for reliability. Everything runs in Docker containers orchestrated by Kubernetes on AWS EKS, which
+  allows us to auto-scale based on load.
+
+  [interviewer]: How did you handle authentication and authorization across these microservices?
+
+  [candidate]: Security was a top priority. We implemented a centralized authentication service using JWT tokens
+  with OAuth 2.0. Each microservice validates tokens using a shared public key, so we don't need to make calls to
+  the auth service for every request. For authorization, we use a role-based access control system with
+  fine-grained permissions stored in PostgreSQL. We also implemented API rate limiting per user and IP address to
+  prevent abuse, and all inter-service communication happens over TLS within our VPC.
+
+  [interviewer]: Tell me about a particularly challenging technical problem you've solved recently.
+
+  [candidate]: One of our biggest challenges was dealing with database connection pooling issues under high load.
+  We were seeing connection timeouts and degraded performance during peak hours. After extensive profiling, I
+  discovered our connection pools were being exhausted due to long-running queries in one of our services. I
+  implemented several solutions: First, I optimized the slow queries using proper indexing and query restructuring.
+   Second, I implemented a circuit breaker pattern to prevent cascading failures. Third, I set up read replicas for
+   read-heavy operations and implemented smart query routing. This reduced our p99 latency by 70% and eliminated
+  the timeout issues.
+
+  [interviewer]: How do you approach testing in a microservices architecture?
+
+  [candidate]: Testing in microservices requires a multi-layered approach. At the unit level, I write extensive
+  tests for business logic using pytest, aiming for at least 80% coverage. For integration testing, I use Docker
+  Compose to spin up dependent services and test interactions. We also have contract tests using Pact to ensure
+  services maintain their API contracts. For end-to-end testing, we have a staging environment that mirrors
+  production where we run automated test suites. I'm also a big advocate for monitoring in production - we use
+  Prometheus and Grafana for metrics, and structured logging with ELK stack for debugging issues.
+
+  [interviewer]: You mentioned using GraphQL in your skills. How have you implemented it and what benefits did it
+  provide?
+
+  [candidate]: We introduced GraphQL as an API gateway layer on top of our REST microservices about a year ago. I
+  used Apollo Server with Python's Graphene library. The main benefit was reducing over-fetching and under-fetching
+   of data - mobile clients could request exactly what they needed in a single query. We also implemented
+  DataLoader to solve the N+1 query problem. One challenge was managing query complexity - we had to implement
+  query depth limiting and cost analysis to prevent expensive queries from overwhelming our backend. Overall, it
+  reduced our API calls by about 40% and significantly improved mobile app performance.
+
+  [interviewer]: How do you ensure your backend systems are scalable and maintainable?
+
+  [candidate]: Scalability starts with good architecture. I follow microservices principles - services should be
+  loosely coupled and highly cohesive. Each service owns its data and communicates through well-defined APIs. For
+  maintainability, I'm strict about code quality - we use Black for formatting, pylint for linting, and mypy for
+  type checking. I write comprehensive documentation and ensure every API endpoint has OpenAPI specs. We also
+  practice infrastructure as code using Terraform, so our entire infrastructure is version controlled and
+  reproducible. Regular code reviews and pair programming sessions help maintain quality and share knowledge across
+   the team.
+
+  [interviewer]: What's your experience with AWS services beyond EKS?
+
+  [candidate]: I've worked extensively with AWS services. For compute, besides EKS, I've used Lambda for
+  event-driven functions and EC2 for specific workloads. For storage, S3 for object storage with lifecycle
+  policies, and EBS for persistent volumes. I've set up RDS instances for PostgreSQL with automated backups and
+  read replicas. For messaging, I've used SQS for queuing and SNS for pub/sub patterns. I've also worked with API
+  Gateway, CloudWatch for monitoring, and IAM for fine-grained access control. Recently, I've been exploring AWS
+  AppSync for real-time features. I always follow the principle of least privilege and use VPCs with proper
+  security groups to isolate resources.
+
+  [interviewer]: How do you handle database migrations in a production environment?
+
+  [candidate]: Database migrations in production require careful planning. I use Alembic for Python projects to
+  manage schema versions. Every migration is reversible, and I always test rollbacks. For zero-downtime
+  deployments, I follow the expand-contract pattern - first deploy code that works with both old and new schemas,
+  then run the migration, then deploy code that only uses the new schema. For large data migrations, I implement
+  them in batches with progress tracking to avoid locking tables. We also have automated backup procedures before
+  any migration, and I always run migrations in staging first with production-like data volumes.
+
+  [interviewer]: What interests you about this Senior Backend Developer position?
+
+  [candidate]: I'm excited about the opportunity to work on distributed systems at an even larger scale. Your focus
+   on real-time data processing and event-driven architecture aligns perfectly with where I want to grow my
+  expertise. I'm particularly interested in the challenges of handling millions of events per day that you
+  mentioned in the job description. Also, the opportunity to mentor junior developers appeals to me - I believe in
+  giving back and helping others grow. The tech stack you're using, especially Kafka for streaming and Kubernetes
+  for orchestration, matches my experience while also offering new challenges. I'm ready to take on more
+  architectural responsibilities and contribute to strategic technical decisions.
+
+  [interviewer]: Do you have any questions for me about the role or the team?
+
+  [candidate]: Yes, I have several questions. First, can you tell me more about the current architecture and any
+  pain points you're looking to address? Second, what's the team structure - how many backend developers, and how
+  do you organize work? Third, what's your deployment process like - how often do you deploy to production? Fourth,
+   what are the biggest technical challenges the team is facing right now? And finally, what opportunities are
+  there for learning and professional development, such as conferences or training?

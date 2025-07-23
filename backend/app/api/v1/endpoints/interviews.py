@@ -1418,14 +1418,17 @@ async def save_manual_transcript(
                         "start": timestamp,
                         "end": timestamp + 5000,  # Mock 5 second utterances
                         "confidence": 0.95,
-                        "speaker": current_speaker
+                        "speaker": current_speaker,
+                        "role": "interviewer" if current_speaker == "A" else "candidate"
                     }
                     utterances.append(utterance)
                     speakers[current_speaker]["utterances"].append(utterance)
                     timestamp += 5000
                 
                 current_speaker = "A"
-                current_text = [line[14:].strip()]  # Remove [interviewer]: prefix
+                # Use split to handle variable spacing after colon
+                parts = line.split(':', 1)
+                current_text = [parts[1].strip()] if len(parts) > 1 else []
                 
             elif line.startswith('[candidate]:'):
                 # Save previous utterance if any
@@ -1435,14 +1438,17 @@ async def save_manual_transcript(
                         "start": timestamp,
                         "end": timestamp + 5000,
                         "confidence": 0.95,
-                        "speaker": current_speaker
+                        "speaker": current_speaker,
+                        "role": "interviewer" if current_speaker == "A" else "candidate"
                     }
                     utterances.append(utterance)
                     speakers[current_speaker]["utterances"].append(utterance)
                     timestamp += 5000
                 
                 current_speaker = "B"
-                current_text = [line[12:].strip()]  # Remove [candidate]: prefix
+                # Use split to handle variable spacing after colon
+                parts = line.split(':', 1)
+                current_text = [parts[1].strip()] if len(parts) > 1 else []
                 
             else:
                 # Continue current speaker's text
@@ -1491,17 +1497,24 @@ async def save_manual_transcript(
                 "job_position": session.job_position,
                 "interview_type": session.interview_type,
                 "interview_category": session.interview_category,
-                "duration_minutes": session.duration_minutes
+                "duration_minutes": session.duration_minutes,
+                "is_manual_transcript": True
             }
         )
         
         # Generate scorecard
+        responses = analysis["responses_for_scorecard"]
+        logger.info(f"Generating scorecard with {len(responses)} responses")
+        if not responses:
+            logger.warning("No responses extracted from transcript analysis - scorecard will use defaults")
+        
         scorecard_data = await interview_ai_service.generate_interview_scorecard(
             session_data={
                 "job_position": session.job_position,
-                "duration_minutes": session.duration_minutes
+                "duration_minutes": session.duration_minutes,
+                "is_manual_transcript": True
             },
-            responses=analysis["responses_for_scorecard"]
+            responses=responses
         )
         
         # Update session with analysis
@@ -1577,3 +1590,85 @@ async def refresh_interview_rating(
     except Exception as e:
         logger.error(f"Error refreshing rating: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to refresh rating: {str(e)}")
+
+
+@router.post("/sessions/{session_id}/reanalyze")
+async def reanalyze_interview_session(
+    session_id: UUID,
+    db: AsyncSession = Depends(deps.get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Re-analyze an existing interview session with updated AI logic."""
+    
+    # Get session
+    query = select(InterviewSession).where(
+        and_(
+            InterviewSession.id == session_id,
+            InterviewSession.interviewer_id == current_user.id
+        )
+    )
+    
+    result = await db.execute(query)
+    session = result.scalar_one_or_none()
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Interview session not found")
+    
+    if not session.transcript_data:
+        raise HTTPException(status_code=400, detail="No transcript data available for re-analysis")
+    
+    try:
+        logger.info(f"Re-analyzing session {session_id} with updated logic")
+        
+        # Check if this was a manual transcript
+        is_manual = session.preparation_notes.get("manual_entry", False) if session.preparation_notes else False
+        
+        # Re-analyze transcript
+        analysis = await interview_ai_service.analyze_transcript_content(
+            transcript_data=session.transcript_data,
+            session_data={
+                "job_position": session.job_position,
+                "interview_type": session.interview_type,
+                "interview_category": session.interview_category,
+                "duration_minutes": session.duration_minutes,
+                "is_manual_transcript": is_manual
+            }
+        )
+        
+        # Re-generate scorecard
+        scorecard_data = await interview_ai_service.generate_interview_scorecard(
+            session_data={
+                "job_position": session.job_position,
+                "duration_minutes": session.duration_minutes,
+                "is_manual_transcript": is_manual
+            },
+            responses=analysis["responses_for_scorecard"]
+        )
+        
+        # Update session
+        session.scorecard = scorecard_data
+        session.overall_rating = float(scorecard_data.get("overall_rating", 0))
+        session.recommendation = scorecard_data.get("recommendation", "maybe")
+        session.strengths = scorecard_data.get("strengths", [])
+        session.concerns = scorecard_data.get("concerns", [])
+        
+        # Update analysis data
+        if not session.preparation_notes:
+            session.preparation_notes = {}
+        session.preparation_notes["transcript_analysis"] = analysis["qa_analysis"]
+        session.preparation_notes["transcript_insights"] = analysis["transcript_insights"]
+        session.preparation_notes["reanalyzed_at"] = datetime.utcnow().isoformat()
+        
+        await db.commit()
+        await db.refresh(session)
+        
+        return {
+            "message": "Session re-analyzed successfully",
+            "overall_rating": session.overall_rating,
+            "recommendation": session.recommendation,
+            "mismatch_detected": scorecard_data.get("mismatch_detected", False)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error re-analyzing session: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to re-analyze: {str(e)}")
