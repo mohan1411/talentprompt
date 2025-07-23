@@ -1,13 +1,34 @@
 """Main FastAPI application entry point."""
 
 import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.api.v1.api import api_router
 from app.core.config import settings
+from app.core.redis import get_redis_client, close_redis
 from app.middleware.analytics import AnalyticsMiddleware
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Handle startup and shutdown events."""
+    # Startup
+    try:
+        await get_redis_client()
+        print("Redis connection established")
+    except Exception as e:
+        print(f"Failed to connect to Redis: {e}")
+        if not settings.DEBUG:
+            raise
+    
+    yield
+    
+    # Shutdown
+    await close_redis()
+    print("Redis connection closed")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -15,6 +36,7 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 # Force Railway redeploy - 2025-01-18
 
@@ -33,12 +55,23 @@ if settings.BACKEND_CORS_ORIGINS:
         origins.append(origin_str)
         origins.append(f"{origin_str}/")
     
+    # Chrome extensions need special handling
+    def is_allowed_origin(origin: str) -> bool:
+        # Check if it's in our explicit list
+        if origin in origins:
+            return True
+        # Allow any Chrome extension origin
+        if origin and origin.startswith("chrome-extension://"):
+            return True
+        return False
+    
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        allow_origin_regex="chrome-extension://.*"  # Allow all Chrome extensions
     )
 
 # Add trusted host middleware

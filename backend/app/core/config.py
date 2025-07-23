@@ -27,6 +27,16 @@ class Settings(BaseSettings):
             values['SECRET_KEY'] = values['JWT_SECRET_KEY']
         return values
     
+    @model_validator(mode='after')
+    def assemble_redis_url(self) -> 'Settings':
+        """Construct Redis URL if not provided."""
+        if not self.REDIS_URL:
+            if self.REDIS_PASSWORD:
+                self.REDIS_URL = f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+            else:
+                self.REDIS_URL = f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{self.REDIS_DB}"
+        return self
+    
     # CORS
     BACKEND_CORS_ORIGINS: List[AnyHttpUrl] = []
 
@@ -132,6 +142,18 @@ class Settings(BaseSettings):
     # Google reCAPTCHA
     RECAPTCHA_SECRET_KEY: Optional[str] = None
     RECAPTCHA_ENABLED: bool = True
+    
+    # Redis Configuration
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: Optional[str] = None
+    REDIS_DB: int = 0
+    REDIS_URL: Optional[str] = None
+    
+    # Extension Token Settings
+    EXTENSION_TOKEN_LENGTH: int = 6
+    EXTENSION_TOKEN_EXPIRE_SECONDS: int = 600  # 10 minutes
+    EXTENSION_TOKEN_RATE_LIMIT: int = 3  # Max attempts per hour
     
     model_config = SettingsConfigDict(
         case_sensitive=True,

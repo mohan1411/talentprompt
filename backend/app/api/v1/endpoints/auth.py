@@ -1,26 +1,32 @@
 """Authentication endpoints."""
 
+import logging
 from datetime import timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies.database import get_db
+from app.api import deps
 from app.core.config import settings
 from app.core.security import create_access_token
 from app.crud.user import authenticate_user, create_user, get_user_by_email
+from app.models.user import User
 from app.schemas.token import Token
-from app.schemas.user import User, UserCreate
+from app.schemas.user import User as UserSchema, UserCreate
 from app.services.recaptcha import recaptcha_service
 from app.services.email_verification import email_verification_service
 from app.services.email import email_service
+from app.services.extension_token import extension_token_service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
-@router.post("/register", response_model=User)
+@router.post("/register", response_model=UserSchema)
 async def register(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_db)
@@ -76,13 +82,55 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
     """OAuth2 compatible token login."""
+    logger.info(f"Login attempt for: {form_data.username}")
+    
+    # First try standard password authentication
     user = await authenticate_user(db, form_data.username, form_data.password)
+    
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # Check if this is an OAuth user trying to use an access token
+        user = await get_user_by_email(db, email=form_data.username)
+        logger.info(f"User found: {user is not None}, OAuth provider: {user.oauth_provider if user else None}")
+        
+        if user and user.oauth_provider:
+            # This is an OAuth user - check if password is actually an access token
+            logger.info(f"OAuth user {form_data.username} attempting token login")
+            token_valid = await extension_token_service.verify_token(form_data.username, form_data.password)
+            logger.info(f"Token verification result: {token_valid}")
+            
+            if token_valid:
+                # Valid access token - proceed with login
+                logger.info(f"Valid access token for {form_data.username}, proceeding with login")
+                pass
+            else:
+                # OAuth user needs to get an access token
+                logger.info(f"OAuth user {form_data.username} needs access token")
+                
+                # Always provide the URL for OAuth users
+                auth_url = f"{settings.FRONTEND_URL}/extension-auth?email={form_data.username}"
+                
+                # Check if they tried to enter an access code
+                if form_data.password and len(form_data.password) == settings.EXTENSION_TOKEN_LENGTH:
+                    # They tried an access code but it was invalid
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail=f"Invalid access code. Get a new one at: {auth_url}",
+                        headers={"WWW-Authenticate": "Bearer"}
+                    )
+                else:
+                    # They didn't enter an access code or entered something else
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail=f"OAuth users need an access code. Get yours at: {auth_url}",
+                        headers={"WWW-Authenticate": "Bearer"}
+                    )
+        else:
+            # Regular user with wrong password
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
     
     # Check if user's email is verified
     if not user.is_verified:
@@ -172,3 +220,76 @@ async def resend_verification(
         )
     
     return {"message": "Verification email has been sent"}
+
+
+@router.post("/generate-extension-token")
+async def generate_extension_token(
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """Generate an access token for Chrome extension (OAuth users only)."""
+    # Check if user is OAuth user
+    if not current_user.oauth_provider:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Access tokens are only for OAuth users. Please use your password to login."
+        )
+    
+    # Generate token
+    token = await extension_token_service.generate_token(current_user.email)
+    
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many token requests. Please try again later."
+        )
+    
+    return {
+        "access_token": token,
+        "expires_in": settings.EXTENSION_TOKEN_EXPIRE_SECONDS,
+        "message": "Use this code in the Chrome extension password field"
+    }
+
+
+@router.get("/extension-token-status")
+async def get_extension_token_status(
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """Check if user has an active extension token."""
+    status = await extension_token_service.get_token_status(current_user.email)
+    
+    return {
+        "has_token": status["has_token"],
+        "ttl": status["ttl"],
+        "is_oauth_user": bool(current_user.oauth_provider)
+    }
+
+
+@router.delete("/revoke-extension-token")
+async def revoke_extension_token(
+    current_user: User = Depends(deps.get_current_active_user)
+) -> Any:
+    """Revoke any existing extension token."""
+    revoked = await extension_token_service.revoke_token(current_user.email)
+    
+    if revoked:
+        return {"message": "Extension token revoked successfully"}
+    else:
+        return {"message": "No active token to revoke"}
+
+
+@router.post("/check-oauth-user")
+async def check_oauth_user(
+    email: str,
+    db: AsyncSession = Depends(get_db)
+) -> Any:
+    """Check if an email belongs to an OAuth user."""
+    user = await get_user_by_email(db, email=email)
+    
+    if not user:
+        return {"is_oauth_user": False, "exists": False}
+    
+    return {
+        "is_oauth_user": bool(user.oauth_provider),
+        "exists": True,
+        "oauth_provider": user.oauth_provider
+    }

@@ -78,9 +78,15 @@ class ConnectionManager:
         if session_id not in self.active_connections:
             return
             
+        # Ensure we have a set to iterate over
+        connections = self.active_connections.get(session_id, set())
+        if not isinstance(connections, set):
+            logger.error(f"Invalid connections type for session {session_id}: {type(connections)}")
+            return
+            
         disconnected = []
         
-        for connection in self.active_connections[session_id]:
+        for connection in connections:
             if connection != exclude:
                 try:
                     await connection.send_json(message)

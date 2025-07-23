@@ -1,13 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/context';
-import { User, Mail, Calendar, Shield, Key } from 'lucide-react';
+import { User, Mail, Calendar, Shield, Key, Chrome, Copy, Check, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { authApi } from '@/lib/api/auth';
+import Link from 'next/link';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [extensionToken, setExtensionToken] = useState<string | null>(null);
+  const [isGeneratingToken, setIsGeneratingToken] = useState(false);
+  const [tokenStatus, setTokenStatus] = useState<any>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    checkTokenStatus();
+  }, []);
+  
+  const checkTokenStatus = async () => {
+    try {
+      const status = await authApi.getExtensionTokenStatus();
+      setTokenStatus(status);
+    } catch (err) {
+      console.error('Failed to check token status:', err);
+    }
+  };
+  
+  const generateToken = async () => {
+    setIsGeneratingToken(true);
+    setTokenError(null);
+    
+    try {
+      const response = await authApi.generateExtensionToken();
+      setExtensionToken(response.access_token);
+      await checkTokenStatus();
+    } catch (err: any) {
+      setTokenError(err.detail || 'Failed to generate access token');
+    } finally {
+      setIsGeneratingToken(false);
+    }
+  };
+  
+  const copyToClipboard = async () => {
+    if (!extensionToken) return;
+    
+    try {
+      await navigator.clipboard.writeText(extensionToken);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  };
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -115,6 +162,88 @@ export default function ProfilePage() {
             )}
           </div>
 
+        </div>
+      </div>
+
+      {/* Chrome Extension Settings Card */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mt-6">
+        <h2 className="text-lg font-semibold mb-4 flex items-center">
+          <Chrome className="mr-2 h-5 w-5" />
+          Chrome Extension
+        </h2>
+        
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {tokenStatus?.is_oauth_user
+              ? 'As a Google/LinkedIn user, you need an access code to log into the Chrome extension.'
+              : 'You can log into the Chrome extension using your email and password.'}
+          </p>
+          
+          {tokenStatus?.is_oauth_user && (
+            <>
+              {tokenError && (
+                <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400 rounded-lg text-sm">
+                  {tokenError}
+                </div>
+              )}
+              
+              {extensionToken ? (
+                <div className="space-y-4">
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Your access code:</p>
+                    <div className="flex items-center gap-2">
+                      <code className="text-xl font-mono font-bold flex-1">
+                        {extensionToken}
+                      </code>
+                      <button
+                        onClick={copyToClipboard}
+                        className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
+                        title="Copy to clipboard"
+                      >
+                        {isCopied ? (
+                          <Check className="h-4 w-4 text-green-600" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-400 rounded-lg text-sm">
+                    <strong>Instructions:</strong> Use this code as your password when logging into the Chrome extension with your email.
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={generateToken}
+                  disabled={isGeneratingToken}
+                  className="btn-primary flex items-center"
+                >
+                  {isGeneratingToken ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      Generate Access Code
+                    </>
+                  )}
+                </button>
+              )}
+            </>
+          )}
+          
+          <div className="pt-4 border-t">
+            <Link
+              href="/extension-auth"
+              className="text-sm text-primary hover:underline inline-flex items-center"
+            >
+              Go to Extension Auth Page
+              <ExternalLink className="ml-1 h-3 w-3" />
+            </Link>
+          </div>
         </div>
       </div>
     </div>

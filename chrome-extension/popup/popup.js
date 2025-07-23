@@ -1,9 +1,9 @@
 // API configuration
 const API_BASE_URL = 'https://talentprompt-production.up.railway.app/api/v1';
-const DEV_API_URL = 'http://localhost:8000/api/v1';
+const DEV_API_URL = 'http://localhost:8001/api/v1';
 
-// Always use production URL for now
-const API_URL = API_BASE_URL;
+// Use development URL for local testing
+const API_URL = DEV_API_URL;
 
 // State management
 let authToken = null;
@@ -11,6 +11,7 @@ let currentUser = null;
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
+  console.log('Popup initialized');
   await checkAuthStatus();
   setupEventListeners();
   updateUIState();
@@ -20,10 +21,33 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Check if user is authenticated
 async function checkAuthStatus() {
   const stored = await chrome.storage.local.get(['authToken', 'userEmail']);
+  console.log('Checking stored auth:', stored);
+  
   if (stored.authToken) {
     authToken = stored.authToken;
     currentUser = stored.userEmail;
-    await loadStats();
+    console.log('Found stored token for:', currentUser);
+    
+    // Verify token is still valid by making a test request
+    try {
+      const response = await fetch(`${API_URL}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (response.ok) {
+        console.log('Token is still valid');
+        await loadStats();
+      } else if (response.status === 401) {
+        console.log('Token expired, clearing auth');
+        await handleLogout();
+      }
+    } catch (error) {
+      console.error('Failed to verify token:', error);
+    }
+  } else {
+    console.log('No stored auth token found');
   }
 }
 
@@ -65,6 +89,16 @@ async function handleLogin() {
     if (!response.ok) {
       const error = await response.json();
       console.error('Login failed:', error);
+      
+      // Check if this is an OAuth user error with URL
+      if (error.detail && error.detail.includes('extension-auth')) {
+        // Extract URL from error message
+        const urlMatch = error.detail.match(/https?:\/\/[^\s]+/);
+        if (urlMatch) {
+          throw new Error(`OAuth users: Please get an access code from ${urlMatch[0]}`);
+        }
+      }
+      
       throw new Error(error.detail || 'Login failed');
     }
     
@@ -93,9 +127,11 @@ async function handleLogin() {
 
 // Handle logout
 async function handleLogout() {
+  console.log('Logging out user:', currentUser);
   authToken = null;
   currentUser = null;
   await chrome.storage.local.remove(['authToken', 'userEmail']);
+  console.log('Cleared stored credentials');
   updateUIState();
 }
 

@@ -27,7 +27,7 @@ interface RequestOptions {
   formData?: FormData;
 }
 
-async function makeRequest(endpoint: string, options: RequestOptions & { params?: any } = {}) {
+export async function makeRequest(endpoint: string, options: RequestOptions & { params?: any } = {}) {
   const headers: Record<string, string> = {
     ...options.headers,
   };
