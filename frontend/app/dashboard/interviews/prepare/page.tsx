@@ -38,7 +38,7 @@ export default function PrepareInterviewPage() {
   const [displayLimit, setDisplayLimit] = useState(10)
   const [jobPosition, setJobPosition] = useState('')
   const [jobRequirements, setJobRequirements] = useState('')
-  const [interviewMode, setInterviewMode] = useState<string | null>(null)  // IN_PERSON, VIRTUAL, PHONE
+  const [interviewMode, setInterviewMode] = useState<'IN_PERSON' | 'VIRTUAL' | 'PHONE' | null>(null)  // IN_PERSON, VIRTUAL, PHONE
   const [interviewCategory, setInterviewCategory] = useState('general')  // general, technical, behavioral, final
   const [difficultyLevel, setDifficultyLevel] = useState([3])
   const [numQuestions, setNumQuestions] = useState([10])
@@ -467,7 +467,7 @@ export default function PrepareInterviewPage() {
 
               <div>
                 <Label htmlFor="interview-mode">Interview Mode</Label>
-                <Select value={interviewMode || ''} onValueChange={setInterviewMode}>
+                <Select value={interviewMode || ''} onValueChange={(value) => setInterviewMode(value as 'IN_PERSON' | 'VIRTUAL' | 'PHONE')}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select interview mode" />
                   </SelectTrigger>
