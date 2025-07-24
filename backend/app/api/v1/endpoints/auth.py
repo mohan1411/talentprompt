@@ -95,13 +95,14 @@ async def login(
         if user and user.oauth_provider:
             # This is an OAuth user - check if password is actually an access token
             logger.info(f"OAuth user {form_data.username} attempting token login")
-            token_valid = await extension_token_service.verify_token(form_data.username, form_data.password)
+            # First check token validity WITHOUT consuming it
+            token_valid = await extension_token_service.verify_token(form_data.username, form_data.password, consume=False)
             logger.info(f"Token verification result: {token_valid}")
             
             if token_valid:
-                # Valid access token - proceed with login
-                logger.info(f"Valid access token for {form_data.username}, proceeding with login")
-                pass
+                # Valid access token - proceed with login checks
+                logger.info(f"Valid access token for {form_data.username}, checking other requirements")
+                # Token will be consumed later after all checks pass
             else:
                 # OAuth user needs to get an access token
                 logger.info(f"OAuth user {form_data.username} needs access token")
@@ -138,6 +139,13 @@ async def login(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Please verify your email before logging in. Check your inbox for the verification link.",
         )
+    
+    # If this was an OAuth user with a valid token, consume it now (after all checks passed)
+    if user.oauth_provider and form_data.password and len(form_data.password) == settings.EXTENSION_TOKEN_LENGTH:
+        # Double-check and consume the token
+        token_consumed = await extension_token_service.verify_token(form_data.username, form_data.password, consume=True)
+        if token_consumed:
+            logger.info(f"Extension token consumed for OAuth user {form_data.username}")
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

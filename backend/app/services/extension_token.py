@@ -53,8 +53,14 @@ class ExtensionTokenService:
             logger.error(f"Error generating token for {email}: {e}")
             return None
     
-    async def verify_token(self, email: str, token: str) -> bool:
-        """Verify if the provided token is valid for the user."""
+    async def verify_token(self, email: str, token: str, consume: bool = True) -> bool:
+        """Verify if the provided token is valid for the user.
+        
+        Args:
+            email: User's email
+            token: Token to verify
+            consume: If True, delete token after successful verification (one-time use)
+        """
         try:
             redis = await get_redis_client()
             key = f"ext_token:{email}"
@@ -66,7 +72,7 @@ class ExtensionTokenService:
             if isinstance(stored_token, bytes):
                 stored_token = stored_token.decode('utf-8')
             
-            logger.info(f"Token verification for {email}: provided='{token}', stored='{stored_token}'")
+            logger.info(f"Token verification for {email}: provided='{token}', stored='{stored_token}', consume={consume}")
             
             if not stored_token:
                 logger.debug(f"No token found for {email}")
@@ -74,9 +80,12 @@ class ExtensionTokenService:
             
             # Case-insensitive comparison for better UX
             if stored_token.upper() == token.upper():
-                # Delete token after successful use (one-time use)
-                await redis.delete(key)
-                logger.info(f"Token verified and consumed for {email}")
+                if consume:
+                    # Delete token after successful use (one-time use)
+                    await redis.delete(key)
+                    logger.info(f"Token verified and consumed for {email}")
+                else:
+                    logger.info(f"Token verified (not consumed) for {email}")
                 return True
             
             # Update failed attempts
