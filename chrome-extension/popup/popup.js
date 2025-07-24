@@ -332,6 +332,52 @@ function updateUIState() {
 // Show error message
 function showError(message) {
   const errorEl = document.getElementById('error-message');
+  
+  // Check if this is an OAuth error with a URL
+  if (message.includes('OAuth users') && message.includes('http')) {
+    // Extract URL from the message
+    const urlMatch = message.match(/https?:\/\/[^\s]+/);
+    if (urlMatch) {
+      const url = urlMatch[0];
+      
+      // Create a more helpful message with a clickable link
+      errorEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div>
+            <div style="margin-bottom: 8px;">OAuth users need an access code to login.</div>
+            <a href="#" id="oauth-link">
+              Get your access code here →
+            </a>
+          </div>
+          <button id="close-error" style="background: none; border: none; color: #6b7280; cursor: pointer; padding: 0; font-size: 18px; line-height: 1;">×</button>
+        </div>
+      `;
+      
+      // Add click handlers
+      setTimeout(() => {
+        const link = document.getElementById('oauth-link');
+        if (link) {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            chrome.tabs.create({ url: url });
+          });
+        }
+        
+        const closeBtn = document.getElementById('close-error');
+        if (closeBtn) {
+          closeBtn.addEventListener('click', () => {
+            errorEl.classList.add('hidden');
+          });
+        }
+      }, 0);
+      
+      errorEl.classList.remove('hidden');
+      // Don't auto-hide OAuth errors - user needs time to click
+      return;
+    }
+  }
+  
+  // Regular error handling
   errorEl.textContent = message;
   errorEl.classList.remove('hidden');
   setTimeout(() => errorEl.classList.add('hidden'), 5000);
