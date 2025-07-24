@@ -332,7 +332,29 @@ function updateUIState() {
 // Show error message
 function showError(message) {
   const errorEl = document.getElementById('error-message');
-  errorEl.textContent = message;
+  
+  // Check if message contains a URL and make it clickable
+  if (message.includes('http://') || message.includes('https://')) {
+    // Replace URLs with clickable links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const messageWithLinks = message.replace(urlRegex, (url) => {
+      return `<a href="#" data-url="${url}" style="color: inherit; text-decoration: underline;">${url}</a>`;
+    });
+    errorEl.innerHTML = messageWithLinks;
+    
+    // Add click handlers for links
+    setTimeout(() => {
+      errorEl.querySelectorAll('a[data-url]').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          chrome.tabs.create({ url: link.getAttribute('data-url') });
+        });
+      });
+    }, 0);
+  } else {
+    errorEl.textContent = message;
+  }
+  
   errorEl.classList.remove('hidden');
   setTimeout(() => errorEl.classList.add('hidden'), 5000);
 }
