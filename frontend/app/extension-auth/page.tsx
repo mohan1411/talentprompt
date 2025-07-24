@@ -216,7 +216,7 @@ export default function ExtensionAuthPage() {
               {/* Instructions */}
               <Alert>
                 <AlertTitle className="mb-2">How to use this code:</AlertTitle>
-                <AlertDescription asChild>
+                <AlertDescription>
                   <ol className="list-decimal list-inside space-y-1">
                     <li>Open the Promtitude Chrome extension</li>
                     <li>Enter your email: <strong>{user.email}</strong></li>
