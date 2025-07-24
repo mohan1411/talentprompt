@@ -653,7 +653,7 @@ export default function InterviewSessionPage() {
                           } : undefined}
                           sessionData={{
                             job_position: session.job_position,
-                            interview_type: session.interview_type,
+                            interview_type: session.interview_type || 'general',
                             duration_minutes: session.duration_minutes || 0
                           }}
                         />
@@ -719,7 +719,7 @@ export default function InterviewSessionPage() {
                           aiAnalysis={undefined}
                           sessionData={{
                             job_position: session.job_position,
-                            interview_type: session.interview_type,
+                            interview_type: session.interview_type || 'general',
                             duration_minutes: session.duration_minutes || 0
                           }}
                         />
