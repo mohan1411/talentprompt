@@ -252,7 +252,7 @@ export function InterviewScorecard({ scorecard, qaAnalysis }: InterviewScorecard
                     {renderStars(qa.rating)}
                   </div>
                 </div>
-                {idx < qaAnalysis.qa_pairs.length - 1 && <Separator className="my-4" />}
+                {idx < (qaAnalysis.qa_pairs?.length ?? 0) - 1 && <Separator className="my-4" />}
               </div>
             ))}
           </CardContent>
