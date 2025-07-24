@@ -14,7 +14,7 @@ import {
   RefreshCwIcon,
   Loader2Icon
 } from 'lucide-react'
-import { authApi } from '@/lib/api/auth'
+import { authApi } from '@/lib/api/client'
 import { useAuth } from '@/lib/auth/context'
 
 export default function ExtensionAuthPage() {

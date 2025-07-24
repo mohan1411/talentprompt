@@ -167,6 +167,23 @@ export const authApi = {
       params: { email },
     });
   },
+
+  // Extension token methods
+  async generateExtensionToken() {
+    return makeRequest('/auth/generate-extension-token', {
+      method: 'POST'
+    });
+  },
+  
+  async getExtensionTokenStatus() {
+    return makeRequest('/auth/extension-token-status');
+  },
+  
+  async revokeExtensionToken() {
+    return makeRequest('/auth/revoke-extension-token', {
+      method: 'DELETE'
+    });
+  },
 };
 
 // OAuth endpoints

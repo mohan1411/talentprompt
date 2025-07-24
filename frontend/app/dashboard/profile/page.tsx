@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/context';
 import { User, Mail, Calendar, Shield, Key, Chrome, Copy, Check, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { authApi } from '@/lib/api/auth';
+import { authApi } from '@/lib/api/client';
 import Link from 'next/link';
 
 export default function ProfilePage() {
