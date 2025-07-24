@@ -155,7 +155,7 @@ export default function InterviewSessionPage() {
       categoryRatings: categoryAverages,
       completionRate: (ratedQuestions.length / questions.length) * 100
     }
-  })() : null
+  })() : undefined
   
   // Check if there are any human ratings
   const hasHumanRatings = questions.some(q => q.response_rating !== null && q.response_rating !== undefined)
