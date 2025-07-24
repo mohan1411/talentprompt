@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +18,7 @@ import {
 import { authApi } from '@/lib/api/client'
 import { useAuth } from '@/lib/auth/context'
 
-export default function ExtensionAuthPage() {
+function ExtensionAuthContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user, isLoading: authLoading } = useAuth()
@@ -276,5 +277,17 @@ export default function ExtensionAuthPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function ExtensionAuthPage() {
+  return (
+    <Suspense fallback={
+      <div className="container mx-auto flex items-center justify-center min-h-screen">
+        <Loader2Icon className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <ExtensionAuthContent />
+    </Suspense>
   )
 }
