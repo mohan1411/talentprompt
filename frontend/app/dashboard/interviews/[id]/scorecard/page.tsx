@@ -1184,7 +1184,7 @@ Note: This is a summary. Full scorecard requires system access.
             </CardContent>
           </Card>
 
-          {session?.status === 'completed' && (
+          {session?.status === 'COMPLETED' && (
             <Card>
               <CardHeader>
                 <CardTitle>Generate Full AI Report</CardTitle>
