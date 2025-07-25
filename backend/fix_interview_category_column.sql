@@ -37,6 +37,24 @@ BEGIN
     END IF;
 END $$;
 
+-- Add transcript_data column
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name='interview_sessions' 
+        AND column_name='transcript_data'
+    ) THEN
+        ALTER TABLE interview_sessions 
+        ADD COLUMN transcript_data JSON;
+        
+        RAISE NOTICE 'Column transcript_data added successfully';
+    ELSE
+        RAISE NOTICE 'Column transcript_data already exists';
+    END IF;
+END $$;
+
 -- Update the alembic version to mark this migration as complete
 -- This prevents the migration from trying to run again
 UPDATE alembic_version 
