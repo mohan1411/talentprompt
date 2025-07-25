@@ -12,8 +12,24 @@
     </div>
     
     <div id="auth-section" class="section">
+      <!-- Welcome screen for new users -->
+      <div id="welcome-screen" class="hidden">
+        <h2>Welcome to Promtitude! 🚀</h2>
+        <p class="welcome-text">Import LinkedIn profiles with one click and build your talent database effortlessly.</p>
+        
+        <div class="feature-list">
+          <div class="feature">✓ One-click profile import</div>
+          <div class="feature">✓ Bulk import from search results</div>
+          <div class="feature">✓ Smart duplicate detection</div>
+          <div class="feature">✓ Secure cloud storage</div>
+        </div>
+        
+        <button id="create-account-btn" class="primary-btn">Create Free Account</button>
+        <p class="signin-link">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+      </div>
+      
       <div id="login-form" class="hidden">
-        <h2>Login to Promtitude</h2>
+        <h2>Sign in to Promtitude</h2>
         <input type="email" id="email" placeholder="Email" />
         
         <!-- Dynamic auth fields based on user type -->
@@ -36,8 +52,9 @@
           <p class="oauth-help">Click "Get Code" to generate an access code</p>
         </div>
         
-        <button id="login-btn" class="primary-btn">Login</button>
+        <button id="login-btn" class="primary-btn">Sign In</button>
         <div id="error-message" class="error hidden"></div>
+        <p class="signup-link">Don't have an account? <a href="#" id="create-account-link">Create one free</a></p>
       </div>
       
       <div id="logged-in" class="hidden">

@@ -249,3 +249,54 @@ button {
   color: #6b7280;
   text-align: center;
 }
+
+/* Welcome screen styles */
+#welcome-screen h2 {
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #4b5563;
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.feature-list {
+  background: #f9fafb;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.feature {
+  color: #059669;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature:last-child {
+  margin-bottom: 0;
+}
+
+.signin-link, .signup-link {
+  text-align: center;
+  margin: 12px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.signin-link a, .signup-link a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.signin-link a:hover, .signup-link a:hover {
+  text-decoration: underline;
+}

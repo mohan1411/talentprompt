@@ -18,11 +18,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateQueueBadge();
   
   // Check if we have a stored email (for better UX)
-  const stored = await chrome.storage.local.get(['lastEmail']);
+  const stored = await chrome.storage.local.get(['lastEmail', 'hasSeenWelcome']);
   if (stored.lastEmail && !authToken) {
     document.getElementById('email').value = stored.lastEmail;
     // Auto-check OAuth status for returning users
     checkUserType();
+  }
+  
+  // Show welcome screen for first-time users
+  if (!authToken && !stored.hasSeenWelcome) {
+    showWelcomeScreen();
   }
 });
 
@@ -82,6 +87,27 @@ function setupEventListeners() {
   document.getElementById('view-queue').addEventListener('click', openQueueManager);
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
+  
+  // Welcome screen listeners
+  const createAccountBtn = document.getElementById('create-account-btn');
+  const showLoginLink = document.getElementById('show-login');
+  const createAccountLink = document.getElementById('create-account-link');
+  
+  if (createAccountBtn) {
+    createAccountBtn.addEventListener('click', openRegistration);
+  }
+  if (showLoginLink) {
+    showLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      showLoginForm();
+    });
+  }
+  if (createAccountLink) {
+    createAccountLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      openRegistration();
+    });
+  }
   
   // OAuth-specific listeners
   const emailInput = document.getElementById('email');
@@ -510,12 +536,14 @@ async function handleOpenBulkImport(tab) {
 
 // Update UI based on auth state
 async function updateUIState() {
+  const welcomeScreen = document.getElementById('welcome-screen');
   const loginForm = document.getElementById('login-form');
   const loggedIn = document.getElementById('logged-in');
   const statsSection = document.getElementById('stats-section');
   const actionsSection = document.getElementById('actions-section');
   
   if (authToken) {
+    welcomeScreen.classList.add('hidden');
     loginForm.classList.add('hidden');
     loggedIn.classList.remove('hidden');
     statsSection.classList.remove('hidden');
@@ -562,7 +590,17 @@ async function updateUIState() {
       document.getElementById('import-action').disabled = true;
     }
   } else {
-    loginForm.classList.remove('hidden');
+    // Not authenticated - check if we should show welcome or login
+    const stored = await chrome.storage.local.get(['hasSeenWelcome']);
+    
+    if (stored.hasSeenWelcome) {
+      welcomeScreen.classList.add('hidden');
+      loginForm.classList.remove('hidden');
+    } else {
+      welcomeScreen.classList.remove('hidden');
+      loginForm.classList.add('hidden');
+    }
+    
     loggedIn.classList.add('hidden');
     statsSection.classList.add('hidden');
     actionsSection.classList.add('hidden');
@@ -639,7 +677,7 @@ function openSettings() {
 // Open help
 function openHelp() {
   chrome.tabs.create({
-    url: 'https://promtitude.com/help/chrome-extension'
+    url: 'https://promtitude.com/help/getting-started'
   });
 }
 
@@ -662,4 +700,25 @@ async function updateQueueBadge() {
       badge.style.display = 'none';
     }
   }
+}
+
+// Show welcome screen
+function showWelcomeScreen() {
+  document.getElementById('welcome-screen').classList.remove('hidden');
+  document.getElementById('login-form').classList.add('hidden');
+}
+
+// Show login form
+function showLoginForm() {
+  document.getElementById('welcome-screen').classList.add('hidden');
+  document.getElementById('login-form').classList.remove('hidden');
+  // Mark that user has seen welcome
+  chrome.storage.local.set({ hasSeenWelcome: true });
+}
+
+// Open registration page
+function openRegistration() {
+  chrome.tabs.create({
+    url: 'https://promtitude.com/register'
+  });
 }
