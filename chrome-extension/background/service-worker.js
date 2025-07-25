@@ -1,7 +1,5 @@
 // Service worker for Promtitude Chrome Extension
 
-// console.log('Promtitude service worker loaded');
-
 // API configuration
 const API_BASE_URL = 'https://talentprompt-production.up.railway.app/api/v1';
 const DEV_API_URL = 'http://localhost:8000/api/v1';
@@ -27,7 +25,6 @@ class QueueProcessor {
 
   async start() {
     if (this.isProcessing) {
-      // console.log('Queue processor is already running');
       return;
     }
     
@@ -36,8 +33,6 @@ class QueueProcessor {
     
     // Start keepalive to prevent service worker from sleeping
     this.startKeepAlive();
-    
-    // console.log('Queue processor started');
     
     try {
       await this.processQueue();

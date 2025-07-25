@@ -2,14 +2,11 @@
 (function() {
   'use strict';
   
-  console.log('[Promtitude] LinkedIn Profile content script loaded at:', window.location.href);
-  
   // Forward declare functions
   let handleImport;
   
   // Listen for messages from popup (always register this)
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('Content script received message:', request);
     
     if (request.action === 'importProfile') {
       // Store the auth token if provided

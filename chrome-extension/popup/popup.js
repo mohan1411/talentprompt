@@ -107,19 +107,28 @@ function setupEventListeners() {
 // Check if user is OAuth user
 async function checkUserType() {
   const email = document.getElementById('email').value;
+  
   if (!email || !email.includes('@')) return;
   
   // Store email for next time
   chrome.storage.local.set({ lastEmail: email });
   
   try {
-    const response = await fetch(`${API_URL}/auth/check-oauth-user?email=${encodeURIComponent(email)}`);
+    const url = `${API_URL}/auth/check-oauth-user?email=${encodeURIComponent(email)}`;
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
     if (response.ok) {
       const data = await response.json();
       updateAuthUI(data.is_oauth_user, data.oauth_provider);
     }
   } catch (error) {
-    console.error('Failed to check user type:', error);
+    // Silently fail - user can still manually enter password
   }
 }
 
@@ -129,6 +138,10 @@ function updateAuthUI(isOAuthUser, provider) {
   const oauthContainer = document.getElementById('oauth-container');
   const oauthProvider = document.getElementById('oauth-provider');
   const oauthIcon = document.getElementById('oauth-icon');
+  
+  if (!passwordContainer || !oauthContainer) {
+    return;
+  }
   
   if (isOAuthUser) {
     passwordContainer.classList.add('hidden');
@@ -167,6 +180,7 @@ async function handleLogin() {
   const email = document.getElementById('email').value;
   const passwordEl = document.getElementById('password');
   const accessCodeEl = document.getElementById('access-code');
+  const errorEl = document.getElementById('error-message');
   const isOAuthLogin = !document.getElementById('oauth-container').classList.contains('hidden');
   
   // Get auth value based on login type
@@ -198,7 +212,6 @@ async function handleLogin() {
     
     if (!response.ok) {
       const error = await response.json();
-      console.error('Login failed:', error);
       
       // Check if this is an OAuth user error
       if (error.detail && error.detail.includes('OAuth users')) {
