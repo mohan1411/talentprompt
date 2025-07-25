@@ -171,3 +171,15 @@ button {
   line-height: 1.4;
   color: #78350f;
 }
+
+.import-info {
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.import-info span {
+  font-weight: 600;
+  color: #2563eb;
+}

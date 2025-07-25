@@ -140,12 +140,10 @@ async def login(
             detail="Please verify your email before logging in. Check your inbox for the verification link.",
         )
     
-    # If this was an OAuth user with a valid token, consume it now (after all checks passed)
+    # If this was an OAuth user with a valid token, we already verified it above
+    # We don't consume it to allow multiple logins within the expiration window
     if user.oauth_provider and form_data.password and len(form_data.password) == settings.EXTENSION_TOKEN_LENGTH:
-        # Double-check and consume the token
-        token_consumed = await extension_token_service.verify_token(form_data.username, form_data.password, consume=True)
-        if token_consumed:
-            logger.info(f"Extension token consumed for OAuth user {form_data.username}")
+        logger.info(f"OAuth user {form_data.username} logged in with extension token (not consumed)")
     
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(

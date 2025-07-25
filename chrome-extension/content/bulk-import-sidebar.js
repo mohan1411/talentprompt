@@ -29,7 +29,60 @@
   
   const selectedProfiles = new Set();
   
-  setTimeout(init, 2000);
+  // Listen for messages from popup
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    console.log('🎯 Bulk Import Sidebar: Received message:', request.action);
+    
+    if (request.action === 'showBulkImportSidebar') {
+      // Only allow on search results pages
+      if (!window.location.pathname.includes('/search/results/')) {
+        console.log('Not on search results page, ignoring request');
+        sendResponse({ success: false, error: 'Bulk import is only available on search results pages' });
+        return true;
+      }
+      
+      // Initialize the sidebar if not already done
+      if (!document.querySelector('#bulk-import-sidebar')) {
+        init();
+      } else {
+        // Show and highlight existing sidebar
+        const sidebar = document.querySelector('#bulk-import-sidebar');
+        sidebar.style.display = 'flex';
+        sidebar.style.boxShadow = '0 4px 20px rgba(10, 102, 194, 0.8)';
+        setTimeout(() => {
+          sidebar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+        }, 2000);
+      }
+      sendResponse({ success: true });
+      return true;
+    }
+  });
+  
+  // Auto-initialize disabled - sidebar only opens when user clicks button
+  // if (window.location.pathname.includes('/search/results/')) {
+  //   setTimeout(init, 2000);
+  // }
+  
+  // Monitor URL changes to hide sidebar when leaving search pages
+  let lastUrl = window.location.href;
+  const urlObserver = new MutationObserver(() => {
+    const currentUrl = window.location.href;
+    if (currentUrl !== lastUrl) {
+      lastUrl = currentUrl;
+      
+      // Hide sidebar if we're no longer on a search results page
+      if (!window.location.pathname.includes('/search/results/')) {
+        const sidebar = document.querySelector('#bulk-import-sidebar');
+        if (sidebar) {
+          console.log('🎯 Bulk Import Sidebar: Hiding - no longer on search results page');
+          sidebar.style.display = 'none';
+        }
+      }
+    }
+  });
+  
+  // Start observing URL changes
+  urlObserver.observe(document, { subtree: true, childList: true });
   
   function init() {
     if (!window.location.pathname.includes('/search/results/')) {

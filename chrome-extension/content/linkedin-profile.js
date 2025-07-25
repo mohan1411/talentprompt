@@ -2,7 +2,7 @@
 (function() {
   'use strict';
   
-  console.log('LinkedIn Profile content script loaded');
+  console.log('[Promtitude] LinkedIn Profile content script loaded at:', window.location.href);
   
   // Forward declare functions
   let handleImport;
@@ -31,8 +31,13 @@
       
       // Handle import - use function if available, otherwise extract and send
       if (typeof handleImport === 'function') {
-        handleImport().then(() => {
-          sendResponse({ success: true });
+        handleImport().then((result) => {
+          // Check if result is null (duplicate that was handled gracefully)
+          if (result === null) {
+            sendResponse({ success: false, error: 'This profile has already been imported' });
+          } else {
+            sendResponse({ success: true, data: result });
+          }
         }).catch(error => {
           console.error('Import error in content script:', error);
           sendResponse({ success: false, error: error.message });
@@ -40,7 +45,8 @@
       } else {
         // Simplified import for when called from popup
         handleSimpleImport(request.authToken).then(result => {
-          sendResponse({ success: true, data: result });
+          // Pass through the result as-is, including duplicate status
+          sendResponse(result);
         }).catch(error => {
           sendResponse({ success: false, error: error.message });
         });
@@ -60,11 +66,8 @@
       tabId: null // Will use current tab
     });
     
-    if (!response.success) {
-      throw new Error(response.error || 'Import failed');
-    }
-    
-    return response.data;
+    // Return the full response, not just the data
+    return response;
   }
   
   // Check if we're on a profile page for the UI elements
@@ -112,52 +115,55 @@
       importButton.remove();
     }
     
-    // Find the profile actions section
+    // Find the profile actions section - try multiple selectors
     const actionsSection = document.querySelector('.pvs-profile-actions') || 
-                          document.querySelector('.pv-top-card-v2-ctas');
+                          document.querySelector('.pv-top-card-v2-ctas') ||
+                          document.querySelector('[class*="artdeco-dropdown"]')?.parentElement ||
+                          document.querySelector('.pv-top-card-v3__cta-container');
     
     if (!actionsSection) {
+      console.log('Actions section not found, retrying...');
       // Retry after a delay
       setTimeout(addImportButton, 1000);
       return;
     }
     
+    console.log('Found actions section:', actionsSection);
+    
     // Create import button
     importButton = document.createElement('button');
-    importButton.className = 'talentprompt-import-btn';
+    importButton.className = 'talentprompt-import-btn artdeco-button artdeco-button--2 artdeco-button--primary';
     importButton.innerHTML = `
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 4px;">
         <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
       </svg>
-      <span>Import to Promtitude</span>
+      <span class="artdeco-button__text">Import to Promtitude</span>
     `;
     
-    // Style the button
+    // Style the button to match LinkedIn's style
     const style = document.createElement('style');
     style.textContent = `
       .talentprompt-import-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        margin-left: 8px;
-        background: #2563eb;
-        color: white;
-        border: none;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
+        margin-left: 8px !important;
+        background: #2563eb !important;
+        border-color: #2563eb !important;
+        color: white !important;
       }
       
-      .talentprompt-import-btn:hover {
-        background: #1d4ed8;
+      .talentprompt-import-btn:hover:not(:disabled) {
+        background: #1d4ed8 !important;
+        border-color: #1d4ed8 !important;
       }
       
       .talentprompt-import-btn:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
+        background: #9ca3af !important;
+        border-color: #9ca3af !important;
+        cursor: not-allowed !important;
+      }
+      
+      .talentprompt-import-btn.exists {
+        background: #10b981 !important;
+        border-color: #10b981 !important;
       }
       
       .talentprompt-status {
@@ -499,14 +505,32 @@
       console.log('Background script response:', response);
       
       if (!response || !response.success) {
-        throw new Error(response?.error || 'Import failed');
+        // Check if it's a duplicate error
+        const errorMsg = response?.error || 'Import failed';
+        if (errorMsg.includes('already been imported') || errorMsg.includes('already exists')) {
+          showStatus('This profile has already been imported', 'exists');
+          if (importButton) {
+            updateButtonState('exists');
+          }
+          // Don't throw error for duplicates, just return
+          return null;
+        }
+        throw new Error(errorMsg);
       }
       
       const result = response.data;
-      showStatus('Profile imported successfully!', 'success');
       
-      if (importButton) {
-        updateButtonState('imported', result.candidate_id);
+      // Check if the successful response indicates a duplicate
+      if (result.is_duplicate) {
+        showStatus('This profile has already been imported', 'exists');
+        if (importButton) {
+          updateButtonState('exists');
+        }
+      } else {
+        showStatus('Profile imported successfully!', 'success');
+        if (importButton) {
+          updateButtonState('imported', result.candidate_id);
+        }
       }
       
       return result;

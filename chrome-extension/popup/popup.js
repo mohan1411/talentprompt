@@ -1,9 +1,9 @@
 // API configuration
 const API_BASE_URL = 'https://talentprompt-production.up.railway.app/api/v1';
-const DEV_API_URL = 'http://localhost:8001/api/v1';
+const DEV_API_URL = 'http://localhost:8000/api/v1';
 
-// Use development URL for local testing
-const API_URL = DEV_API_URL;
+// Use production URL
+const API_URL = API_BASE_URL;
 
 // State management
 let authToken = null;
@@ -11,11 +11,26 @@ let currentUser = null;
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('Popup initialized');
+  // console.log('Popup initialized');
   await checkAuthStatus();
   setupEventListeners();
-  updateUIState();
+  await updateUIState();
   updateQueueBadge();
+});
+
+// Listen for stats updates from background script
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'statsUpdated' && request.stats) {
+    document.getElementById('imported-today').textContent = request.stats.imported;
+    document.getElementById('duplicates-found').textContent = request.stats.duplicates;
+  }
+});
+
+// Update UI when active tab changes
+chrome.tabs.onActivated.addListener(async () => {
+  if (authToken) {
+    await updateUIState();
+  }
 });
 
 // Check if user is authenticated
@@ -26,7 +41,7 @@ async function checkAuthStatus() {
   if (stored.authToken) {
     authToken = stored.authToken;
     currentUser = stored.userEmail;
-    console.log('Found stored token for:', currentUser);
+    // console.log('Found stored token for:', currentUser);
     
     // Verify token is still valid by making a test request
     try {
@@ -37,17 +52,17 @@ async function checkAuthStatus() {
       });
       
       if (response.ok) {
-        console.log('Token is still valid');
+        // console.log('Token is still valid');
         await loadStats();
       } else if (response.status === 401) {
-        console.log('Token expired, clearing auth');
+        // console.log('Token expired, clearing auth');
         await handleLogout();
       }
     } catch (error) {
       console.error('Failed to verify token:', error);
     }
   } else {
-    console.log('No stored auth token found');
+    // console.log('No stored auth token found');
   }
 }
 
@@ -55,8 +70,7 @@ async function checkAuthStatus() {
 function setupEventListeners() {
   document.getElementById('login-btn').addEventListener('click', handleLogin);
   document.getElementById('logout-btn').addEventListener('click', handleLogout);
-  document.getElementById('import-current').addEventListener('click', handleImportCurrent);
-  document.getElementById('bulk-import').addEventListener('click', handleBulkImport);
+  document.getElementById('import-action').addEventListener('click', handleImportAction);
   document.getElementById('view-queue').addEventListener('click', openQueueManager);
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
@@ -74,7 +88,7 @@ async function handleLogin() {
   }
   
   try {
-    console.log('Attempting login with:', email);
+    // console.log('Attempting login with:', email);
     
     // Use FormData like the web app does
     const formData = new FormData();
@@ -118,7 +132,7 @@ async function handleLogin() {
     errorEl.classList.add('hidden');
     
     await loadStats();
-    updateUIState();
+    await updateUIState();
     
   } catch (error) {
     showError(error.message);
@@ -127,37 +141,70 @@ async function handleLogin() {
 
 // Handle logout
 async function handleLogout() {
-  console.log('Logging out user:', currentUser);
+  // console.log('Logging out user:', currentUser);
   authToken = null;
   currentUser = null;
   await chrome.storage.local.remove(['authToken', 'userEmail']);
-  console.log('Cleared stored credentials');
-  updateUIState();
+  // console.log('Cleared stored credentials');
+  await updateUIState();
 }
 
 // Load statistics
 async function loadStats() {
   try {
-    // For now, use mock data. Will implement real API later
-    document.getElementById('imported-today').textContent = '0';
-    document.getElementById('duplicates-found').textContent = '0';
+    const today = new Date().toDateString();
+    const { importStats = {} } = await chrome.storage.local.get('importStats');
+    
+    const todayStats = importStats[today] || { imported: 0, duplicates: 0 };
+    
+    document.getElementById('imported-today').textContent = todayStats.imported;
+    document.getElementById('duplicates-found').textContent = todayStats.duplicates;
   } catch (error) {
     console.error('Failed to load stats:', error);
   }
 }
 
-// Handle import current profile
-async function handleImportCurrent() {
-  console.log('Import button clicked');
+// Handle import action (context-aware)
+async function handleImportAction() {
   try {
-    // Get current tab
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    if (!tab || !tab.url) {
+      showError('No active tab found');
+      return;
+    }
+    
+    if (tab.url.includes('linkedin.com/in/')) {
+      // On a profile page - do import
+      await handleImportProfile(tab);
+    } else if (tab.url.includes('linkedin.com/search/results/')) {
+      // On a search page - focus the bulk import toolbar
+      await handleOpenBulkImport(tab);
+    } else {
+      showError('Navigate to a LinkedIn profile or search page');
+    }
+  } catch (error) {
+    console.error('Import action error:', error);
+    showError('Failed to perform action: ' + error.message);
+  }
+}
+
+// Handle import current profile
+async function handleImportProfile(tab) {
+  console.log('Import profile clicked');
+  try {
     console.log('Current tab:', tab.url);
     
     if (!tab.url || !tab.url.includes('linkedin.com/in/')) {
       showError('Please navigate to a LinkedIn profile');
       return;
     }
+    
+    // Show loading state
+    const importBtn = document.getElementById('import-action');
+    const originalText = importBtn.textContent;
+    importBtn.textContent = 'Importing...';
+    importBtn.disabled = true;
     
     // Try to send message to content script
     console.log('Sending message to content script...');
@@ -211,42 +258,80 @@ async function handleImportCurrent() {
     }
     
     console.log('Response from content script:', response);
+    console.log('Response success:', response?.success);
+    console.log('Response error:', response?.error);
+    console.log('Response data:', response?.data);
     
     if (response && response.success) {
-      // Update stats
-      const imported = parseInt(document.getElementById('imported-today').textContent) + 1;
-      document.getElementById('imported-today').textContent = imported;
+      // Check if it's a duplicate
+      if (response.data && response.data.is_duplicate) {
+        // Don't update stats for duplicates
+        showInfo('This profile has already been imported');
+      } else {
+        // Update stats only for new imports
+        const imported = parseInt(document.getElementById('imported-today').textContent) + 1;
+        document.getElementById('imported-today').textContent = imported;
+        
+        showSuccess('Profile imported successfully!');
+      }
       
-      showSuccess('Profile imported successfully!');
+      // Close popup after showing message
+      setTimeout(() => {
+        window.close();
+      }, 1500);
     } else {
-      showError(response?.error || 'Import failed');
+      const errorMessage = response?.error || 'Import failed';
+      console.log('Error message:', errorMessage);
+      
+      // Check if it's a duplicate error
+      if (errorMessage.includes('already been imported') || 
+          errorMessage.includes('already exists')) {
+        // Show as info instead of error for duplicates
+        showInfo('This profile has already been imported');
+      } else {
+        showError(errorMessage);
+      }
     }
     
   } catch (error) {
     console.error('Import error:', error);
     showError('Failed to import profile: ' + error.message);
+  } finally {
+    // Restore button state
+    const importBtn = document.getElementById('import-action');
+    importBtn.textContent = originalText;
+    importBtn.disabled = false;
   }
 }
 
-// Handle bulk import
-async function handleBulkImport() {
+// Handle opening bulk import tool on search page
+async function handleOpenBulkImport(tab) {
+  console.log('Opening bulk import tool');
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    // Show loading state
+    const importBtn = document.getElementById('import-action');
+    const originalText = importBtn.textContent;
+    importBtn.textContent = 'Opening...';
+    importBtn.disabled = true;
     
-    if (!tab.url.includes('linkedin.com/search/')) {
-      showError('Please navigate to LinkedIn search results');
-      return;
-    }
-    
-    // Send message to content script
+    // Send message to content script to show/focus the bulk import toolbar
     let response;
     try {
+      console.log('Attempting to focus bulk import tool...');
       response = await chrome.tabs.sendMessage(tab.id, {
-        action: 'bulkImport',
-        authToken: authToken
+        action: 'showBulkImportSidebar'
       });
+      
+      if (response && response.success) {
+        console.log('Bulk import tool opened successfully');
+        // Close the popup immediately
+        window.close();
+      } else {
+        console.error('Failed to open bulk import tool:', response);
+        showError(response?.error || 'Failed to open bulk import tool');
+      }
     } catch (error) {
-      console.log('Content script not loaded for bulk import, injecting scripts...');
+      console.log('Content script not loaded, injecting scripts...');
       
       // Get all content scripts from manifest
       const manifest = chrome.runtime.getManifest();
@@ -275,36 +360,40 @@ async function handleBulkImport() {
       }
       
       // Wait for initialization
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Try again
       try {
-        response = await chrome.tabs.sendMessage(tab.id, {
-          action: 'bulkImport',
-          authToken: authToken
+        console.log('Retrying focusBulkImportTool message...');
+        const retryResponse = await chrome.tabs.sendMessage(tab.id, {
+          action: 'showBulkImportSidebar'
         });
+        
+        if (retryResponse && retryResponse.success) {
+          console.log('Bulk import tool opened successfully on retry');
+          // Close the popup immediately
+          window.close();
+        } else {
+          showError(retryResponse?.error || 'Bulk import tool not ready. Please refresh the page.');
+        }
       } catch (retryError) {
-        throw new Error('Failed to communicate with page. Please refresh and try again.');
+        console.error('Retry failed:', retryError);
+        showError('Please refresh the LinkedIn page and try again');
       }
     }
-    
-    if (response.success) {
-      showSuccess(`Imported ${response.count} profiles`);
-      
-      // Update stats
-      const imported = parseInt(document.getElementById('imported-today').textContent) + response.count;
-      document.getElementById('imported-today').textContent = imported;
-    } else {
-      showError(response.error || 'Bulk import failed');
-    }
-    
   } catch (error) {
-    showError('Failed to bulk import');
+    console.error('Failed to open bulk import tool:', error);
+    showError('Failed to open bulk import tool: ' + error.message);
+  } finally {
+    // Restore button state
+    const importBtn = document.getElementById('import-action');
+    importBtn.textContent = originalText;
+    importBtn.disabled = false;
   }
 }
 
 // Update UI based on auth state
-function updateUIState() {
+async function updateUIState() {
   const loginForm = document.getElementById('login-form');
   const loggedIn = document.getElementById('logged-in');
   const statsSection = document.getElementById('stats-section');
@@ -318,9 +407,44 @@ function updateUIState() {
     
     document.getElementById('user-email').textContent = currentUser;
     
-    // Enable action buttons
-    document.getElementById('import-current').disabled = false;
-    document.getElementById('bulk-import').disabled = false;
+    // Check current tab to determine context
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      const importBtn = document.getElementById('import-action');
+      const importInfo = document.getElementById('import-action-info');
+      
+      if (!tab || !tab.url || !tab.url.includes('linkedin.com')) {
+        // Not on LinkedIn
+        importBtn.textContent = 'Import Profile';
+        importBtn.disabled = true;
+        importBtn.title = 'Navigate to a LinkedIn profile to import';
+        importInfo.classList.add('hidden');
+      } else if (tab.url.includes('linkedin.com/in/')) {
+        // On a profile page
+        importBtn.textContent = 'Import Current Profile';
+        importBtn.disabled = false;
+        importBtn.title = 'Import this LinkedIn profile';
+        importInfo.classList.add('hidden');
+      } else if (tab.url.includes('linkedin.com/search/results/')) {
+        // On a search page
+        importBtn.textContent = 'Open Bulk Import Tool';
+        importBtn.disabled = false;
+        importBtn.title = 'Open the bulk import sidebar';
+        
+        // Show helpful info
+        importInfo.textContent = 'Opens a sidebar to select and import multiple profiles';
+        importInfo.classList.remove('hidden');
+      } else {
+        // On LinkedIn but not a supported page
+        importBtn.textContent = 'Import Profile';
+        importBtn.disabled = true;
+        importBtn.title = 'Navigate to a profile or search results';
+        importInfo.classList.add('hidden');
+      }
+    } catch (error) {
+      console.error('Failed to check current tab:', error);
+      document.getElementById('import-action').disabled = true;
+    }
   } else {
     loginForm.classList.remove('hidden');
     loggedIn.classList.add('hidden');
@@ -363,6 +487,29 @@ function showError(message) {
 function showSuccess(message) {
   // For now, use alert. Can implement toast later
   alert(message);
+}
+
+// Show info message (for duplicates, etc)
+function showInfo(message) {
+  const errorEl = document.getElementById('error-message');
+  
+  if (errorEl) {
+    errorEl.style.background = '#fef3c7';
+    errorEl.style.borderColor = '#fbbf24';
+    errorEl.style.color = '#92400e';
+    errorEl.innerHTML = '⚠️ ' + message;
+    errorEl.classList.remove('hidden');
+    
+    setTimeout(() => {
+      errorEl.classList.add('hidden');
+      // Reset styles
+      errorEl.style.background = '';
+      errorEl.style.borderColor = '';
+      errorEl.style.color = '';
+    }, 5000);
+  } else {
+    alert(message);
+  }
 }
 
 // Open settings

@@ -120,6 +120,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
             oauth_data=json.dumps(oauth_data),
             is_active=True,
             is_superuser=False,
+            is_verified=True,  # OAuth users are pre-verified by their provider
         )
         db.add(db_obj)
         await db.commit()
@@ -152,6 +153,7 @@ class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
         db_obj.oauth_provider = provider
         db_obj.oauth_provider_id = provider_id
         db_obj.oauth_data = json.dumps(oauth_data)
+        db_obj.is_verified = True  # OAuth users are pre-verified by their provider
         await db.commit()
         await db.refresh(db_obj)
         return db_obj

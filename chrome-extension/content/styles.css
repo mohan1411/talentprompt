@@ -25,55 +25,31 @@
   cursor: not-allowed;
 }
 
-/* Search results integration */
-.talentprompt-bulk-toolbar {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: white;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
-  min-width: 300px;
+/* Sidebar styles for better visibility */
+#bulk-import-sidebar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-.talentprompt-bulk-toolbar h3 {
-  margin: 0 0 12px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
+#bulk-import-sidebar * {
+  box-sizing: border-box;
 }
 
-.talentprompt-profile-indicator {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 32px;
-  height: 32px;
-  background: #2563eb;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
+#bulk-import-sidebar button {
+  font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
 }
 
-.talentprompt-profile-indicator.exists {
-  background: #10b981;
+#bulk-import-sidebar input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
 }
 
-.talentprompt-profile-indicator.selected {
-  background: #f59e0b;
-}
-
-.talentprompt-profile-indicator:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+/* Ensure sidebar stays on top */
+#bulk-import-sidebar {
+  z-index: 99999 !important;
 }
 
 /* Status notifications */
@@ -117,59 +93,9 @@
   }
 }
 
-/* Tooltip */
-.talentprompt-tooltip {
-  position: absolute;
-  background: #1f2937;
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 10000;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.talentprompt-tooltip.visible {
-  opacity: 1;
-}
-
-.talentprompt-tooltip::before {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: #1f2937;
-}
-
-/* Bulk import checkboxes */
-.bulk-import-checkbox-fixed {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
-
-.bulk-import-checkbox-fixed input[type="checkbox"] {
-  -webkit-appearance: checkbox !important;
-  appearance: checkbox !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: all !important;
-  width: 24px !important;
-  height: 24px !important;
-}
-
 /* Ensure search results are relatively positioned */
-li.reusable-search__result-container {
-  position: relative !important;
-}
-
-/* Make checkboxes stand out */
-.entity-result__image,
-.presence-entity__image {
+li.reusable-search__result-container,
+li[class*="result-container"],
+div[data-chameleon-result-urn] {
   position: relative !important;
 }

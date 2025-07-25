@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, JSON, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -15,6 +15,9 @@ class Resume(Base):
     """Resume/Candidate model."""
 
     __tablename__ = "resumes"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'linkedin_url', name='resumes_user_id_linkedin_url_key'),
+    )
 
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
@@ -51,7 +54,7 @@ class Resume(Base):
     job_position = Column(String, index=True)  # Job position/role this resume is for
     
     # LinkedIn Integration
-    linkedin_url = Column(String, unique=True, index=True)  # LinkedIn profile URL
+    linkedin_url = Column(String, index=True)  # LinkedIn profile URL
     linkedin_data = Column(JSON)  # Raw LinkedIn data
     last_linkedin_sync = Column(DateTime(timezone=True), nullable=True)  # Last sync timestamp
     
