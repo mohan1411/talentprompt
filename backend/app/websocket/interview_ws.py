@@ -307,7 +307,8 @@ async def handle_chat_message(websocket: WebSocket, session_id: str, data: Dict,
 async def handle_end_transcription(websocket: WebSocket, session_id: str):
     """End transcription and get summary."""
     try:
-        summary = await transcription_service.end_session(session_id)
+        # Use stop_session instead of end_session (which doesn't exist)
+        summary = await transcription_service.stop_session(session_id)
         
         await websocket.send_json({
             "type": "transcription_summary",

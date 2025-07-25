@@ -73,8 +73,46 @@ EXCEPTION
         NULL;
 END $$;
 
+-- Fix the status enum to include PROCESSING value
+DO $$
+DECLARE
+    enum_exists boolean;
+    has_processing boolean;
+BEGIN
+    -- Check if enum type exists
+    SELECT EXISTS (
+        SELECT 1 FROM pg_type WHERE typname = 'interviewstatus'
+    ) INTO enum_exists;
+    
+    IF NOT enum_exists THEN
+        -- Create the enum type with all values
+        CREATE TYPE interviewstatus AS ENUM (
+            'SCHEDULED',
+            'IN_PROGRESS',
+            'COMPLETED',
+            'CANCELLED',
+            'PROCESSING'
+        );
+        RAISE NOTICE 'Created interviewstatus enum type with all values';
+    ELSE
+        -- Check if PROCESSING value exists
+        SELECT EXISTS (
+            SELECT 1 FROM pg_enum 
+            WHERE enumtypid = 'interviewstatus'::regtype 
+            AND enumlabel = 'PROCESSING'
+        ) INTO has_processing;
+        
+        IF NOT has_processing THEN
+            -- Add PROCESSING to existing enum
+            ALTER TYPE interviewstatus ADD VALUE IF NOT EXISTS 'PROCESSING';
+            RAISE NOTICE 'Added PROCESSING value to interviewstatus enum';
+        END IF;
+    END IF;
+END $$;
+
 -- Display success message
 DO $$
 BEGIN
     RAISE NOTICE 'All missing columns have been added to interview_sessions table';
+    RAISE NOTICE 'InterviewStatus enum has been fixed with PROCESSING value';
 END $$;
