@@ -61,6 +61,40 @@ Implement Captcha and email verification when user register through email and pa
 - [x] **STATUS**: Published and available in Chrome Web Store!
 - [x] OAuth user authentication implemented for extension users
 
+#### Chrome Extension v1.1.0 Updates ✅ COMPLETED - July 25, 2025
+**Major Improvements for Republishing**
+- [x] **OAuth-Friendly Login UI** 
+  - Dynamic form switching based on user type (OAuth vs regular)
+  - Access code field replaces password for OAuth users
+  - Shows OAuth provider (Google/LinkedIn) with icons
+  - "Get Code" button opens web app authentication page
+  - Auto-uppercase access code input for better UX
+  - Remember last email for returning users
+- [x] **Welcome Screen for New Users**
+  - Beautiful onboarding experience explaining what Promtitude does
+  - Feature list: one-click import, bulk import, duplicate detection, cloud storage
+  - Prominent "Create Free Account" CTA button
+  - "Already have an account? Sign in" link
+  - Only shows on first install (tracked via chrome.storage)
+- [x] **Fixed Access Code Reuse Issue**
+  - OAuth users can now reuse access codes within 10-minute window
+  - No longer consumed on first login, allowing logout/login cycles
+- [x] **Fixed Bulk Import Sidebar**
+  - Resolved duplicate lastUrl declaration error
+  - Added URL monitoring to auto-hide on non-search pages
+  - Sidebar only shows on LinkedIn search results pages
+- [x] **Fixed Duplicate Import Messages**
+  - Clear yellow warning when importing duplicate profiles
+  - Message stays visible for 3 seconds before popup closes
+  - Fixed Settings link (now points to promtitude.com/settings)
+  - Fixed Help link (now points to promtitude.com/help)
+- [x] **Production Code Cleanup**
+  - Removed all console.log statements
+  - Moved 38 debug/test files to debug folder
+  - Cleaned up unused content scripts
+  - Updated version to 1.1.0
+  - No TODO comments in production code
+
 ### Critical Fixes
 - [x] Test all features in production after recent deployments - ✅ All working
 - [x] Email verification system - ✅ WORKING in production with Gmail SMTP
