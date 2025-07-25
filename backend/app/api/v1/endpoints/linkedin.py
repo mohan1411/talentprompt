@@ -67,13 +67,31 @@ async def import_linkedin_profile(
     # Normalize LinkedIn URL (remove query parameters and trailing slash)
     normalized_url = profile_data.linkedin_url.split('?')[0].rstrip('/')
     
-    logger.info(f"Checking for existing profile with URL: {normalized_url}")
+    logger.info(f"Import attempt - Original URL: {profile_data.linkedin_url}")
+    logger.info(f"Import attempt - Normalized URL: {normalized_url}")
+    logger.info(f"Import attempt - User ID: {current_user.id}")
+    logger.info(f"Import attempt - User Email: {current_user.email}")
     
-    # Check if profile already exists (excluding soft-deleted)
+    # DEBUG: Let's see what the query actually finds
+    test_query = select(Resume).where(
+        Resume.linkedin_url == normalized_url
+    )
+    test_result = await db.execute(test_query)
+    all_with_url = test_result.scalars().all()
+    logger.info(f"DEBUG - All resumes with URL {normalized_url}: {[(r.id, r.user_id, r.status) for r in all_with_url]}")
+    logger.info(f"DEBUG - Current user ID type: {type(current_user.id)}, value: {current_user.id}")
+    
+    # Check if profile already exists for this user (excluding soft-deleted)
+    # Ensure user_id is compared as string if needed
+    user_id_to_check = str(current_user.id) if hasattr(current_user.id, '__str__') else current_user.id
+    
     existing_query = select(Resume).where(
         Resume.linkedin_url == normalized_url,
+        Resume.user_id == user_id_to_check,
         Resume.status != 'deleted'
     )
+    
+    logger.info(f"DEBUG - Query checking for user_id: {user_id_to_check}, URL: {normalized_url}, excluding status: deleted")
     existing_result = await db.execute(existing_query)
     existing_resume = existing_result.scalar_one_or_none()
     
@@ -81,6 +99,7 @@ async def import_linkedin_profile(
     if not existing_resume and not normalized_url.endswith('/'):
         existing_query2 = select(Resume).where(
             Resume.linkedin_url == normalized_url + '/',
+            Resume.user_id == current_user.id,
             Resume.status != 'deleted'
         )
         existing_result2 = await db.execute(existing_query2)
@@ -89,43 +108,11 @@ async def import_linkedin_profile(
     logger.info(f"Existing resume found: {existing_resume is not None}")
     
     if existing_resume:
-        # Update the existing resume with new data
-        logger.info(f"Updating existing profile: {normalized_url}")
-        
-        # Update with new data
-        update_data = {
-            "location": profile_data.location or existing_resume.location,
-            "summary": profile_data.about or existing_resume.summary,
-            "current_title": profile_data.headline or existing_resume.current_title,
-            "years_experience": profile_data.years_experience or existing_resume.years_experience,
-            "last_linkedin_sync": datetime.utcnow(),
-        }
-        
-        # Update skills if provided
-        if profile_data.skills:
-            normalized_skills = [normalize_skill_for_storage(skill) for skill in profile_data.skills]
-            if normalized_skills:
-                update_data["skills"] = normalized_skills
-        
-        for key, value in update_data.items():
-            setattr(existing_resume, key, value)
-        
-        await db.commit()
-        await db.refresh(existing_resume)
-        
-        # Re-index in vector search - temporarily disabled due to greenlet issue
-        # TODO: Fix async context issue with reindex_service
-        # try:
-        #     from app.services.reindex_service import reindex_service
-        #     await reindex_service.reindex_resume(db, existing_resume)
-        # except Exception as e:
-        #     logger.error(f"Failed to reindex resume: {e}")
-        
-        return LinkedInImportResponse(
-            success=True,
-            candidate_id=existing_resume.id,
-            message="Profile updated successfully",
-            is_duplicate=True
+        # Return 409 Conflict for duplicate profiles
+        logger.info(f"Duplicate profile detected: {normalized_url}")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"This profile has already been imported"
         )
     
     try:
@@ -183,7 +170,8 @@ async def import_linkedin_profile(
         await db.commit()
         
         # Log import history
-        logger.info(f"Successfully imported LinkedIn profile: {profile_data.linkedin_url}")
+        logger.info(f"Successfully imported LinkedIn profile: {profile_data.linkedin_url} for user {current_user.id}")
+        logger.info(f"New resume created - ID: {resume.id}, Name: {profile_data.name}")
         
         return LinkedInImportResponse(
             success=True,
@@ -194,7 +182,42 @@ async def import_linkedin_profile(
         
     except Exception as e:
         logger.error(f"Failed to import LinkedIn profile: {e}")
+        logger.error(f"Exception type: {type(e).__name__}")
+        logger.error(f"Exception details: {str(e)}")
+        
         await db.rollback()
+        
+        # Check if it's a unique constraint violation
+        error_message = str(e)
+        if "duplicate key value violates unique constraint" in error_message:
+            # Log detailed information about the constraint violation
+            logger.error(f"Constraint violation details: {error_message}")
+            
+            if "resumes_linkedin_url_key" in error_message:
+                # Old global constraint - this is the problem!
+                logger.error("CRITICAL: Old global unique constraint still exists on linkedin_url!")
+                logger.error(f"Profile {normalized_url} already imported by another user")
+                
+                # Return a different status code to distinguish this case
+                raise HTTPException(
+                    status_code=status.HTTP_423_LOCKED,  # Using 423 to indicate resource locked by another user
+                    detail="This profile has been imported by another user. The system currently doesn't support multiple users importing the same profile due to a database constraint issue."
+                )
+            elif "resumes_user_id_linkedin_url_key" in error_message:
+                # New constraint - this means our duplicate check failed somehow
+                logger.error(f"Duplicate check failed but constraint caught it. URL: {normalized_url}, User: {current_user.id}")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="You have already imported this profile"
+                )
+            else:
+                # Unknown constraint
+                logger.error(f"Unknown constraint violation: {error_message}")
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="This profile cannot be imported due to a constraint violation"
+                )
+        
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to import profile: {str(e)}"
@@ -209,9 +232,27 @@ async def check_profile_exists(
 ) -> Dict[str, Any]:
     """Check if a LinkedIn profile already exists in the database."""
     
-    query = select(Resume).where(Resume.linkedin_url == request.linkedin_url)
+    # Normalize the URL to match import logic
+    normalized_url = request.linkedin_url.split('?')[0].rstrip('/')
+    
+    # Check for the current user's resumes only
+    query = select(Resume).where(
+        Resume.linkedin_url == normalized_url,
+        Resume.user_id == current_user.id,
+        Resume.status != 'deleted'
+    )
     result = await db.execute(query)
     resume = result.scalar_one_or_none()
+    
+    # If not found, also check with trailing slash
+    if not resume and not normalized_url.endswith('/'):
+        query2 = select(Resume).where(
+            Resume.linkedin_url == normalized_url + '/',
+            Resume.user_id == current_user.id,
+            Resume.status != 'deleted'
+        )
+        result2 = await db.execute(query2)
+        resume = result2.scalar_one_or_none()
     
     return {
         "exists": resume is not None,
@@ -252,6 +293,25 @@ async def bulk_import_profiles(
                 "candidate_id": result.candidate_id
             })
             
+        except HTTPException as e:
+            # Check if it's a duplicate (409 conflict)
+            if e.status_code == status.HTTP_409_CONFLICT:
+                results["duplicates"] += 1
+                results["details"].append({
+                    "linkedin_url": profile_data.linkedin_url,
+                    "success": False,
+                    "is_duplicate": True,
+                    "error": str(e.detail)
+                })
+                logger.info(f"Duplicate profile: {profile_data.linkedin_url}")
+            else:
+                results["failed"] += 1
+                results["details"].append({
+                    "linkedin_url": profile_data.linkedin_url,
+                    "success": False,
+                    "error": str(e.detail)
+                })
+                logger.error(f"Failed to import {profile_data.linkedin_url}: {e}")
         except Exception as e:
             results["failed"] += 1
             results["details"].append({
