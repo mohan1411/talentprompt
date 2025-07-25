@@ -28,6 +28,7 @@ import {
   ThumbsDownIcon,
   ChevronRightIcon,
   FileTextIcon,
+  InfoIcon,
   Loader2Icon,
   ArrowLeftIcon,
   HeadphonesIcon,
@@ -777,16 +778,45 @@ export default function InterviewSessionPage() {
                   
                   <TabsContent value="manual" className="mt-4">
                     <div className="space-y-4">
-                      <Alert>
-                        <AlertCircleIcon className="h-4 w-4" />
-                        <AlertDescription>
-                          <strong>Format Guide:</strong> Enter the transcript with speaker labels like:
-                          <br />
-                          <code className="text-xs">[interviewer]: Question here...</code>
-                          <br />
-                          <code className="text-xs">[candidate]: Answer here...</code>
-                        </AlertDescription>
-                      </Alert>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Alert>
+                          <AlertCircleIcon className="h-4 w-4" />
+                          <AlertDescription>
+                            <strong>Supported Formats:</strong>
+                            <ul className="mt-2 space-y-1 text-xs">
+                              <li>• <code>[interviewer]:</code> or <code>[candidate]:</code></li>
+                              <li>• <code>Interviewer:</code> or <code>Candidate:</code></li>
+                              <li>• <code>Q:</code> and <code>A:</code></li>
+                              <li>• <code>Sarah:</code> and <code>John:</code> (names)</li>
+                              <li>• <code>1.</code> and <code>2.</code> (alternating)</li>
+                            </ul>
+                          </AlertDescription>
+                        </Alert>
+                        
+                        <Alert className="border-blue-200 bg-blue-50">
+                          <InfoIcon className="h-4 w-4 text-blue-600" />
+                          <AlertDescription>
+                            <strong>Parsing Status:</strong>
+                            <div className="mt-2 text-sm">
+                              {manualTranscript ? (
+                                <>
+                                  <div className="flex items-center gap-2">
+                                    <span className={`inline-block w-2 h-2 rounded-full ${
+                                      manualTranscript.includes(':') ? 'bg-green-500' : 'bg-yellow-500'
+                                    }`} />
+                                    {manualTranscript.includes(':') ? 'Speaker labels detected' : 'Add speaker labels'}
+                                  </div>
+                                  <div className="text-xs text-gray-600 mt-1">
+                                    {manualTranscript.split('\n').filter(l => l.trim()).length} lines detected
+                                  </div>
+                                </>
+                              ) : (
+                                <span className="text-gray-500">Start typing to see parsing status</span>
+                              )}
+                            </div>
+                          </AlertDescription>
+                        </Alert>
+                      </div>
                       
                       <Textarea
                         placeholder="Paste or type the interview transcript here...
@@ -800,6 +830,71 @@ Example:
                         onChange={(e) => setManualTranscript(e.target.value)}
                         className="min-h-[400px] font-mono text-sm"
                       />
+                      
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const template = `[Interviewer]: Can you tell me about yourself and your background?
+[Candidate]: 
+
+[Interviewer]: What experience do you have with [technology/skill]?
+[Candidate]: 
+
+[Interviewer]: Can you describe a challenging project you've worked on?
+[Candidate]: 
+
+[Interviewer]: What are your career goals?
+[Candidate]: `;
+                            setManualTranscript(template);
+                          }}
+                        >
+                          General Template
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const template = `[Interviewer]: What programming languages are you proficient in?
+[Candidate]: 
+
+[Interviewer]: Can you explain your experience with databases and SQL?
+[Candidate]: 
+
+[Interviewer]: How do you approach debugging complex issues?
+[Candidate]: 
+
+[Interviewer]: Describe your experience with version control systems.
+[Candidate]: `;
+                            setManualTranscript(template);
+                          }}
+                        >
+                          Technical Template
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const template = `[Interviewer]: Tell me about a time you had to work with a difficult team member.
+[Candidate]: 
+
+[Interviewer]: How do you handle tight deadlines?
+[Candidate]: 
+
+[Interviewer]: Describe a situation where you had to learn something new quickly.
+[Candidate]: 
+
+[Interviewer]: What's your approach to giving and receiving feedback?
+[Candidate]: `;
+                            setManualTranscript(template);
+                          }}
+                        >
+                          Behavioral Template
+                        </Button>
+                      </div>
                       
                       <div className="flex justify-end gap-2">
                         <Button

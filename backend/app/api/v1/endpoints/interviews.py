@@ -1,6 +1,7 @@
 """Interview management endpoints."""
 
 import logging
+import re
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 from datetime import datetime, timedelta
@@ -1405,8 +1406,18 @@ async def save_manual_transcript(
         timestamp = 0
         
         # More flexible speaker detection patterns
-        interviewer_patterns = ['[interviewer]:', 'interviewer:', 'sarah:', 'interviewer :', '[sarah]:', 'q:', 'question:']
-        candidate_patterns = ['[candidate]:', 'candidate:', 'aditya:', 'candidate :', '[aditya]:', 'a:', 'answer:']
+        interviewer_patterns = [
+            '[interviewer]:', 'interviewer:', 'interviewer ', 
+            'q:', 'question:', 'q.', 'q ', 
+            '1.', '1)', '1 -', '1:', 
+            'hr:', 'manager:', 'recruiter:'
+        ]
+        candidate_patterns = [
+            '[candidate]:', 'candidate:', 'candidate ', 
+            'a:', 'answer:', 'a.', 'a ', 
+            '2.', '2)', '2 -', '2:', 
+            'applicant:', 'interviewee:'
+        ]
         
         for line in lines:
             line = line.strip()
@@ -1417,6 +1428,15 @@ async def save_manual_transcript(
             line_lower = line.lower()
             is_interviewer = any(pattern in line_lower for pattern in interviewer_patterns)
             is_candidate = any(pattern in line_lower for pattern in candidate_patterns)
+            
+            # Also check for name patterns (Name: at start of line)
+            name_pattern = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*:', line)
+            if name_pattern and not is_interviewer and not is_candidate:
+                # Assume first named speaker is interviewer, second is candidate
+                if current_speaker is None:
+                    is_interviewer = True
+                else:
+                    is_candidate = True
             
             if is_interviewer or is_candidate:
                 # Save previous utterance if any
@@ -1545,6 +1565,73 @@ async def save_manual_transcript(
     except Exception as e:
         logger.error(f"Error processing manual transcript: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process transcript: {str(e)}")
+
+
+@router.post("/validate-transcript")
+async def validate_transcript_format(
+    request: Dict[str, str],
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Validate transcript format and provide feedback."""
+    
+    transcript_text = request.get("transcript", "").strip()
+    if not transcript_text:
+        return {
+            "valid": False,
+            "issues": ["No transcript provided"],
+            "suggestions": ["Enter or paste an interview transcript"]
+        }
+    
+    lines = transcript_text.split('\n')
+    non_empty_lines = [l.strip() for l in lines if l.strip()]
+    
+    # Check for basic issues
+    issues = []
+    suggestions = []
+    
+    # Check for speaker labels
+    has_colon = any(':' in line for line in non_empty_lines)
+    if not has_colon:
+        issues.append("No speaker labels detected")
+        suggestions.append("Add speaker labels like '[Interviewer]:' or 'Q:' before questions")
+    
+    # Check for minimum length
+    if len(non_empty_lines) < 4:
+        issues.append("Transcript is too short")
+        suggestions.append("Add at least 2 question-answer pairs")
+    
+    # Check for alternating pattern
+    speaker_pattern = []
+    for line in non_empty_lines:
+        if ':' in line:
+            if any(p in line.lower() for p in ['interviewer', 'q:', 'question', '1.', 'hr:']):
+                speaker_pattern.append('I')
+            elif any(p in line.lower() for p in ['candidate', 'a:', 'answer', '2.']):
+                speaker_pattern.append('C')
+    
+    # Check if pattern alternates
+    if len(speaker_pattern) >= 2:
+        alternates = all(
+            speaker_pattern[i] != speaker_pattern[i+1] 
+            for i in range(len(speaker_pattern)-1)
+        )
+        if not alternates:
+            issues.append("Multiple consecutive questions or answers detected")
+            suggestions.append("Ensure questions and answers alternate")
+    
+    # Count detected Q&A pairs
+    qa_count = len(speaker_pattern) // 2
+    
+    return {
+        "valid": len(issues) == 0,
+        "issues": issues,
+        "suggestions": suggestions,
+        "stats": {
+            "lines": len(non_empty_lines),
+            "speaker_labels_found": has_colon,
+            "estimated_qa_pairs": qa_count
+        }
+    }
 
 
 @router.post("/test-transcript-analysis")
