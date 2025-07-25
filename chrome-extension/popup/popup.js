@@ -350,6 +350,9 @@ async function handleImportAction() {
 // Handle import current profile
 async function handleImportProfile(tab) {
   console.log('Import profile clicked');
+  const importBtn = document.getElementById('import-action');
+  const originalText = importBtn.textContent;
+  
   try {
     console.log('Current tab:', tab.url);
     
@@ -359,8 +362,6 @@ async function handleImportProfile(tab) {
     }
     
     // Show loading state
-    const importBtn = document.getElementById('import-action');
-    const originalText = importBtn.textContent;
     importBtn.textContent = 'Importing...';
     importBtn.disabled = true;
     
@@ -487,10 +488,11 @@ async function handleImportProfile(tab) {
 // Handle opening bulk import tool on search page
 async function handleOpenBulkImport(tab) {
   console.log('Opening bulk import tool');
+  const importBtn = document.getElementById('import-action');
+  const originalText = importBtn.textContent;
+  
   try {
     // Show loading state
-    const importBtn = document.getElementById('import-action');
-    const originalText = importBtn.textContent;
     importBtn.textContent = 'Opening...';
     importBtn.disabled = true;
     
