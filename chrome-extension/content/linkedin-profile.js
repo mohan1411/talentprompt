@@ -85,6 +85,7 @@
   // State
   let importButton = null;
   let isProcessing = false;
+  let profileExistsStatus = null; // Store duplicate check result
   
   // Initialize when page loads
   if (document.readyState === 'loading') {
@@ -95,6 +96,9 @@
   
   // Initialize the integration
   function init() {
+    // Reset profile exists status on new page
+    profileExistsStatus = null;
+    
     // Wait a bit for LinkedIn to render
     setTimeout(() => {
       addImportButton();
@@ -223,7 +227,15 @@
         authToken: authToken
       }, response => {
         if (response && response.exists) {
+          profileExistsStatus = {
+            exists: true,
+            candidate_id: response.candidate_id
+          };
           updateButtonState('exists', response.candidate_id);
+        } else {
+          profileExistsStatus = {
+            exists: false
+          };
         }
       });
     } catch (error) {
@@ -236,6 +248,15 @@
     console.log('=== Import Handler v2 - Enhanced Email Extraction ===');
     
     if (isProcessing) return;
+    
+    // Check if we already know this profile exists
+    if (profileExistsStatus && profileExistsStatus.exists) {
+      showStatus('This profile has already been imported', 'exists');
+      if (importButton) {
+        updateButtonState('exists', profileExistsStatus.candidate_id);
+      }
+      return;
+    }
     
     isProcessing = true;
     

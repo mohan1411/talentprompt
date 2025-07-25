@@ -288,6 +288,21 @@ async function handleLogout() {
   currentUser = null;
   await chrome.storage.local.remove(['authToken', 'userEmail']);
   // console.log('Cleared stored credentials');
+  
+  // Notify all tabs to close bulk import sidebar
+  try {
+    const tabs = await chrome.tabs.query({});
+    for (const tab of tabs) {
+      if (tab.url && tab.url.includes('linkedin.com')) {
+        chrome.tabs.sendMessage(tab.id, { action: 'userLoggedOut' }).catch(() => {
+          // Ignore errors - tab might not have content script loaded
+        });
+      }
+    }
+  } catch (error) {
+    console.error('Failed to notify tabs of logout:', error);
+  }
+  
   await updateUIState();
 }
 

@@ -58,6 +58,18 @@
         }
         return true;
       }
+      
+      // Handle logout message
+      if (request.action === 'userLoggedOut') {
+        console.log('🎯 Bulk Import Sidebar: User logged out, closing sidebar');
+        const sidebar = document.querySelector('#bulk-import-sidebar');
+        if (sidebar) {
+          sidebar.remove();
+        }
+        // Clear any stored state
+        selectedProfiles.clear();
+        return true;
+      }
     });
   } catch (error) {
     console.error('Failed to register message listener:', error);
