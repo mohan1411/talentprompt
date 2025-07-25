@@ -5,6 +5,10 @@
   // Forward declare functions
   let handleImport;
   
+  // Global state - accessible from message listener
+  let profileExistsStatus = null;
+  let isCheckingDuplicate = false;
+  
   // Listen for messages from popup (always register this)
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     
@@ -26,28 +30,60 @@
         return true;
       }
       
-      // Handle import - use function if available, otherwise extract and send
-      if (typeof handleImport === 'function') {
-        handleImport().then((result) => {
-          // Check if result is null (duplicate that was handled gracefully)
-          if (result === null) {
-            sendResponse({ success: false, error: 'This profile has already been imported' });
-          } else {
-            sendResponse({ success: true, data: result });
+      // If we're still checking for duplicates, wait for it to complete
+      if (isCheckingDuplicate) {
+        console.log('Still checking for duplicates, waiting...');
+        const checkInterval = setInterval(() => {
+          if (!isCheckingDuplicate) {
+            clearInterval(checkInterval);
+            
+            // Now check if it's a duplicate
+            if (profileExistsStatus && profileExistsStatus.exists) {
+              console.log('Profile is known duplicate (after waiting), showing error');
+              sendResponse({ success: false, error: 'This profile has already been imported' });
+            } else {
+              // Continue with normal import flow
+              proceedWithImport();
+            }
           }
-        }).catch(error => {
-          console.error('Import error in content script:', error);
-          sendResponse({ success: false, error: error.message });
-        });
-      } else {
-        // Simplified import for when called from popup
-        handleSimpleImport(request.authToken).then(result => {
-          // Pass through the result as-is, including duplicate status
-          sendResponse(result);
-        }).catch(error => {
-          sendResponse({ success: false, error: error.message });
-        });
+        }, 100);
+        return true;
       }
+      
+      // Check if we already know this profile exists (before any import action)
+      if (profileExistsStatus && profileExistsStatus.exists) {
+        console.log('Profile is known duplicate (from popup trigger), showing error immediately');
+        sendResponse({ success: false, error: 'This profile has already been imported' });
+        return true;
+      }
+      
+      const proceedWithImport = () => {
+        // Handle import - use function if available, otherwise extract and send
+        if (typeof handleImport === 'function') {
+          handleImport().then((result) => {
+            // Check if result is null (duplicate that was handled gracefully)
+            if (result === null) {
+              sendResponse({ success: false, error: 'This profile has already been imported' });
+            } else {
+              sendResponse({ success: true, data: result });
+            }
+          }).catch(error => {
+            console.error('Import error in content script:', error);
+            sendResponse({ success: false, error: error.message });
+          });
+        } else {
+          // Simplified import for when called from popup
+          handleSimpleImport(request.authToken).then(result => {
+            // Pass through the result as-is, including duplicate status
+            sendResponse(result);
+          }).catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        }
+      };
+      
+      // If not waiting or duplicate, proceed with import
+      proceedWithImport();
       return true; // Indicates async response
     }
   });
@@ -85,7 +121,6 @@
   // State
   let importButton = null;
   let isProcessing = false;
-  let profileExistsStatus = null; // Store duplicate check result
   
   // Initialize when page loads
   if (document.readyState === 'loading') {
@@ -98,6 +133,7 @@
   async function init() {
     // Reset profile exists status on new page
     profileExistsStatus = null;
+    isCheckingDuplicate = false;
     
     // Wait a bit for LinkedIn to render
     setTimeout(async () => {
@@ -230,12 +266,19 @@
   
   // Check if profile already exists in database
   async function checkIfProfileExists() {
+    isCheckingDuplicate = true;
     try {
       const profileData = extractProfileData();
-      if (!profileData.linkedin_url) return;
+      if (!profileData.linkedin_url) {
+        isCheckingDuplicate = false;
+        return;
+      }
       
       const authToken = await getAuthToken();
-      if (!authToken) return;
+      if (!authToken) {
+        isCheckingDuplicate = false;
+        return;
+      }
       
       // Send through background script to avoid CORS - use Promise style
       const response = await new Promise((resolve) => {
@@ -264,6 +307,8 @@
     } catch (error) {
       console.error('Error checking profile:', error);
       profileExistsStatus = { exists: false };
+    } finally {
+      isCheckingDuplicate = false;
     }
   }
   
