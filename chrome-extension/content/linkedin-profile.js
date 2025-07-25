@@ -91,6 +91,38 @@
   // Simple import function for popup - now using full extraction
   async function handleSimpleImport(authToken) {
     console.log('Handling import from popup - requesting full extraction');
+    console.log('Current profileExistsStatus:', profileExistsStatus);
+    
+    // Check if we already know this profile exists
+    if (profileExistsStatus && profileExistsStatus.exists) {
+      console.log('Profile is known duplicate in handleSimpleImport, returning error');
+      return { success: false, error: 'This profile has already been imported' };
+    }
+    
+    // If still checking, wait for it (with timeout)
+    if (isCheckingDuplicate) {
+      console.log('Still checking for duplicates in handleSimpleImport, waiting...');
+      await new Promise((resolve) => {
+        let waitTime = 0;
+        const maxWaitTime = 5000; // 5 seconds max
+        const checkInterval = setInterval(() => {
+          waitTime += 100;
+          if (!isCheckingDuplicate || waitTime >= maxWaitTime) {
+            clearInterval(checkInterval);
+            if (waitTime >= maxWaitTime) {
+              console.log('Duplicate check timed out after', maxWaitTime, 'ms');
+            }
+            resolve();
+          }
+        }, 100);
+      });
+      
+      // Check again after waiting
+      if (profileExistsStatus && profileExistsStatus.exists) {
+        console.log('Profile is duplicate after waiting in handleSimpleImport');
+        return { success: false, error: 'This profile has already been imported' };
+      }
+    }
     
     // Request the background script to do a full extraction
     const response = await chrome.runtime.sendMessage({
@@ -108,6 +140,8 @@
   if (!pathname.includes('/in/')) {
     return;
   }
+  
+  console.log('LinkedIn profile script loaded on:', pathname);
   
   // Don't run UI elements on detail pages (experience, education, etc)
   if (pathname.includes('/details/')) {
@@ -135,22 +169,19 @@
     profileExistsStatus = null;
     isCheckingDuplicate = false;
     
+    // Start checking for duplicates immediately
+    checkIfProfileExists().then(() => {
+      console.log('Initial duplicate check complete:', profileExistsStatus);
+    });
+    
     // Wait a bit for LinkedIn to render
     setTimeout(async () => {
       addImportButton();
       
-      // Show checking state
-      if (importButton) {
-        const buttonText = importButton.querySelector('span');
-        if (buttonText) {
-          buttonText.textContent = 'Checking...';
-        }
-      }
-      
-      await checkIfProfileExists();
-      
-      // Reset button state if not a duplicate
-      if (importButton && (!profileExistsStatus || !profileExistsStatus.exists)) {
+      // Update button state based on duplicate check result
+      if (importButton && profileExistsStatus && profileExistsStatus.exists) {
+        updateButtonState('exists', profileExistsStatus.candidate_id);
+      } else if (importButton) {
         const buttonText = importButton.querySelector('span');
         if (buttonText) {
           buttonText.textContent = 'Import to Promtitude';
