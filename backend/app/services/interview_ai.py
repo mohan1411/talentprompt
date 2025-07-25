@@ -334,9 +334,18 @@ class InterviewAIService:
         Responses Summary:
         {self._summarize_responses(responses)}
         
-        Analyze the candidate's performance and provide a detailed scorecard.
-        For technical skills, identify specific technologies mentioned in questions and rate them.
-        For soft skills, identify behaviors like communication, leadership, teamwork, etc.
+        CRITICAL: Analyze the candidate's performance and extract SPECIFIC technologies mentioned.
+        
+        Technical Skills to Extract:
+        - Programming languages: Python, Java, JavaScript, TypeScript, C++, Go, etc.
+        - Frontend: React, Angular, Vue, HTML, CSS, Redux, etc.
+        - Backend: Node.js, Django, FastAPI, Spring, Express, etc.
+        - Databases: SQL, PostgreSQL, MySQL, MongoDB, Redis, etc.
+        - Cloud/DevOps: AWS, Azure, GCP, Docker, Kubernetes, CI/CD, etc.
+        - Other: Git, REST APIs, GraphQL, Microservices, etc.
+        
+        IMPORTANT: Only include technologies that were ACTUALLY mentioned in the responses.
+        Rate each technology based on the depth of knowledge demonstrated (1-5 scale).
         
         {f'''
         IMPORTANT: Audio mismatch detected! Confidence level: {mismatch_check['confidence']}%
@@ -548,7 +557,8 @@ class InterviewAIService:
             q_summary = {
                 'question': question_text[:150],
                 'rating': rating,
-                'summary': resp.get('response_summary', 'No summary')[:200]
+                'summary': resp.get('response_summary', 'No summary')[:200],
+                'skills': resp.get('skills_mentioned', [])
             }
             
             if is_technical:
@@ -560,11 +570,20 @@ class InterviewAIService:
         summary_parts.append(f"Total Questions: {len(responses)}")
         summary_parts.append(f"Average Rating: {sum(r.get('response_rating', 0) for r in responses) / len(responses) if responses else 0:.1f}/5")
         
+        # Collect all skills mentioned
+        all_skills = []
+        for resp in responses:
+            all_skills.extend(resp.get('skills_mentioned', []))
+        
+        if all_skills:
+            summary_parts.append(f"\nSkills Mentioned: {', '.join(set(all_skills))}")
+        
         summary_parts.append("\nTechnical Questions:")
         for i, q in enumerate(technical_questions[:5], 1):
+            skills_str = f" (Skills: {', '.join(q['skills'])})" if q['skills'] else ""
             summary_parts.append(
                 f"Q{i}: {q['question']}...\n"
-                f"Rating: {q['rating']}/5\n"
+                f"Rating: {q['rating']}/5{skills_str}\n"
                 f"Response: {q['summary']}...\n"
             )
         
@@ -1178,36 +1197,40 @@ class InterviewAIService:
             return self._get_default_transcript_analysis(transcript_data, session_data)
         
         prompt = f"""
-        Analyze this interview transcript and extract ALL question-answer pairs.
+        Analyze this interview transcript and extract detailed information about the candidate's performance.
         
-        Context:
+        Interview Context:
         - Position: {session_data.get('job_position')}
         - Type: {session_data.get('interview_type', 'general')}
+        - Manual Entry: {session_data.get('is_manual_transcript', False)}
         
         Transcript:
         {self._format_transcript_for_analysis(utterances)}
         
-        RULES:
-        1. Every [interviewer] line that asks something is a question
-        2. The [candidate] response(s) that follow are the answer
-        3. Rate answers 1-5 (1=poor, 3=average, 5=excellent)
-        4. Extract skills mentioned (Python, React, etc.)
+        CRITICAL INSTRUCTIONS:
+        1. Extract EVERY question-answer exchange from the transcript
+        2. Identify ALL technical skills, tools, and technologies mentioned by name
+        3. Rate each answer based on:
+           - Depth of knowledge demonstrated
+           - Specific examples provided
+           - Problem-solving approach
+           - Communication clarity
+        4. Look for specific technologies like: Python, Java, JavaScript, React, Angular, Vue, 
+           SQL, MongoDB, AWS, Docker, Kubernetes, Git, REST, GraphQL, etc.
         
-        EXAMPLE:
-        [interviewer]: Tell me about your experience
-        [candidate]: I have 3 years working with Python and React
+        For each Q&A pair, evaluate:
+        - Technical accuracy and depth
+        - Use of specific examples or metrics
+        - Problem-solving methodology
+        - Years of experience with specific technologies
         
-        Would extract as:
-        {{
-            "question": "Tell me about your experience",
-            "answer": "I have 3 years working with Python and React",
-            "rating": 3,
-            "skills_mentioned": ["Python", "React"]
-        }}
+        IMPORTANT: 
+        - Extract specific technology names, not generic categories
+        - If candidate mentions "3 years with Python", note Python as a skill
+        - Rate based on the actual content, not assumptions
+        - Every interviewer utterance followed by candidate response is a Q&A pair
         
-        IMPORTANT: Extract AT LEAST ONE Q&A pair. If you can't find clear questions, treat any interviewer statement as a question.
-        
-        Return ONLY a JSON object with this structure:
+        Return a JSON object with this EXACT structure:
         {{
             "qa_pairs": [
                 {{
@@ -1329,9 +1352,34 @@ class InterviewAIService:
                     # Combine multiple answer utterances
                     full_answer = " ".join(answer_texts)
                     
-                    # Extract skills mentioned
-                    tech_keywords = ["python", "java", "javascript", "react", "sql", "api", "docker", "aws", "database", "frontend", "backend"]
-                    skills_mentioned = [skill for skill in tech_keywords if skill in full_answer.lower()]
+                    # Extract skills mentioned - comprehensive list
+                    tech_keywords = [
+                        # Programming languages
+                        "python", "java", "javascript", "typescript", "c++", "go", "rust", "ruby", "php", "c#",
+                        # Frontend
+                        "react", "angular", "vue", "html", "css", "redux", "next.js", "gatsby", "webpack",
+                        # Backend
+                        "node.js", "django", "fastapi", "flask", "spring", "express", "rails",
+                        # Databases
+                        "sql", "postgresql", "mysql", "mongodb", "redis", "elasticsearch", "cassandra",
+                        # Cloud/DevOps
+                        "aws", "azure", "gcp", "docker", "kubernetes", "jenkins", "terraform", "ansible",
+                        # Other
+                        "git", "api", "rest", "graphql", "microservices", "agile", "scrum"
+                    ]
+                    
+                    # Case-insensitive skill extraction
+                    answer_lower = full_answer.lower()
+                    skills_mentioned = []
+                    for skill in tech_keywords:
+                        if skill in answer_lower:
+                            # Capitalize properly
+                            if skill in ["html", "css", "sql", "api", "rest", "aws", "gcp"]:
+                                skills_mentioned.append(skill.upper())
+                            elif skill in ["node.js", "next.js"]:
+                                skills_mentioned.append(skill.replace('.js', '.js').title().replace('.Js', '.js'))
+                            else:
+                                skills_mentioned.append(skill.title())
                     
                     # Simple rating based on answer length and content
                     rating = 3.0  # Default
