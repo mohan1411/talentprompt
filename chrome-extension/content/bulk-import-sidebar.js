@@ -6,7 +6,13 @@
 (function() {
   'use strict';
   
-  if (window.__bulkImportSidebar) return;
+  // Debug info
+  console.log('🎯 Bulk Import Sidebar: Script loaded on', window.location.href);
+  
+  if (window.__bulkImportSidebar) {
+    console.log('🎯 Bulk Import Sidebar: Already initialized');
+    return;
+  }
   window.__bulkImportSidebar = true;
   
   console.log('🎯 Bulk Import Sidebar: Starting...');
@@ -30,33 +36,47 @@
   const selectedProfiles = new Set();
   
   // Listen for messages from popup
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log('🎯 Bulk Import Sidebar: Received message:', request.action);
-    
-    if (request.action === 'showBulkImportSidebar') {
-      // Only allow on search results pages
-      if (!window.location.pathname.includes('/search/results/')) {
-        console.log('Not on search results page, ignoring request');
-        sendResponse({ success: false, error: 'Bulk import is only available on search results pages' });
+  try {
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      console.log('🎯 Bulk Import Sidebar: Received message:', request.action);
+      console.log('🎯 Current URL:', window.location.href);
+      
+      if (request.action === 'showBulkImportSidebar') {
+        // Only allow on search results pages (specifically people search)
+        if (!window.location.pathname.includes('/search/results/')) {
+          console.log('Not on search results page, ignoring request');
+          console.log('Current pathname:', window.location.pathname);
+          sendResponse({ success: false, error: 'Bulk import is only available on search results pages' });
+          return true;
+        }
+        
+        try {
+          // Initialize the sidebar if not already done
+          if (!document.querySelector('#bulk-import-sidebar')) {
+            console.log('🎯 Initializing sidebar for the first time');
+            init();
+          } else {
+            // Show and highlight existing sidebar
+            console.log('🎯 Showing existing sidebar');
+            const sidebar = document.querySelector('#bulk-import-sidebar');
+            sidebar.style.display = 'flex';
+            sidebar.style.boxShadow = '0 4px 20px rgba(10, 102, 194, 0.8)';
+            setTimeout(() => {
+              sidebar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+            }, 2000);
+          }
+          sendResponse({ success: true });
+        } catch (error) {
+          console.error('🎯 Error showing sidebar:', error);
+          sendResponse({ success: false, error: error.message });
+        }
         return true;
       }
-      
-      // Initialize the sidebar if not already done
-      if (!document.querySelector('#bulk-import-sidebar')) {
-        init();
-      } else {
-        // Show and highlight existing sidebar
-        const sidebar = document.querySelector('#bulk-import-sidebar');
-        sidebar.style.display = 'flex';
-        sidebar.style.boxShadow = '0 4px 20px rgba(10, 102, 194, 0.8)';
-        setTimeout(() => {
-          sidebar.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
-        }, 2000);
-      }
-      sendResponse({ success: true });
-      return true;
-    }
-  });
+    });
+    console.log('🎯 Message listener registered successfully');
+  } catch (error) {
+    console.error('🎯 Failed to register message listener:', error);
+  }
   
   // Auto-initialize disabled - sidebar only opens when user clicks button
   // if (window.location.pathname.includes('/search/results/')) {
@@ -85,13 +105,16 @@
   urlObserver.observe(document, { subtree: true, childList: true });
   
   function init() {
+    console.log('🎯 Init called, checking URL...');
+    console.log('Current pathname:', window.location.pathname);
+    console.log('Full URL:', window.location.href);
+    
     if (!window.location.pathname.includes('/search/results/')) {
       console.log('Not on search results page, skipping initialization');
       return;
     }
     
     console.log('🎯 Initializing bulk import sidebar');
-    console.log('Current URL:', window.location.href);
     console.log('Page readyState:', document.readyState);
     
     // Remove any existing sidebar
@@ -691,11 +714,11 @@
   }
   
   // Reinitialize on navigation
-  let lastUrl = location.href;
+  let lastNavigationUrl = location.href;
   new MutationObserver(() => {
     const url = location.href;
-    if (url !== lastUrl) {
-      lastUrl = url;
+    if (url !== lastNavigationUrl) {
+      lastNavigationUrl = url;
       if (url.includes('/search/results/')) {
         selectedProfiles.clear();
         setTimeout(init, 2000);
@@ -774,4 +797,24 @@
   // setTimeout(addDebugButton, 3000);
   
   console.log('🎯 Bulk Import Sidebar: Ready');
+  
+  // Expose debug function globally for testing
+  window.__debugBulkImportSidebar = {
+    init: init,
+    showSidebar: function() {
+      const sidebar = document.querySelector('#bulk-import-sidebar');
+      if (sidebar) {
+        sidebar.style.display = 'flex';
+        console.log('Sidebar shown');
+      } else {
+        console.log('No sidebar found, initializing...');
+        init();
+      }
+    },
+    checkURL: function() {
+      console.log('Current URL:', window.location.href);
+      console.log('Pathname:', window.location.pathname);
+      console.log('Includes /search/results/:', window.location.pathname.includes('/search/results/'));
+    }
+  };
 })();

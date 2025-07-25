@@ -183,3 +183,66 @@ button {
   font-weight: 600;
   color: #2563eb;
 }
+
+/* OAuth-specific styles */
+.oauth-info {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.oauth-label {
+  margin: 0 0 4px 0;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.oauth-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.oauth-desc {
+  margin: 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.oauth-desc span {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.access-code-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.access-code-group input {
+  flex: 1;
+  margin-bottom: 0;
+  font-family: monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.access-code-group .secondary-btn {
+  margin: 0;
+  padding: 8px 16px;
+  white-space: nowrap;
+}
+
+.oauth-help {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}

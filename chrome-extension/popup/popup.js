@@ -16,6 +16,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   await updateUIState();
   updateQueueBadge();
+  
+  // Check if we have a stored email (for better UX)
+  const stored = await chrome.storage.local.get(['lastEmail']);
+  if (stored.lastEmail && !authToken) {
+    document.getElementById('email').value = stored.lastEmail;
+    // Auto-check OAuth status for returning users
+    checkUserType();
+  }
 });
 
 // Listen for stats updates from background script
@@ -74,16 +82,104 @@ function setupEventListeners() {
   document.getElementById('view-queue').addEventListener('click', openQueueManager);
   document.getElementById('settings-link').addEventListener('click', openSettings);
   document.getElementById('help-link').addEventListener('click', openHelp);
+  
+  // OAuth-specific listeners
+  const emailInput = document.getElementById('email');
+  const getCodeBtn = document.getElementById('get-code-btn');
+  const accessCodeInput = document.getElementById('access-code');
+  
+  // Check user type when email loses focus
+  emailInput.addEventListener('blur', checkUserType);
+  
+  // Handle get code button
+  if (getCodeBtn) {
+    getCodeBtn.addEventListener('click', handleGetAccessCode);
+  }
+  
+  // Auto-uppercase access code input
+  if (accessCodeInput) {
+    accessCodeInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+  }
+}
+
+// Check if user is OAuth user
+async function checkUserType() {
+  const email = document.getElementById('email').value;
+  if (!email || !email.includes('@')) return;
+  
+  // Store email for next time
+  chrome.storage.local.set({ lastEmail: email });
+  
+  try {
+    const response = await fetch(`${API_URL}/auth/check-oauth-user?email=${encodeURIComponent(email)}`);
+    if (response.ok) {
+      const data = await response.json();
+      updateAuthUI(data.is_oauth_user, data.oauth_provider);
+    }
+  } catch (error) {
+    console.error('Failed to check user type:', error);
+  }
+}
+
+// Update UI based on auth type
+function updateAuthUI(isOAuthUser, provider) {
+  const passwordContainer = document.getElementById('password-container');
+  const oauthContainer = document.getElementById('oauth-container');
+  const oauthProvider = document.getElementById('oauth-provider');
+  const oauthIcon = document.getElementById('oauth-icon');
+  
+  if (isOAuthUser) {
+    passwordContainer.classList.add('hidden');
+    oauthContainer.classList.remove('hidden');
+    oauthProvider.textContent = provider || 'OAuth';
+    
+    // Set provider icon
+    if (provider === 'google') {
+      oauthIcon.src = 'https://www.google.com/favicon.ico';
+      oauthIcon.alt = 'Google';
+    } else if (provider === 'linkedin') {
+      oauthIcon.src = 'https://www.linkedin.com/favicon.ico';
+      oauthIcon.alt = 'LinkedIn';
+    }
+  } else {
+    passwordContainer.classList.remove('hidden');
+    oauthContainer.classList.add('hidden');
+  }
+}
+
+// Handle get access code button
+async function handleGetAccessCode() {
+  const email = document.getElementById('email').value;
+  if (!email) {
+    showError('Please enter your email first');
+    return;
+  }
+  
+  // Open the web app's extension auth page
+  const authUrl = `https://promtitude.com/extension-auth?email=${encodeURIComponent(email)}`;
+  chrome.tabs.create({ url: authUrl });
 }
 
 // Handle login
 async function handleLogin() {
   const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
-  const errorEl = document.getElementById('error-message');
+  const passwordEl = document.getElementById('password');
+  const accessCodeEl = document.getElementById('access-code');
+  const isOAuthLogin = !document.getElementById('oauth-container').classList.contains('hidden');
   
-  if (!email || !password) {
-    showError('Please enter email and password');
+  // Get auth value based on login type
+  const authValue = isOAuthLogin ? accessCodeEl.value : passwordEl.value;
+  
+  if (!email || !authValue) {
+    showError(isOAuthLogin ? 'Please enter email and access code' : 'Please enter email and password');
+    return;
+  }
+  
+  // Validate access code format for OAuth users
+  if (isOAuthLogin && authValue.length !== 6) {
+    showError('Access code must be exactly 6 characters');
     return;
   }
   
@@ -93,7 +189,7 @@ async function handleLogin() {
     // Use FormData like the web app does
     const formData = new FormData();
     formData.append('username', email);
-    formData.append('password', password);
+    formData.append('password', authValue); // This works for both password and access code
     
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
@@ -104,13 +200,19 @@ async function handleLogin() {
       const error = await response.json();
       console.error('Login failed:', error);
       
-      // Check if this is an OAuth user error with URL
-      if (error.detail && error.detail.includes('extension-auth')) {
-        // Extract URL from error message
-        const urlMatch = error.detail.match(/https?:\/\/[^\s]+/);
-        if (urlMatch) {
-          throw new Error(`OAuth users: Please get an access code from ${urlMatch[0]}`);
+      // Check if this is an OAuth user error
+      if (error.detail && error.detail.includes('OAuth users')) {
+        // For OAuth users, we should have already shown the proper UI
+        // This error might occur if they're trying with an old/invalid code
+        if (error.detail.includes('Invalid access code')) {
+          throw new Error('Invalid or expired access code. Please generate a new one.');
         }
+        throw new Error(error.detail);
+      }
+      
+      // Check for access code specific errors
+      if (error.detail && error.detail.includes('access code')) {
+        throw new Error(error.detail);
       }
       
       throw new Error(error.detail || 'Login failed');
@@ -129,6 +231,7 @@ async function handleLogin() {
     // Clear form
     document.getElementById('email').value = '';
     document.getElementById('password').value = '';
+    document.getElementById('access-code').value = '';
     errorEl.classList.add('hidden');
     
     await loadStats();

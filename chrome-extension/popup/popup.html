@@ -15,7 +15,27 @@
       <div id="login-form" class="hidden">
         <h2>Login to Promtitude</h2>
         <input type="email" id="email" placeholder="Email" />
-        <input type="password" id="password" placeholder="Password" />
+        
+        <!-- Dynamic auth fields based on user type -->
+        <div id="password-container">
+          <input type="password" id="password" placeholder="Password" />
+        </div>
+        
+        <div id="oauth-container" class="hidden">
+          <div class="oauth-info">
+            <p class="oauth-label">
+              <img id="oauth-icon" src="" alt="" class="oauth-icon" />
+              <span id="oauth-text">OAuth Account Detected</span>
+            </p>
+            <p class="oauth-desc">You signed up with <span id="oauth-provider"></span></p>
+          </div>
+          <div class="access-code-group">
+            <input type="text" id="access-code" placeholder="Enter 6-character code" maxlength="6" pattern="[A-Za-z0-9]{6}" />
+            <button id="get-code-btn" class="secondary-btn" type="button">Get Code</button>
+          </div>
+          <p class="oauth-help">Click "Get Code" to generate an access code</p>
+        </div>
+        
         <button id="login-btn" class="primary-btn">Login</button>
         <div id="error-message" class="error hidden"></div>
       </div>
