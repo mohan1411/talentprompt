@@ -1419,9 +1419,15 @@ async def save_manual_transcript(
             'applicant:', 'interviewee:'
         ]
         
+        # Track speaker names for better detection
+        speaker_names = {}
+        
         for line in lines:
             line = line.strip()
             if not line:
+                # Empty lines don't break the current speaker's text
+                if current_speaker and current_text:
+                    current_text.append("")  # Preserve paragraph breaks
                 continue
                 
             # Check for speaker label with flexible matching
@@ -1431,18 +1437,40 @@ async def save_manual_transcript(
             
             # Also check for name patterns (Name: at start of line)
             name_pattern = re.match(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*:', line)
-            if name_pattern and not is_interviewer and not is_candidate:
-                # Assume first named speaker is interviewer, second is candidate
-                if current_speaker is None:
-                    is_interviewer = True
-                else:
-                    is_candidate = True
+            if name_pattern:
+                name = name_pattern.group(1)
+                # Check if we've seen this name before
+                if name in speaker_names:
+                    if speaker_names[name] == "interviewer":
+                        is_interviewer = True
+                    else:
+                        is_candidate = True
+                elif not is_interviewer and not is_candidate:
+                    # New name - assign role based on context
+                    if current_speaker is None or len(speaker_names) == 0:
+                        is_interviewer = True
+                        speaker_names[name] = "interviewer"
+                    else:
+                        is_candidate = True
+                        speaker_names[name] = "candidate"
             
+            # Check if this line indicates a new speaker
             if is_interviewer or is_candidate:
                 # Save previous utterance if any
                 if current_speaker and current_text:
+                    # Join text, preserving paragraph breaks
+                    full_text = []
+                    for t in current_text:
+                        if t == "":
+                            if full_text and full_text[-1] != "\n\n":
+                                full_text.append("\n\n")
+                        else:
+                            if full_text and not full_text[-1].endswith("\n"):
+                                full_text.append(" ")
+                            full_text.append(t)
+                    
                     utterance = {
-                        "text": ' '.join(current_text),
+                        "text": ''.join(full_text).strip(),
                         "start": timestamp,
                         "end": timestamp + 5000,  # Mock 5 second utterances
                         "confidence": 0.95,
@@ -1482,12 +1510,24 @@ async def save_manual_transcript(
         
         # Save final utterance
         if current_speaker and current_text:
+            # Join text, preserving paragraph breaks
+            full_text = []
+            for t in current_text:
+                if t == "":
+                    if full_text and full_text[-1] != "\n\n":
+                        full_text.append("\n\n")
+                else:
+                    if full_text and not full_text[-1].endswith("\n"):
+                        full_text.append(" ")
+                    full_text.append(t)
+            
             utterance = {
-                "text": ' '.join(current_text),
+                "text": ''.join(full_text).strip(),
                 "start": timestamp,
                 "end": timestamp + 5000,
                 "confidence": 0.95,
-                "speaker": current_speaker
+                "speaker": current_speaker,
+                "role": "interviewer" if current_speaker == "A" else "candidate"
             }
             utterances.append(utterance)
             speakers[current_speaker]["utterances"].append(utterance)

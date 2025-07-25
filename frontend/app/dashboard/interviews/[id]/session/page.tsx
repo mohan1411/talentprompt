@@ -600,15 +600,27 @@ export default function InterviewSessionPage() {
                     {session?.transcript ? (
                       <ScrollArea className="h-[400px] w-full rounded-md border p-4">
                         <div className="space-y-4">
-                          {session.transcript_data?.speakers ? (
-                            // Show speaker-separated transcript if available
+                          {session.transcript_data?.utterances ? (
+                            // Show utterances in conversation format
+                            session.transcript_data.utterances.map((utterance: any, idx: number) => (
+                              <div key={idx} className="space-y-1">
+                                <h4 className="font-medium text-sm text-primary">
+                                  {utterance.speaker === "A" ? "Interviewer" : "Candidate"}:
+                                </h4>
+                                <p className="text-sm text-muted-foreground ml-4 whitespace-pre-wrap">
+                                  {utterance.text}
+                                </p>
+                              </div>
+                            ))
+                          ) : session.transcript_data?.speakers ? (
+                            // Fallback to speaker-separated transcript if available
                             Object.entries(session.transcript_data.speakers).map(([speakerId, speaker]: [string, any]) => (
                               <div key={speakerId} className="space-y-2">
                                 <h4 className="font-medium text-sm">
                                   Speaker {speakerId} ({speaker.likely_role})
                                 </h4>
                                 {speaker.utterances?.map((utterance: any, idx: number) => (
-                                  <p key={idx} className="text-sm text-muted-foreground ml-4">
+                                  <p key={idx} className="text-sm text-muted-foreground ml-4 whitespace-pre-wrap">
                                     {utterance.text}
                                   </p>
                                 ))}
