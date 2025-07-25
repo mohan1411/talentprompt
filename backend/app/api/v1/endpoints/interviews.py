@@ -1404,13 +1404,21 @@ async def save_manual_transcript(
         current_text = []
         timestamp = 0
         
+        # More flexible speaker detection patterns
+        interviewer_patterns = ['[interviewer]:', 'interviewer:', 'sarah:', 'interviewer :', '[sarah]:', 'q:', 'question:']
+        candidate_patterns = ['[candidate]:', 'candidate:', 'aditya:', 'candidate :', '[aditya]:', 'a:', 'answer:']
+        
         for line in lines:
             line = line.strip()
             if not line:
                 continue
                 
-            # Check for speaker label
-            if line.startswith('[interviewer]:'):
+            # Check for speaker label with flexible matching
+            line_lower = line.lower()
+            is_interviewer = any(pattern in line_lower for pattern in interviewer_patterns)
+            is_candidate = any(pattern in line_lower for pattern in candidate_patterns)
+            
+            if is_interviewer or is_candidate:
                 # Save previous utterance if any
                 if current_speaker and current_text:
                     utterance = {
@@ -1419,41 +1427,38 @@ async def save_manual_transcript(
                         "end": timestamp + 5000,  # Mock 5 second utterances
                         "confidence": 0.95,
                         "speaker": current_speaker,
-                        "role": "interviewer" if current_speaker == "A" else "candidate"
+                        "role": "interviewer" if current_speaker == "A" else "candidate_1"
                     }
                     utterances.append(utterance)
                     speakers[current_speaker]["utterances"].append(utterance)
                     timestamp += 5000
                 
-                current_speaker = "A"
-                # Use split to handle variable spacing after colon
-                parts = line.split(':', 1)
-                current_text = [parts[1].strip()] if len(parts) > 1 else []
+                # Set new speaker
+                current_speaker = "A" if is_interviewer else "B"
                 
-            elif line.startswith('[candidate]:'):
-                # Save previous utterance if any
-                if current_speaker and current_text:
-                    utterance = {
-                        "text": ' '.join(current_text),
-                        "start": timestamp,
-                        "end": timestamp + 5000,
-                        "confidence": 0.95,
-                        "speaker": current_speaker,
-                        "role": "interviewer" if current_speaker == "A" else "candidate"
-                    }
-                    utterances.append(utterance)
-                    speakers[current_speaker]["utterances"].append(utterance)
-                    timestamp += 5000
-                
-                current_speaker = "B"
-                # Use split to handle variable spacing after colon
-                parts = line.split(':', 1)
-                current_text = [parts[1].strip()] if len(parts) > 1 else []
-                
+                # Extract text after the speaker label
+                # Find first colon and take everything after it
+                colon_idx = line.find(':')
+                if colon_idx != -1:
+                    text_after_colon = line[colon_idx + 1:].strip()
+                    current_text = [text_after_colon] if text_after_colon else []
+                else:
+                    current_text = []
+                    
             else:
                 # Continue current speaker's text
-                if current_text:
+                if current_speaker:
                     current_text.append(line)
+                else:
+                    # No speaker identified yet, try to guess
+                    # If line starts with uppercase and is a question, likely interviewer
+                    if line.strip() and line[0].isupper() and '?' in line:
+                        current_speaker = "A"
+                        current_text = [line]
+                    else:
+                        # Default to candidate
+                        current_speaker = "B"
+                        current_text = [line]
         
         # Save final utterance
         if current_speaker and current_text:
@@ -1540,6 +1545,91 @@ async def save_manual_transcript(
     except Exception as e:
         logger.error(f"Error processing manual transcript: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to process transcript: {str(e)}")
+
+
+@router.post("/test-transcript-analysis")
+async def test_transcript_analysis(
+    request: Dict[str, str],
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """Test transcript analysis without saving to database."""
+    
+    transcript_text = request.get("transcript", "").strip()
+    if not transcript_text:
+        raise HTTPException(status_code=400, detail="No transcript provided")
+    
+    # Parse the transcript
+    utterances = []
+    interviewer_patterns = ['[interviewer]:', 'interviewer:', 'sarah:', 'q:']
+    candidate_patterns = ['[candidate]:', 'candidate:', 'aditya:', 'a:']
+    
+    lines = transcript_text.split('\n')
+    current_speaker = None
+    current_text = []
+    timestamp = 0
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+            
+        line_lower = line.lower()
+        is_interviewer = any(pattern in line_lower for pattern in interviewer_patterns)
+        is_candidate = any(pattern in line_lower for pattern in candidate_patterns)
+        
+        if is_interviewer or is_candidate:
+            if current_speaker and current_text:
+                utterances.append({
+                    "text": ' '.join(current_text),
+                    "start": timestamp,
+                    "end": timestamp + 5000,
+                    "speaker": current_speaker,
+                    "role": "interviewer" if current_speaker == "A" else "candidate_1"
+                })
+                timestamp += 5000
+            
+            current_speaker = "A" if is_interviewer else "B"
+            colon_idx = line.find(':')
+            if colon_idx != -1:
+                current_text = [line[colon_idx + 1:].strip()]
+            else:
+                current_text = []
+        else:
+            if current_speaker:
+                current_text.append(line)
+    
+    # Save final utterance
+    if current_speaker and current_text:
+        utterances.append({
+            "text": ' '.join(current_text),
+            "start": timestamp,
+            "end": timestamp + 5000,
+            "speaker": current_speaker,
+            "role": "interviewer" if current_speaker == "A" else "candidate_1"
+        })
+    
+    # Test the analysis
+    transcript_data = {
+        "transcript_text": transcript_text,
+        "utterances": utterances,
+        "duration": len(utterances) * 5
+    }
+    
+    analysis = await interview_ai_service.analyze_transcript_content(
+        transcript_data=transcript_data,
+        session_data={
+            "job_position": request.get("position", "Software Developer"),
+            "interview_type": "general",
+            "is_manual_transcript": True
+        }
+    )
+    
+    return {
+        "utterances_count": len(utterances),
+        "qa_pairs_extracted": len(analysis["qa_analysis"].get("qa_pairs", [])),
+        "analysis": analysis["qa_analysis"],
+        "would_generate_default": len(analysis["responses_for_scorecard"]) == 0
+    }
 
 
 @router.post("/sessions/{session_id}/refresh-rating")
