@@ -399,37 +399,39 @@ async function handleImportProfile(tab) {
       }
     }
     
-    console.log('Response from content script:', response);
-    console.log('Response success:', response?.success);
-    console.log('Response error:', response?.error);
-    console.log('Response data:', response?.data);
-    
     if (response && response.success) {
       // Check if it's a duplicate
       if (response.data && response.data.is_duplicate) {
         // Don't update stats for duplicates
         showInfo('This profile has already been imported');
+        // Don't close popup for duplicates, let user see the message
+        setTimeout(() => {
+          window.close();
+        }, 3000);
       } else {
         // Update stats only for new imports
         const imported = parseInt(document.getElementById('imported-today').textContent) + 1;
         document.getElementById('imported-today').textContent = imported;
         
         showSuccess('Profile imported successfully!');
+        // Close popup after showing message
+        setTimeout(() => {
+          window.close();
+        }, 1500);
       }
-      
-      // Close popup after showing message
-      setTimeout(() => {
-        window.close();
-      }, 1500);
     } else {
       const errorMessage = response?.error || 'Import failed';
-      console.log('Error message:', errorMessage);
       
       // Check if it's a duplicate error
       if (errorMessage.includes('already been imported') || 
-          errorMessage.includes('already exists')) {
+          errorMessage.includes('already exists') ||
+          errorMessage.includes('duplicate')) {
         // Show as info instead of error for duplicates
         showInfo('This profile has already been imported');
+        // Give more time to read duplicate message
+        setTimeout(() => {
+          window.close();
+        }, 3000);
       } else {
         showError(errorMessage);
       }
@@ -649,18 +651,15 @@ function showInfo(message) {
   
   if (errorEl) {
     errorEl.style.background = '#fef3c7';
-    errorEl.style.borderColor = '#fbbf24';
+    errorEl.style.border = '1px solid #fbbf24';
     errorEl.style.color = '#92400e';
+    errorEl.style.padding = '10px';
+    errorEl.style.borderRadius = '6px';
     errorEl.innerHTML = '⚠️ ' + message;
     errorEl.classList.remove('hidden');
     
-    setTimeout(() => {
-      errorEl.classList.add('hidden');
-      // Reset styles
-      errorEl.style.background = '';
-      errorEl.style.borderColor = '';
-      errorEl.style.color = '';
-    }, 5000);
+    // Don't auto-hide for important messages like duplicates
+    // User will see it until popup closes
   } else {
     alert(message);
   }
@@ -670,14 +669,14 @@ function showInfo(message) {
 function openSettings() {
   // Open settings in a new tab since we don't have an options page yet
   chrome.tabs.create({
-    url: 'https://talentprompt-production.up.railway.app/settings'
+    url: 'https://promtitude.com/settings'
   });
 }
 
 // Open help
 function openHelp() {
   chrome.tabs.create({
-    url: 'https://promtitude.com/help/getting-started'
+    url: 'https://promtitude.com/help'
   });
 }
 
