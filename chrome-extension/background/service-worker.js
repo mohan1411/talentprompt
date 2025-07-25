@@ -50,11 +50,22 @@ class QueueProcessor {
   }
 
   async processQueue() {
+    // Get current user
+    const { userEmail, authToken } = await chrome.storage.local.get(['userEmail', 'authToken']);
+    if (!userEmail || !authToken) {
+      console.error('No user logged in or missing auth token');
+      return;
+    }
+    
     const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
-    const pendingItems = linkedinImportQueue.filter(item => item.status === 'pending');
+    // Filter for current user's pending items only
+    const pendingItems = linkedinImportQueue.filter(item => 
+      item.status === 'pending' && 
+      item.userEmail === userEmail
+    );
     
     if (pendingItems.length === 0) {
-      // console.log('No pending items to process');
+      // console.log('No pending items to process for user:', userEmail);
       return;
     }
 
@@ -877,6 +888,12 @@ async function handleAddToQueue(profiles) {
       throw new Error('Invalid profiles data');
     }
     
+    // Get current user
+    const { userEmail } = await chrome.storage.local.get('userEmail');
+    if (!userEmail) {
+      throw new Error('No user logged in');
+    }
+    
     const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
     
     let addedCount = 0;
@@ -888,14 +905,18 @@ async function handleAddToQueue(profiles) {
         return;
       }
       
-      // Check if profile already exists in queue
-      if (!linkedinImportQueue.some(item => item.profileUrl === profile.profileUrl)) {
+      // Check if profile already exists in queue for this user
+      if (!linkedinImportQueue.some(item => 
+        item.profileUrl === profile.profileUrl && 
+        item.userEmail === userEmail
+      )) {
         linkedinImportQueue.push({
           id: Date.now() + '_' + Math.random(),
           profileUrl: profile.profileUrl,
           profileName: profile.profileName,
           status: 'pending',
-          addedAt: new Date().toISOString()
+          addedAt: new Date().toISOString(),
+          userEmail: userEmail // Track which user added this
         });
         addedCount++;
       }
@@ -904,8 +925,11 @@ async function handleAddToQueue(profiles) {
     // Save updated queue
     await chrome.storage.local.set({ linkedinImportQueue });
     
-    // Update badge
-    const pendingCount = linkedinImportQueue.filter(item => item.status === 'pending').length;
+    // Update badge - only count current user's pending items
+    const pendingCount = linkedinImportQueue.filter(item => 
+      item.status === 'pending' && 
+      item.userEmail === userEmail
+    ).length;
     updateBadgeFromStorage();
     
     return {
@@ -955,8 +979,13 @@ async function handleExtractAndImportCurrentProfile(authToken, tabId) {
 // Update badge from storage
 async function updateBadgeFromStorage() {
   try {
-    const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
-    const pendingCount = linkedinImportQueue.filter(item => item.status === 'pending').length;
+    const { linkedinImportQueue = [], userEmail } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail']);
+    
+    // Only count current user's pending items
+    const pendingCount = linkedinImportQueue.filter(item => 
+      item.status === 'pending' && 
+      item.userEmail === userEmail
+    ).length;
     
     if (pendingCount > 0) {
       chrome.action.setBadgeText({ text: pendingCount.toString() });
@@ -973,19 +1002,28 @@ async function updateBadgeFromStorage() {
 async function updateDuplicateCounter() {
   try {
     const today = new Date().toDateString();
-    const { importStats = {} } = await chrome.storage.local.get('importStats');
+    const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
     
-    if (!importStats[today]) {
-      importStats[today] = { imported: 0, duplicates: 0 };
+    if (!userEmail) {
+      console.error('No user logged in, cannot update duplicate counter');
+      return;
     }
     
-    importStats[today].duplicates += 1;
+    if (!importStats[today]) {
+      importStats[today] = {};
+    }
+    
+    if (!importStats[today][userEmail]) {
+      importStats[today][userEmail] = { imported: 0, duplicates: 0 };
+    }
+    
+    importStats[today][userEmail].duplicates += 1;
     await chrome.storage.local.set({ importStats });
     
     // Notify popup if it's open
     chrome.runtime.sendMessage({
       action: 'statsUpdated',
-      stats: importStats[today]
+      stats: importStats[today][userEmail]
     }).catch(() => {
       // Ignore errors if popup is not open
     });
@@ -998,19 +1036,28 @@ async function updateDuplicateCounter() {
 async function updateImportCounter() {
   try {
     const today = new Date().toDateString();
-    const { importStats = {} } = await chrome.storage.local.get('importStats');
+    const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
     
-    if (!importStats[today]) {
-      importStats[today] = { imported: 0, duplicates: 0 };
+    if (!userEmail) {
+      console.error('No user logged in, cannot update import counter');
+      return;
     }
     
-    importStats[today].imported += 1;
+    if (!importStats[today]) {
+      importStats[today] = {};
+    }
+    
+    if (!importStats[today][userEmail]) {
+      importStats[today][userEmail] = { imported: 0, duplicates: 0 };
+    }
+    
+    importStats[today][userEmail].imported += 1;
     await chrome.storage.local.set({ importStats });
     
     // Notify popup if it's open
     chrome.runtime.sendMessage({
       action: 'statsUpdated',
-      stats: importStats[today]
+      stats: importStats[today][userEmail]
     }).catch(() => {
       // Ignore errors if popup is not open
     });
@@ -1019,8 +1066,52 @@ async function updateImportCounter() {
   }
 }
 
+// Migrate existing data to include userEmail
+async function migrateExistingData() {
+  try {
+    const { linkedinImportQueue = [], userEmail, dataMigrated } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail', 'dataMigrated']);
+    
+    // Skip if already migrated or no user logged in
+    if (dataMigrated || !userEmail) {
+      return;
+    }
+    
+    let needsMigration = false;
+    
+    // Check if any items don't have userEmail
+    const updatedQueue = linkedinImportQueue.map(item => {
+      if (!item.userEmail) {
+        needsMigration = true;
+        // Assign current user to items without userEmail
+        return { ...item, userEmail };
+      }
+      return item;
+    });
+    
+    if (needsMigration) {
+      console.log('Migrating queue data to include userEmail');
+      await chrome.storage.local.set({ 
+        linkedinImportQueue: updatedQueue,
+        dataMigrated: true 
+      });
+    } else {
+      // Mark as migrated even if no changes needed
+      await chrome.storage.local.set({ dataMigrated: true });
+    }
+  } catch (error) {
+    console.error('Error migrating data:', error);
+  }
+}
+
 // Initialize badge on startup
-chrome.runtime.onStartup.addListener(() => {
+chrome.runtime.onStartup.addListener(async () => {
+  await migrateExistingData();
+  updateBadgeFromStorage();
+});
+
+// Also run migration on install/update
+chrome.runtime.onInstalled.addListener(async () => {
+  await migrateExistingData();
   updateBadgeFromStorage();
 });
 
@@ -1032,8 +1123,13 @@ chrome.alarms.create('queueReminder', {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === 'queueReminder') {
     try {
-      const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
-      const pendingCount = linkedinImportQueue.filter(item => item.status === 'pending').length;
+      const { linkedinImportQueue = [], userEmail } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail']);
+      
+      // Only count current user's pending items
+      const pendingCount = linkedinImportQueue.filter(item => 
+        item.status === 'pending' && 
+        item.userEmail === userEmail
+      ).length;
       
       if (pendingCount > 10) {
         // Create notification if many items are pending

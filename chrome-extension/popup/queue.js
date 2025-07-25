@@ -54,7 +54,10 @@ function setupEventListeners() {
 
 // Load and display queue
 async function loadQueue() {
-  const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
+  const { linkedinImportQueue = [], userEmail } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail']);
+  
+  // Filter for current user's items only
+  const userQueue = linkedinImportQueue.filter(item => item.userEmail === userEmail);
   
   // Update stats
   const stats = {
@@ -64,7 +67,7 @@ async function loadQueue() {
     failed: 0
   };
   
-  linkedinImportQueue.forEach(item => {
+  userQueue.forEach(item => {
     stats[item.status] = (stats[item.status] || 0) + 1;
   });
   
@@ -77,14 +80,14 @@ async function loadQueue() {
   const queueList = document.getElementById('queue-list');
   const emptyState = document.getElementById('empty-state');
   
-  if (linkedinImportQueue.length === 0) {
+  if (userQueue.length === 0) {
     queueList.innerHTML = '';
     emptyState.style.display = 'block';
     return;
   }
   
   emptyState.style.display = 'none';
-  queueList.innerHTML = linkedinImportQueue.map(item => {
+  queueList.innerHTML = userQueue.map(item => {
     // Check if it's a duplicate error
     const isDuplicate = item.error && (
       item.error.includes('already been imported') || 
@@ -265,10 +268,14 @@ async function updateItemStatus(itemId, status, error = null) {
 
 // Clear completed items
 async function clearCompleted() {
-  const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
+  const { linkedinImportQueue = [], userEmail } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail']);
   
+  // Keep items that are either:
+  // 1. Not belonging to current user, OR
+  // 2. Belonging to current user but not completed/failed
   const filtered = linkedinImportQueue.filter(item => 
-    item.status !== 'completed' && item.status !== 'failed'
+    item.userEmail !== userEmail || 
+    (item.status !== 'completed' && item.status !== 'failed')
   );
   
   await chrome.storage.local.set({ linkedinImportQueue: filtered });

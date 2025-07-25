@@ -310,9 +310,10 @@ async function handleLogout() {
 async function loadStats() {
   try {
     const today = new Date().toDateString();
-    const { importStats = {} } = await chrome.storage.local.get('importStats');
+    const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
     
-    const todayStats = importStats[today] || { imported: 0, duplicates: 0 };
+    // Get stats for current user only
+    const todayStats = importStats[today]?.[userEmail] || { imported: 0, duplicates: 0 };
     
     document.getElementById('imported-today').textContent = todayStats.imported;
     document.getElementById('duplicates-found').textContent = todayStats.duplicates;
@@ -702,8 +703,13 @@ function openQueueManager() {
 
 // Update queue badge
 async function updateQueueBadge() {
-  const { linkedinImportQueue = [] } = await chrome.storage.local.get('linkedinImportQueue');
-  const pendingCount = linkedinImportQueue.filter(item => item.status === 'pending').length;
+  const { linkedinImportQueue = [], userEmail } = await chrome.storage.local.get(['linkedinImportQueue', 'userEmail']);
+  
+  // Only count current user's pending items
+  const pendingCount = linkedinImportQueue.filter(item => 
+    item.status === 'pending' && 
+    item.userEmail === userEmail
+  ).length;
   
   const badge = document.getElementById('queue-badge');
   if (badge) {
