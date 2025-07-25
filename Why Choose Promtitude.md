@@ -8,7 +8,7 @@
 - 🔍 **Natural Language Search** - No more boolean queries or keyword matching
 - 🤖 **AI Interview Copilot** - Real-time assistance during interviews (industry first!)
 - 💰 **Free During Early Access** - While competitors charge $500-5000/month
-- 🧠 **Latest AI Technology** - OpenAI o4-mini & Claude 4 (not GPT-3.5 like others)
+- 🧠 **Latest AI Technology** - GPT-4.1-mini (not GPT-3.5 like others)
 - 🛡️ **Privacy-First Design** - EU AI Act compliant, GDPR ready
 - 🎯 **All-in-One Platform** - Search + Interview + Outreach in one seamless experience
 
@@ -45,13 +45,13 @@ While other tools offer basic video recording, Promtitude provides:
 
 | Feature | Promtitude | Competitors |
 |---------|------------|-------------|
-| Search AI | OpenAI o4-mini | Basic keyword matching |
-| Interview AI | Claude 4 Sonnet | None or GPT-3.5 |
+| Search AI | GPT-4.1-mini | Basic keyword matching |
+| Interview AI | GPT-4.1-mini | None or GPT-3.5 |
 | Transcription | OpenAI Whisper | Third-party services |
 | Embeddings | ada-002 latest | Outdated models |
 | Vector Search | Qdrant HNSW | SQL LIKE queries |
 
-We use the **same AI models that power ChatGPT Plus**, not outdated technology from 2022.
+We use **advanced GPT-4.1-mini**, the latest efficient model from OpenAI, not outdated technology from 2022.
 
 ---
 
@@ -63,7 +63,7 @@ We use the **same AI models that power ChatGPT Plus**, not outdated technology f
 |---------|------------|-----------------|
 | Natural Language Search | ✅ Advanced AI | ❌ Boolean only |
 | AI Interview Assistant | ✅ Real-time | ❌ None |
-| Resume Parsing | ✅ 95% accuracy | ⚠️ 60-70% accuracy |
+| Resume Parsing | ✅ 85-90% accuracy | ⚠️ 60-70% accuracy |
 | Chrome Extension | ✅ One-click import | ❌ Manual entry |
 | AI Outreach Messages | ✅ Personalized | ❌ Templates only |
 | Setup Time | ✅ 5 minutes | ❌ 2-4 weeks |
@@ -201,9 +201,9 @@ Remember when LinkedIn Recruiter launched? Early adopters built massive advantag
 - AI ranks best 20 candidates
 - AI Copilot captures everything, suggests questions
 - Personalized outreach for each candidate
-- 40% response rate
+- 25-30% response rate
 
-**Time Saved: 10 hours/week**
+**Time Saved: 5-8 hours/week**
 
 ### Scenario 2: HR Team at Growing Company
 
@@ -302,11 +302,6 @@ We're here to help you succeed:
 
 ---
 
-*"Promtitude isn't just replacing our ATS – it's transforming how we think about recruiting. The AI Interview Copilot alone saves us 15 hours per week."*  
-— Sarah Chen, Head of Talent at TechStartup Inc.
+**Ready to experience the future of recruiting?**
 
-*"We tried Greenhouse, Lever, and Workday. Promtitude found better candidates in 5 minutes than we found in 5 months with boolean searches."*  
-— Michael Rodriguez, Technical Recruiter
-
-*"The fact that it's free during early access let us try it risk-free. Now we can't imagine recruiting without it."*  
-— Jennifer Park, HR Director
+**[Start Your Free Trial Today](https://promtitude.com/register)**

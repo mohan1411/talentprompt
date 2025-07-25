@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)](https://www.postgresql.org/)
-[![AI Models](https://img.shields.io/badge/AI-OpenAI%20o4--mini%20%7C%20Claude%204-green.svg)](https://openai.com/)
+[![AI Models](https://img.shields.io/badge/AI-GPT--4.1--mini-green.svg)](https://openai.com/)
 [![EU AI Act](https://img.shields.io/badge/EU%20AI%20Act-Compliant-brightgreen.svg)](https://digital-strategy.ec.europa.eu/en/policies/european-approach-artificial-intelligence)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -16,7 +16,7 @@ Promtitude revolutionizes recruitment by enabling natural language searches to f
 ### Key Features
 
 - 🔍 **Natural Language Search**: "Find me a senior Python developer with AWS experience and leadership skills"
-- 🤖 **AI-Powered Matching**: Advanced semantic understanding using OpenAI o4-mini and Claude 4
+- 🤖 **AI-Powered Matching**: Advanced semantic understanding using GPT-4.1-mini
 - ⚡ **Instant Results**: Sub-second search across millions of resumes
 - 🎯 **Smart Ranking**: ML-based relevance scoring
 - 🔐 **EU AI Act Compliant**: Full transparency and human oversight features
@@ -92,7 +92,7 @@ Visit http://localhost:3000 to see the application running.
 - **Real-time**: Socket.io
 
 ### AI/ML
-- **LLMs**: OpenAI o4-mini, Claude 4 Sonnet
+- **LLMs**: GPT-4.1-mini
 - **Embeddings**: text-embedding-ada-002
 - **Vector Search**: Qdrant with HNSW indexing
 - **ML Framework**: scikit-learn, transformers
@@ -100,9 +100,9 @@ Visit http://localhost:3000 to see the application running.
 ## 📊 Performance
 
 - **Search Speed**: < 300ms for 1M resumes
-- **Accuracy**: 95% relevance in top 10 results
+- **Accuracy**: 85-90% relevance in top 10 results
 - **Scalability**: Handles 10,000+ concurrent users
-- **Uptime**: 99.9% SLA
+- **Uptime**: 99% target
 
 ## 🔒 Security & Compliance
 
@@ -138,8 +138,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🌟 Acknowledgments
 
-- OpenAI for o4-mini model
-- Anthropic for Claude 4
+- OpenAI for GPT-4.1-mini model
 - The open-source community
 
 ---
