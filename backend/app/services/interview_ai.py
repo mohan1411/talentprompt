@@ -852,14 +852,14 @@ class InterviewAIService:
             },
             "culture_fit": round(base_rating + random.uniform(-0.3, 0.3), 1),
             "strengths": [
-                "Unable to extract specific strengths from transcript",
-                "Manual transcript requires human review",
-                "Consider scheduling follow-up assessment"
+                "Candidate participated in the interview",
+                "Responses were provided to interview questions",
+                "Consider reviewing transcript for specific achievements"
             ],
             "concerns": [
-                "Automated analysis was unable to process transcript fully",
-                "Specific technical skills assessment pending",
-                "Recommend manual review of responses"
+                "AI analysis could not extract detailed insights",
+                "Manual review recommended for accurate assessment",
+                "Technical skills evaluation requires human verification"
             ],
             "next_steps": [
                 "Manual review of transcript recommended",
@@ -1178,38 +1178,36 @@ class InterviewAIService:
             return self._get_default_transcript_analysis(transcript_data, session_data)
         
         prompt = f"""
-        Analyze this interview transcript and extract Q&A pairs with detailed evaluation.
+        Analyze this interview transcript and extract ALL question-answer pairs.
         
-        Interview Context:
+        Context:
         - Position: {session_data.get('job_position')}
-        - Interview Type: {session_data.get('interview_type', 'general')}
-        - Duration: {transcript_data.get('duration', 0)} seconds
-        - Manual Entry: {session_data.get('is_manual_transcript', False)}
+        - Type: {session_data.get('interview_type', 'general')}
         
         Transcript:
         {self._format_transcript_for_analysis(utterances)}
         
-        IMPORTANT: The transcript uses [interviewer]: and [candidate]: tags to indicate speakers.
+        RULES:
+        1. Every [interviewer] line that asks something is a question
+        2. The [candidate] response(s) that follow are the answer
+        3. Rate answers 1-5 (1=poor, 3=average, 5=excellent)
+        4. Extract skills mentioned (Python, React, etc.)
         
-        Instructions:
-        1. Extract EVERY question asked by the interviewer
-        2. Extract the candidate's COMPLETE response to each question
-        3. Evaluate each response on a 1-5 scale based on:
-           - Technical accuracy (if applicable)
-           - Communication clarity
-           - Depth of answer
-           - Relevant examples provided
-        4. Identify specific technical skills, tools, or technologies mentioned
-        5. Note exceptional insights or concerning responses
+        EXAMPLE:
+        [interviewer]: Tell me about your experience
+        [candidate]: I have 3 years working with Python and React
         
-        CRITICAL REQUIREMENTS:
-        - You MUST extract Q&A pairs even from informal conversation
-        - If the transcript seems incomplete, still analyze what's available
-        - Provide specific, detailed evaluations - avoid generic feedback
-        - Base ratings on actual content, not assumptions
-        - For manual transcripts, be extra thorough in extraction
+        Would extract as:
+        {{
+            "question": "Tell me about your experience",
+            "answer": "I have 3 years working with Python and React",
+            "rating": 3,
+            "skills_mentioned": ["Python", "React"]
+        }}
         
-        Return a JSON object with this exact structure:
+        IMPORTANT: Extract AT LEAST ONE Q&A pair. If you can't find clear questions, treat any interviewer statement as a question.
+        
+        Return ONLY a JSON object with this structure:
         {{
             "qa_pairs": [
                 {{
@@ -1246,7 +1244,9 @@ class InterviewAIService:
             except json.JSONDecodeError:
                 logger.error("Failed to parse transcript analysis as JSON")
                 logger.debug(f"Raw response: {response[:500]}...")  # Log first 500 chars
-                return self._get_default_transcript_analysis(transcript_data, session_data)
+                # Try fallback extraction
+                logger.info("Attempting fallback Q&A extraction")
+                analysis = self._fallback_qa_extraction(utterances, session_data)
             
             # Calculate aggregated scores for scorecard
             qa_pairs = analysis.get("qa_pairs", [])
@@ -1256,9 +1256,12 @@ class InterviewAIService:
             if not qa_pairs:
                 logger.warning("No Q&A pairs extracted from transcript analysis")
                 logger.debug(f"Analysis response: {json.dumps(analysis, indent=2)}")
-                # Log the formatted transcript that was sent to AI
-                formatted_transcript = self._format_transcript_for_analysis(utterances)
-                logger.debug(f"Formatted transcript sent to AI (first 500 chars): {formatted_transcript[:500]}")
+                # Try fallback extraction
+                logger.info("OpenAI returned empty Q&A pairs, trying fallback extraction")
+                analysis = self._fallback_qa_extraction(utterances, session_data)
+                qa_pairs = analysis.get("qa_pairs", [])
+                if qa_pairs:
+                    logger.info(f"Fallback extraction found {len(qa_pairs)} Q&A pairs")
             else:
                 logger.info(f"Successfully extracted {len(qa_pairs)} Q&A pairs from transcript")
             
@@ -1299,6 +1302,86 @@ class InterviewAIService:
         except Exception as e:
             logger.error(f"Error analyzing transcript: {e}")
             return self._get_default_transcript_analysis(transcript_data, session_data)
+    
+    def _fallback_qa_extraction(self, utterances: List[Dict], session_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Fallback method to extract Q&A pairs when AI fails."""
+        logger.info("Using fallback Q&A extraction method")
+        
+        qa_pairs = []
+        i = 0
+        
+        while i < len(utterances):
+            utt = utterances[i]
+            
+            # Find interviewer utterances
+            if utt.get("role") == "interviewer" or utt.get("speaker") == "A":
+                question_text = utt.get("text", "").strip()
+                
+                # Look for the next candidate response
+                answer_texts = []
+                j = i + 1
+                
+                while j < len(utterances) and (utterances[j].get("role") == "candidate" or utterances[j].get("speaker") == "B"):
+                    answer_texts.append(utterances[j].get("text", "").strip())
+                    j += 1
+                
+                if question_text and answer_texts:
+                    # Combine multiple answer utterances
+                    full_answer = " ".join(answer_texts)
+                    
+                    # Extract skills mentioned
+                    tech_keywords = ["python", "java", "javascript", "react", "sql", "api", "docker", "aws", "database", "frontend", "backend"]
+                    skills_mentioned = [skill for skill in tech_keywords if skill in full_answer.lower()]
+                    
+                    # Simple rating based on answer length and content
+                    rating = 3.0  # Default
+                    if len(full_answer) > 200:
+                        rating += 0.5
+                    if len(skills_mentioned) > 2:
+                        rating += 0.5
+                    if "experience" in full_answer.lower() and any(word in full_answer.lower() for word in ["years", "worked", "developed"]):
+                        rating += 0.5
+                    rating = min(5.0, rating)
+                    
+                    qa_pairs.append({
+                        "question": question_text,
+                        "answer": full_answer,
+                        "rating": rating,
+                        "category": "technical" if any(tech in question_text.lower() for tech in tech_keywords) else "behavioral",
+                        "skills_mentioned": skills_mentioned,
+                        "evaluation": "Extracted via fallback method"
+                    })
+                    
+                    i = j - 1  # Move to last answer
+                
+            i += 1
+        
+        # If still no Q&A pairs, create one from the transcript
+        if not qa_pairs and len(utterances) >= 2:
+            logger.warning("Fallback extraction found no clear Q&A pattern, creating synthetic pair")
+            qa_pairs.append({
+                "question": "Tell me about yourself and your experience",
+                "answer": " ".join([u.get("text", "") for u in utterances if u.get("role") == "candidate" or u.get("speaker") == "B"])[:500],
+                "rating": 3.0,
+                "category": "general",
+                "skills_mentioned": [],
+                "evaluation": "Synthetic Q&A pair created from transcript"
+            })
+        
+        return {
+            "qa_pairs": qa_pairs,
+            "overall_assessment": {
+                "communication_score": 3.5,
+                "technical_depth": 3.5,
+                "cultural_fit": 3.5,
+                "enthusiasm": 3.5,
+                "overall_rating": 3.5
+            },
+            "key_strengths": [f"Discussed {len(qa_pairs)} topics during interview"],
+            "areas_of_concern": ["AI analysis failed - using pattern-based extraction"],
+            "recommendation": "maybe",
+            "summary": f"Fallback analysis extracted {len(qa_pairs)} Q&A pairs from transcript."
+        }
     
     def _format_transcript_for_analysis(self, utterances: List[Dict]) -> str:
         """Format utterances for analysis prompt."""

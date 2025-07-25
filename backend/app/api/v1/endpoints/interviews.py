@@ -1427,7 +1427,7 @@ async def save_manual_transcript(
                         "end": timestamp + 5000,  # Mock 5 second utterances
                         "confidence": 0.95,
                         "speaker": current_speaker,
-                        "role": "interviewer" if current_speaker == "A" else "candidate_1"
+                        "role": "interviewer" if current_speaker == "A" else "candidate"
                     }
                     utterances.append(utterance)
                     speakers[current_speaker]["utterances"].append(utterance)
@@ -1584,7 +1584,7 @@ async def test_transcript_analysis(
                     "start": timestamp,
                     "end": timestamp + 5000,
                     "speaker": current_speaker,
-                    "role": "interviewer" if current_speaker == "A" else "candidate_1"
+                    "role": "interviewer" if current_speaker == "A" else "candidate"
                 })
                 timestamp += 5000
             
