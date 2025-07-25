@@ -95,14 +95,31 @@
   }
   
   // Initialize the integration
-  function init() {
+  async function init() {
     // Reset profile exists status on new page
     profileExistsStatus = null;
     
     // Wait a bit for LinkedIn to render
-    setTimeout(() => {
+    setTimeout(async () => {
       addImportButton();
-      checkIfProfileExists();
+      
+      // Show checking state
+      if (importButton) {
+        const buttonText = importButton.querySelector('span');
+        if (buttonText) {
+          buttonText.textContent = 'Checking...';
+        }
+      }
+      
+      await checkIfProfileExists();
+      
+      // Reset button state if not a duplicate
+      if (importButton && (!profileExistsStatus || !profileExistsStatus.exists)) {
+        const buttonText = importButton.querySelector('span');
+        if (buttonText) {
+          buttonText.textContent = 'Import to Promtitude';
+        }
+      }
     }, 2000);
     
     // Re-initialize on navigation (LinkedIn is a SPA)
@@ -220,37 +237,46 @@
       const authToken = await getAuthToken();
       if (!authToken) return;
       
-      // Send through background script to avoid CORS
-      chrome.runtime.sendMessage({
-        action: 'checkProfileExists',
-        linkedin_url: profileData.linkedin_url,
-        authToken: authToken
-      }, response => {
-        if (response && response.exists) {
-          profileExistsStatus = {
-            exists: true,
-            candidate_id: response.candidate_id
-          };
-          updateButtonState('exists', response.candidate_id);
-        } else {
-          profileExistsStatus = {
-            exists: false
-          };
-        }
+      // Send through background script to avoid CORS - use Promise style
+      const response = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({
+          action: 'checkProfileExists',
+          linkedin_url: profileData.linkedin_url,
+          authToken: authToken
+        }, (response) => {
+          resolve(response || { exists: false });
+        });
       });
+      
+      console.log('Profile exists check response:', response);
+      
+      if (response && response.exists) {
+        profileExistsStatus = {
+          exists: true,
+          candidate_id: response.candidate_id
+        };
+        updateButtonState('exists', response.candidate_id);
+      } else {
+        profileExistsStatus = {
+          exists: false
+        };
+      }
     } catch (error) {
       console.error('Error checking profile:', error);
+      profileExistsStatus = { exists: false };
     }
   }
   
   // Handle import button click
   handleImport = async function() {
     console.log('=== Import Handler v2 - Enhanced Email Extraction ===');
+    console.log('Profile exists status:', profileExistsStatus);
     
     if (isProcessing) return;
     
     // Check if we already know this profile exists
     if (profileExistsStatus && profileExistsStatus.exists) {
+      console.log('Profile is known duplicate, showing error immediately');
       showStatus('This profile has already been imported', 'exists');
       if (importButton) {
         updateButtonState('exists', profileExistsStatus.candidate_id);
