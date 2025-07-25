@@ -93,6 +93,16 @@
     console.log('Handling import from popup - requesting full extraction');
     console.log('Current profileExistsStatus:', profileExistsStatus);
     
+    // Wait for any early duplicate check to complete
+    if (window.__duplicateCheckPromise) {
+      console.log('Waiting for early duplicate check to complete...');
+      try {
+        await window.__duplicateCheckPromise;
+      } catch (err) {
+        console.error('Early duplicate check failed:', err);
+      }
+    }
+    
     // Check if we already know this profile exists
     if (profileExistsStatus && profileExistsStatus.exists) {
       console.log('Profile is known duplicate in handleSimpleImport, returning error');
@@ -163,16 +173,30 @@
     init();
   }
   
+  // Also check immediately for popup requests
+  // This ensures duplicate check starts ASAP
+  const earlyCheckPromise = checkIfProfileExists().then(() => {
+    console.log('Early duplicate check complete:', profileExistsStatus);
+  }).catch(err => {
+    console.error('Early duplicate check failed:', err);
+  });
+  
+  // Store the promise globally so handleSimpleImport can wait for it
+  window.__duplicateCheckPromise = earlyCheckPromise;
+  
   // Initialize the integration
   async function init() {
     // Reset profile exists status on new page
     profileExistsStatus = null;
     isCheckingDuplicate = false;
     
-    // Start checking for duplicates immediately
-    checkIfProfileExists().then(() => {
+    // Start checking for duplicates immediately and wait for it
+    try {
+      await checkIfProfileExists();
       console.log('Initial duplicate check complete:', profileExistsStatus);
-    });
+    } catch (err) {
+      console.error('Initial duplicate check failed:', err);
+    }
     
     // Wait a bit for LinkedIn to render
     setTimeout(async () => {

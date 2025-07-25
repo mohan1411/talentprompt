@@ -401,8 +401,8 @@ async function handleImportProfile(tab) {
         console.error('Failed to inject CSS:', cssError);
       }
       
-      // Wait a bit for scripts to initialize
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait a bit for scripts to initialize and duplicate check to start
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Try sending the message again
       try {
@@ -415,11 +415,21 @@ async function handleImportProfile(tab) {
       }
     }
     
+    console.log('Import response:', response);
+    
     if (response && response.success) {
       // Check if it's a duplicate
       if (response.data && response.data.is_duplicate) {
+        console.log('Success response indicates duplicate');
         // Don't update stats for duplicates
         showInfo('This profile has already been imported');
+        // Update duplicate counter in stats
+        const duplicates = parseInt(document.getElementById('duplicates-found').textContent) + 1;
+        document.getElementById('duplicates-found').textContent = duplicates;
+        
+        // Also update in storage for persistence
+        updateDuplicateStats();
+        
         // Don't close popup for duplicates, let user see the message
         setTimeout(() => {
           window.close();
@@ -437,13 +447,23 @@ async function handleImportProfile(tab) {
       }
     } else {
       const errorMessage = response?.error || 'Import failed';
+      console.log('Import failed with error:', errorMessage);
       
       // Check if it's a duplicate error
       if (errorMessage.includes('already been imported') || 
+          errorMessage.includes('already imported this profile') ||
           errorMessage.includes('already exists') ||
           errorMessage.includes('duplicate')) {
+        console.log('Error message indicates duplicate');
         // Show as info instead of error for duplicates
         showInfo('This profile has already been imported');
+        // Update duplicate counter locally
+        const duplicates = parseInt(document.getElementById('duplicates-found').textContent) + 1;
+        document.getElementById('duplicates-found').textContent = duplicates;
+        
+        // Also update in storage for persistence
+        updateDuplicateStats();
+        
         // Give more time to read duplicate message
         setTimeout(() => {
           window.close();
@@ -627,7 +647,26 @@ async function updateUIState() {
 
 // Show error message
 function showError(message) {
-  const errorEl = document.getElementById('error-message');
+  // Try to use the action message area first (when logged in)
+  let errorEl = document.getElementById('action-message');
+  if (!errorEl || errorEl.parentElement.classList.contains('hidden')) {
+    // Fall back to login error message area
+    errorEl = document.getElementById('error-message');
+  }
+  
+  if (!errorEl) {
+    // If no element found, use alert as last resort
+    alert('Error: ' + message);
+    return;
+  }
+  
+  // Reset styles for error
+  errorEl.style.background = '#fee';
+  errorEl.style.border = '1px solid #fcc';
+  errorEl.style.color = '#c00';
+  errorEl.style.padding = '10px';
+  errorEl.style.borderRadius = '6px';
+  errorEl.style.marginBottom = '10px';
   
   // Check if message contains a URL and make it clickable
   if (message.includes('http://') || message.includes('https://')) {
@@ -636,7 +675,7 @@ function showError(message) {
     const messageWithLinks = message.replace(urlRegex, (url) => {
       return `<a href="#" data-url="${url}" style="color: inherit; text-decoration: underline;">${url}</a>`;
     });
-    errorEl.innerHTML = messageWithLinks;
+    errorEl.innerHTML = '❌ ' + messageWithLinks;
     
     // Add click handlers for links
     setTimeout(() => {
@@ -648,7 +687,7 @@ function showError(message) {
       });
     }, 0);
   } else {
-    errorEl.textContent = message;
+    errorEl.innerHTML = '❌ ' + message;
   }
   
   errorEl.classList.remove('hidden');
@@ -657,28 +696,57 @@ function showError(message) {
 
 // Show success message
 function showSuccess(message) {
-  // For now, use alert. Can implement toast later
-  alert(message);
+  // Try to use the action message area first (when logged in)
+  let messageEl = document.getElementById('action-message');
+  if (!messageEl || messageEl.parentElement.classList.contains('hidden')) {
+    // Fall back to login error message area
+    messageEl = document.getElementById('error-message');
+  }
+  
+  if (!messageEl) {
+    // If no element found, use alert as last resort
+    alert(message);
+    return;
+  }
+  
+  messageEl.style.background = '#d1fae5';
+  messageEl.style.border = '1px solid #34d399';
+  messageEl.style.color = '#065f46';
+  messageEl.style.padding = '10px';
+  messageEl.style.borderRadius = '6px';
+  messageEl.style.marginBottom = '10px';
+  messageEl.innerHTML = '✓ ' + message;
+  messageEl.classList.remove('hidden');
+  
+  setTimeout(() => messageEl.classList.add('hidden'), 3000);
 }
 
 // Show info message (for duplicates, etc)
 function showInfo(message) {
-  const errorEl = document.getElementById('error-message');
-  
-  if (errorEl) {
-    errorEl.style.background = '#fef3c7';
-    errorEl.style.border = '1px solid #fbbf24';
-    errorEl.style.color = '#92400e';
-    errorEl.style.padding = '10px';
-    errorEl.style.borderRadius = '6px';
-    errorEl.innerHTML = '⚠️ ' + message;
-    errorEl.classList.remove('hidden');
-    
-    // Don't auto-hide for important messages like duplicates
-    // User will see it until popup closes
-  } else {
-    alert(message);
+  // Try to use the action message area first (when logged in)
+  let errorEl = document.getElementById('action-message');
+  if (!errorEl || errorEl.parentElement.classList.contains('hidden')) {
+    // Fall back to login error message area
+    errorEl = document.getElementById('error-message');
   }
+  
+  if (!errorEl) {
+    // If no element found, use alert as last resort
+    alert(message);
+    return;
+  }
+  
+  errorEl.style.background = '#fef3c7';
+  errorEl.style.border = '1px solid #fbbf24';
+  errorEl.style.color = '#92400e';
+  errorEl.style.padding = '10px';
+  errorEl.style.borderRadius = '6px';
+  errorEl.style.marginBottom = '10px';
+  errorEl.innerHTML = '⚠️ ' + message;
+  errorEl.classList.remove('hidden');
+  
+  // Don't auto-hide for important messages like duplicates
+  // User will see it until popup closes
 }
 
 // Open settings
@@ -741,4 +809,25 @@ function openRegistration() {
   chrome.tabs.create({
     url: 'https://promtitude.com/register'
   });
+}
+
+// Update duplicate stats in storage
+async function updateDuplicateStats() {
+  try {
+    const today = new Date().toDateString();
+    const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
+    
+    if (!importStats[today]) {
+      importStats[today] = {};
+    }
+    
+    if (!importStats[today][userEmail]) {
+      importStats[today][userEmail] = { imported: 0, duplicates: 0 };
+    }
+    
+    importStats[today][userEmail].duplicates += 1;
+    await chrome.storage.local.set({ importStats });
+  } catch (error) {
+    console.error('Failed to update duplicate stats:', error);
+  }
 }
