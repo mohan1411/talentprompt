@@ -21,8 +21,8 @@ async def lifespan(app: FastAPI):
         print("Redis connection established")
     except Exception as e:
         print(f"Failed to connect to Redis: {e}")
-        if not settings.DEBUG:
-            raise
+        print("Continuing without Redis - some features may be limited")
+        # Don't raise in production - Redis is optional
     
     yield
     
@@ -45,6 +45,16 @@ print(f"Starting {settings.PROJECT_NAME} v{settings.VERSION}")
 print(f"Environment: {os.environ.get('RAILWAY_ENVIRONMENT', 'local')}")
 print(f"DATABASE_URL present: {'DATABASE_URL' in os.environ}")
 print(f"CORS Origins: {settings.BACKEND_CORS_ORIGINS}")
+print(f"CORS Origins from env: {os.environ.get('BACKEND_CORS_ORIGINS', 'Not set')}")
+
+# Critical CORS check for production
+if os.environ.get('RAILWAY_ENVIRONMENT') == 'production':
+    cors_str = str(settings.BACKEND_CORS_ORIGINS)
+    if 'promtitude.com' not in cors_str:
+        print("WARNING: promtitude.com not in CORS origins! Frontend will be blocked!")
+        print("Set BACKEND_CORS_ORIGINS environment variable to fix this")
+    else:
+        print("✓ CORS configured correctly for promtitude.com")
 
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
