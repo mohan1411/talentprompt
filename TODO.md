@@ -233,7 +233,7 @@ Implement Captcha and email verification when user register through email and pa
 
 ---
 
-**Last Updated**: July 23, 2025  
+**Last Updated**: July 25, 2025  
 **Priority Levels**: 🔴 Critical | 🟡 Important | 🟢 Nice-to-have
 
 ## Notes
@@ -369,3 +369,47 @@ This reduces friction and accelerates user acquisition at this critical early st
 - ✅ Confirmed job requirements textbox is used by AI for question generation
 
 **Production Deployment**: All OAuth authentication features deployed and working!
+
+### Updates - July 25, 2025
+
+#### Chrome Extension Bug Fixes ✅ COMPLETED
+**Critical Privacy and UX Improvements**
+- ✅ **Fixed Manual Transcript Analysis**
+  - Problem: AI analysis was giving generic 3.0 ratings for all technologies
+  - Solution: Fixed transcript parsing to preserve complete multi-line responses
+  - Result: AI now provides specific technology ratings (Python 3.5, React 4.0, etc.)
+  
+- ✅ **Fixed Privacy Issue - User Data Isolation**
+  - Problem: All users on same browser could see each other's import queue and stats
+  - Solution: Implemented user-specific data storage with email tracking
+  - Changes made:
+    - Queue items now track userEmail to identify which user added them
+    - Queue display filters to show only current user's items
+    - Stats are now stored per user (importStats[date][userEmail])
+    - Badge counts only include current user's pending items
+    - Clear functions only affect current user's items
+    - Added migration for existing data to assign current user
+    - Alarm notifications count only current user's items
+  - Result: Complete data privacy between different users sharing the same browser
+  
+- ✅ **Fixed Duplicate Error Message Display**
+  - Problem: Duplicate error message not showing on first click after navigation
+  - Solution: 
+    - Added early duplicate check promise that runs immediately when content script loads
+    - Modified handleSimpleImport to wait for the early check to complete
+    - Increased script initialization delay from 1s to 2s for better reliability
+    - Added proper CSS styles for message display in popup
+    - Added updateDuplicateStats function to persist duplicate counts
+  - Result: Duplicate errors now display immediately on first click
+  
+- ✅ **Fixed Bulk Import Sidebar Not Closing on Logout**
+  - Problem: Sidebar remained open when user logged out
+  - Solution: Added logout message broadcasting to all tabs with listeners
+  - Result: Sidebar now closes automatically on logout
+  
+- ✅ **Fixed JavaScript Error**
+  - Problem: "originalText is not defined" error when importing profiles
+  - Solution: Fixed variable scoping issue by moving declaration outside try block
+  - Result: Import functionality works without errors
+
+**Extension Status**: All issues resolved - working smoothly with proper duplicate detection and user data isolation!
