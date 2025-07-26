@@ -14,32 +14,21 @@ window.manualExperienceOverrides = {
 
 // Apply manual overrides
 window.applyManualOverride = function(url, calculatedYears) {
-  console.log('🔍 Checking manual override for URL:', url);
-  console.log('Calculated years:', calculatedYears);
   
   // Extract profile ID from URL
   const profileMatch = url.match(/linkedin\.com\/in\/([^\/\?]+)/);
   if (!profileMatch) {
-    console.log('No profile ID found in URL');
     return calculatedYears;
   }
   
   const profileId = profileMatch[1];
-  console.log('Profile ID extracted:', profileId);
-  console.log('Available overrides:', Object.keys(window.manualExperienceOverrides));
   
   const override = window.manualExperienceOverrides[profileId];
   
   if (override) {
-    console.log('%c⚡ MANUAL OVERRIDE APPLIED', 'color: white; background: purple; font-size: 14px; padding: 3px;');
-    console.log(`Profile: ${profileId}`);
-    console.log(`Calculated: ${calculatedYears} years`);
-    console.log(`Override: ${override.years} years`);
-    console.log(`Reason: ${override.reason}`);
     return override.years;
   }
   
-  console.log('No override found for profile:', profileId);
   return calculatedYears;
 };
 
@@ -53,7 +42,6 @@ if (window.validateProfileData) {
     const override = window.applyManualOverride(window.location.href, validated.years_experience);
     if (override !== validated.years_experience) {
       validated.years_experience = override;
-      console.log('Experience years updated by manual override');
     }
     
     return validated;
@@ -77,7 +65,6 @@ window.extractANZExperiencesCorrectly = function() {
       if (groupedContainer) {
         // This is a grouped experience - only process sub-items
         const subItems = groupedContainer.querySelectorAll('li');
-        console.log('Found ANZ grouped experience with', subItems.length, 'roles');
         
         subItems.forEach(subItem => {
           const texts = [];
@@ -112,7 +99,6 @@ window.extractANZExperiencesCorrectly = function() {
         
         // Skip if this is "ANZ" with 14 years
         if (texts[0] === 'ANZ' && texts.some(t => t.includes('14 yr'))) {
-          console.log('Skipping ANZ 14 year company total');
           return;
         }
         

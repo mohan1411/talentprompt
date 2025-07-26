@@ -2,8 +2,6 @@
 window.calculateTotalExperienceAdvanced = function(experiences) {
   if (!experiences || !Array.isArray(experiences)) return 0;
   
-  console.log('=== Advanced Experience Calculation ===');
-  console.log(`Processing ${experiences.length} experience entries`);
   
   // Month mapping for parsing
   const monthMap = {
@@ -70,14 +68,12 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
   let skippedCount = 0;
   
   experiences.forEach((exp, index) => {
-    console.log(`\nProcessing Experience ${index + 1}:`, {
       title: exp.title,
       company: exp.company,
       duration: exp.duration
     });
     
     if (!exp.duration) {
-      console.log('- No duration found, skipping');
       skippedCount++;
       return;
     }
@@ -88,10 +84,6 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     if (duration.match(/^[A-Za-z\s&.,]+\s+(at|@|·)\s+\d+\s*yrs?/i) ||
         exp.company?.match(/\s+(at|@|·)\s+\d+\s*yrs?/i) ||
         exp.title?.match(/^[A-Z][A-Za-z\s&.,]+\s+(at|@|·)\s+\d+\s*yrs?/i)) {
-      console.log(`- SKIPPING: Company total duration detected`);
-      console.log(`  Title: "${exp.title}"`);
-      console.log(`  Company: "${exp.company}"`);
-      console.log(`  Duration: "${exp.duration}"`);
       skippedCount++;
       return;
     }
@@ -106,7 +98,6 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
       const years = parseInt(calcDurationMatch[1]) || 0;
       const months = parseInt(calcDurationMatch[2]) || 0;
       calculatedMonths = (years * 12) + months;
-      console.log(`- Found pre-calculated duration: ${years} years + ${months} months = ${calculatedMonths} months`);
     }
     
     // Method 2: Parse date range
@@ -117,13 +108,9 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
       
       if (startDate && endDate) {
         const rangeMonths = monthsBetween(startDate, endDate);
-        console.log(`- Parsed date range: ${dateRangeMatch[1]} to ${dateRangeMatch[2]}`);
-        console.log(`  Start: ${startDate.toDateString()}, End: ${endDate.toDateString()}`);
-        console.log(`  Calculated: ${rangeMonths} months`);
         
         // If we have both calculated and parsed, use the more specific one
         if (calculatedMonths && Math.abs(calculatedMonths - rangeMonths) > 6) {
-          console.log(`  WARNING: LinkedIn shows ${calculatedMonths} months but dates suggest ${rangeMonths} months`);
           // Trust LinkedIn's calculation if available
         } else if (!calculatedMonths) {
           calculatedMonths = rangeMonths;
@@ -134,12 +121,10 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     // Method 3: Handle special cases
     if (!calculatedMonths && duration.toLowerCase().includes('less than')) {
       calculatedMonths = 6; // Assume 6 months for "less than a year"
-      console.log('- Special case: "less than a year" = 6 months');
     }
     
     // Additional check: if title equals company name and has duration, likely a total
     if (exp.title === exp.company && calculatedMonths > 0) {
-      console.log(`- SKIPPING: Title equals company (likely a total)`);
       skippedCount++;
       return;
     }
@@ -154,15 +139,11 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
         months: calculatedMonths,
         hasDateRange: !!(startDate && endDate)
       });
-      console.log(`- Added ${calculatedMonths} months to periods list`);
     } else {
-      console.log(`- WARNING: Could not parse duration "${duration}"`);
       skippedCount++;
     }
   });
   
-  console.log(`\n=== Overlap Detection ===`);
-  console.log(`Found ${timePeriods.length} valid time periods`);
   
   // Sort by whether we have date ranges (prioritize those with dates for overlap detection)
   timePeriods.sort((a, b) => {
@@ -178,7 +159,6 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
   let totalMonths = 0;
   
   if (periodsWithDates.length > 0) {
-    console.log(`\nProcessing ${periodsWithDates.length} experiences with date ranges`);
     
     // Create a timeline of all months worked
     const timeline = new Map();
@@ -206,7 +186,6 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     
     // Count unique months
     const uniqueMonths = timeline.size;
-    console.log(`Found ${uniqueMonths} unique months worked`);
     
     // Log any overlapping periods
     let overlapCount = 0;
@@ -214,13 +193,11 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
       if (jobs.length > 1) {
         overlapCount++;
         if (overlapCount <= 5) { // Only log first 5 overlaps
-          console.log(`Overlap in ${monthKey}:`, jobs.map(j => `${j.title} at ${j.company}`).join(', '));
         }
       }
     });
     
     if (overlapCount > 0) {
-      console.log(`Total overlapping months: ${overlapCount}`);
     }
     
     totalMonths = uniqueMonths;
@@ -228,13 +205,11 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
     // Add experiences without dates (but reduce if they seem to overlap)
     if (periodsWithoutDates.length > 0) {
       const monthsWithoutDates = periodsWithoutDates.reduce((sum, p) => sum + p.months, 0);
-      console.log(`\nAdding ${periodsWithoutDates.length} experiences without date ranges: ${monthsWithoutDates} months`);
       
       // Heuristic: if we have many dated experiences, undated ones likely overlap
       if (periodsWithDates.length > 3) {
         const overlapFactor = 0.5; // Assume 50% overlap
         const adjustedMonths = Math.round(monthsWithoutDates * overlapFactor);
-        console.log(`Applying overlap factor of ${overlapFactor}: ${adjustedMonths} months`);
         totalMonths += adjustedMonths;
       } else {
         totalMonths += monthsWithoutDates;
@@ -243,26 +218,18 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
   } else {
     // No date ranges available, sum all months
     totalMonths = timePeriods.reduce((sum, period) => sum + period.months, 0);
-    console.log(`No date ranges available, summing all periods: ${totalMonths} months`);
   }
   
   // Calculate years with proper rounding
   const exactYears = totalMonths / 12;
   const totalYears = Math.round(exactYears);
   
-  console.log(`\n=== Final Summary ===`);
-  console.log(`Processed: ${timePeriods.length} experiences`);
-  console.log(`Skipped: ${skippedCount} experiences`);
-  console.log(`Total: ${totalMonths} months = ${exactYears.toFixed(1)} years`);
-  console.log(`Rounded: ${totalYears} years`);
   
   // Sanity checks
   if (totalYears > 50) {
-    console.warn(`WARNING: ${totalYears} years seems unusually high`);
   }
   
   if (totalYears === 0 && experiences.length > 0) {
-    console.warn('WARNING: Calculated 0 years but experiences exist');
   }
   
   return totalYears;

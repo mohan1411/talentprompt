@@ -1,7 +1,6 @@
 // Extract contact info that might be visible inline on the profile
 window.extractInlineContactInfo = function() {
   try {
-    console.log('=== Inline Contact Extraction ===');
   
   const contactInfo = {
     email: '',
@@ -11,14 +10,12 @@ window.extractInlineContactInfo = function() {
   
   // First, search the entire page for email patterns
   const pageText = document.body.innerText || document.body.textContent || '';
-  console.log('Page text length:', pageText.length);
   
   // More comprehensive email regex
   const emailRegex = /[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9][a-zA-Z0-9.-]*\.[a-zA-Z]{2,}/g;
   const allEmails = pageText.match(emailRegex);
   
   if (allEmails && allEmails.length > 0) {
-    console.log('Found emails on page:', allEmails);
     // Filter out common non-personal emails
     const personalEmail = allEmails.find(email => 
       !email.includes('linkedin.com') && 
@@ -32,13 +29,10 @@ window.extractInlineContactInfo = function() {
     
     if (personalEmail) {
       contactInfo.email = personalEmail;
-      console.log('Selected personal email:', personalEmail);
       return contactInfo;
     } else {
-      console.log('All emails were filtered out as non-personal');
     }
   } else {
-    console.log('No email patterns found on page');
   }
   
   // Method 1: Check the intro card for any visible contact info
@@ -52,14 +46,12 @@ window.extractInlineContactInfo = function() {
     const emailMatch = introText.match(/[\w.-]+@[\w.-]+\.\w+/);
     if (emailMatch) {
       contactInfo.email = emailMatch[0];
-      console.log('Found email in intro card:', contactInfo.email);
     }
     
     // Look for phone pattern
     const phoneMatch = introText.match(/[\+]?[\d\s\-\(\)]+[\d]/);
     if (phoneMatch && phoneMatch[0].length > 9) {
       contactInfo.phone = phoneMatch[0].trim();
-      console.log('Found phone in intro card:', contactInfo.phone);
     }
   }
   
@@ -68,14 +60,12 @@ window.extractInlineContactInfo = function() {
                         document.querySelector('[class*="contact-info"]');
   
   if (contactSection) {
-    console.log('Found inline contact section');
     const sectionText = contactSection.textContent || '';
     
     if (!contactInfo.email) {
       const emailMatch = sectionText.match(/[\w.-]+@[\w.-]+\.\w+/);
       if (emailMatch) {
         contactInfo.email = emailMatch[0];
-        console.log('Found email in contact section:', contactInfo.email);
       }
     }
   }
@@ -85,7 +75,6 @@ window.extractInlineContactInfo = function() {
     const mailtoLinks = document.querySelectorAll('a[href^="mailto:"]');
     if (mailtoLinks.length > 0) {
       contactInfo.email = mailtoLinks[0].href.replace('mailto:', '');
-      console.log('Found mailto link:', contactInfo.email);
     }
   }
   
@@ -98,7 +87,6 @@ window.extractInlineContactInfo = function() {
         const href = link.href || '';
         if (href.includes('mailto:')) {
           contactInfo.email = href.replace('mailto:', '');
-          console.log('Found email in profile header link:', contactInfo.email);
         }
       });
     }
@@ -118,7 +106,6 @@ window.extractInlineContactInfo = function() {
         const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
         if (emailMatch && !emailMatch[0].includes('linkedin.com')) {
           contactInfo.email = emailMatch[0];
-          console.log('Found email in text node:', contactInfo.email);
           break;
         }
       }
@@ -126,11 +113,9 @@ window.extractInlineContactInfo = function() {
     }
   }
   
-  console.log('Inline extraction result:', contactInfo);
   return contactInfo;
   
   } catch (error) {
-    console.error('Error in inline contact extraction:', error);
     return {
       email: '',
       phone: '',

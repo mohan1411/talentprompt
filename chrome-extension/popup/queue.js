@@ -179,7 +179,6 @@ async function startProcessing() {
       showError('Failed to start processing: ' + (response.error || 'Unknown error'));
     }
   } catch (error) {
-    console.error('Error starting queue processing:', error);
     showError(error.message);
   }
 }
@@ -191,7 +190,6 @@ async function pauseProcessing() {
     isProcessing = false;
     resetProcessingUI();
   } catch (error) {
-    console.error('Failed to stop processing:', error);
   }
 }
 
@@ -227,7 +225,6 @@ function monitorProgress() {
       }
       
     } catch (error) {
-      console.error('Progress monitoring error:', error);
       clearInterval(progressInterval);
     }
   }, 1000);

@@ -1,16 +1,13 @@
 // Validate and fix common data issues
 window.validateProfileData = function(data) {
-  console.log('=== Data Validation ===');
   
   // Check for suspicious experience years
   if (data.years_experience > 50) {
-    console.warn(`Experience of ${data.years_experience} years seems too high. Recalculating...`);
     
     // Filter out company-level totals from experience array
     const filteredExperiences = data.experience.filter(exp => {
       // Skip if duration looks like company total
       if (exp.duration && exp.duration.match(/^[A-Za-z\s&]+\s+at\s+\d+\s*yrs?/i)) {
-        console.log(`Filtering out company total: ${exp.duration}`);
         return false;
       }
       return true;
@@ -20,14 +17,11 @@ window.validateProfileData = function(data) {
     let recalculated;
     if (window.calculateTotalExperienceAdvanced) {
       recalculated = window.calculateTotalExperienceAdvanced(filteredExperiences);
-      console.log('Using advanced calculator for recalculation');
     } else if (window.calculateTotalExperience) {
       recalculated = window.calculateTotalExperience(filteredExperiences);
-      console.log('Using basic calculator for recalculation');
     }
     
     if (recalculated !== undefined) {
-      console.log(`Recalculated from ${data.experience.length} to ${filteredExperiences.length} experiences: ${recalculated} years`);
       data.years_experience = recalculated;
       data.experience = filteredExperiences;
     }
@@ -40,14 +34,12 @@ window.validateProfileData = function(data) {
   
   // Ensure professional summary exists
   if (!data.about || data.about.length < 10) {
-    console.log('Professional summary missing or too short');
     // Try to find it again
     const aboutSection = document.querySelector('#about')?.closest('section');
     if (aboutSection) {
       const aboutText = aboutSection.querySelector('span[aria-hidden="true"]:not(.visually-hidden)')?.textContent?.trim();
       if (aboutText && aboutText.length > 20) {
         data.about = aboutText;
-        console.log('Found professional summary:', aboutText.substring(0, 50) + '...');
       }
     }
   }
@@ -57,7 +49,6 @@ window.validateProfileData = function(data) {
     // Age-based validation (assuming work starts at 18)
     const maxReasonableExperience = 50; // 68 years old with 50 years experience
     if (data.years_experience > maxReasonableExperience) {
-      console.warn(`Experience of ${data.years_experience} years exceeds reasonable maximum of ${maxReasonableExperience}`);
     }
     
     // Check if experience exceeds profile age hints
@@ -77,7 +68,6 @@ window.validateProfileData = function(data) {
         
         // If experience significantly exceeds years since earliest education
         if (data.years_experience > yearsSinceGraduation + 5) {
-          console.warn(`Experience (${data.years_experience} years) seems high compared to education timeline (graduated ${earliestGraduation})`);
         }
       }
     }
@@ -85,12 +75,10 @@ window.validateProfileData = function(data) {
     // Check for common calculation errors
     const avgYearsPerRole = data.years_experience / data.experience.length;
     if (avgYearsPerRole > 15) {
-      console.warn(`Average of ${avgYearsPerRole.toFixed(1)} years per role seems unusually high`);
     }
   }
   
   // Log validation results
-  console.log('Validation complete:', {
     name: data.name || 'MISSING',
     email: data.email || 'MISSING',
     years_experience: data.years_experience,

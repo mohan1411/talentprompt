@@ -37,7 +37,6 @@ class QueueProcessor {
     try {
       await this.processQueue();
     } catch (error) {
-      console.error('Queue processing error:', error);
       throw error;  // Re-throw to let caller handle it
     } finally {
       this.isProcessing = false;
@@ -53,7 +52,6 @@ class QueueProcessor {
     // Get current user
     const { userEmail, authToken } = await chrome.storage.local.get(['userEmail', 'authToken']);
     if (!userEmail || !authToken) {
-      console.error('No user logged in or missing auth token');
       return;
     }
     
@@ -65,7 +63,6 @@ class QueueProcessor {
     );
     
     if (pendingItems.length === 0) {
-      // console.log('No pending items to process for user:', userEmail);
       return;
     }
 
@@ -75,7 +72,6 @@ class QueueProcessor {
       processingTab = await this.createHiddenTab();
       this.currentTab = processingTab;
     } catch (error) {
-      console.error('Failed to create processing tab:', error);
       throw new Error('Failed to create processing tab: ' + error.message);
     }
 
@@ -110,21 +106,16 @@ class QueueProcessor {
         // Import profile
         const result = await handleImportProfile(profileData, (await chrome.storage.local.get('authToken')).authToken);
         
-        console.log('[IMPORT RESULT] Full result:', result);
-        console.log('[IMPORT RESULT] Has candidate_id:', !!result?.candidate_id);
-        console.log('[IMPORT RESULT] Is duplicate:', result?.is_duplicate);
         
         // Verify the import was successful by checking for candidate_id
         if (result && result.candidate_id && !result.is_duplicate) {
           // Successfully imported new profile
           await this.updateItemStatus(item.id, 'completed');
           successCount++;
-          console.log(`[IMPORT SUCCESS] Profile imported with ID: ${result.candidate_id}`);
         } else if (result && result.is_duplicate) {
           // This is a duplicate (shouldn't happen with new logic, but just in case)
           await this.updateItemStatus(item.id, 'failed', 'Duplicate - Already imported');
           duplicateCount++;
-          console.log('[IMPORT DUPLICATE] Profile was marked as duplicate');
         } else {
           // Import failed - no candidate_id returned
           throw new Error('Import failed - no candidate ID returned');
@@ -134,17 +125,12 @@ class QueueProcessor {
         await this.sendProgressUpdate();
         
       } catch (error) {
-        console.error(`[IMPORT ERROR] Failed to process ${item.profileUrl}:`, error);
-        console.log('[IMPORT ERROR] Error type:', error.constructor.name);
-        console.log('[IMPORT ERROR] Error message:', error.message);
-        console.log('[IMPORT ERROR] Error stack:', error.stack);
         
         // Check error type
         if (error.message && error.message.includes('You have already imported')) {
           // User's own duplicate
           await this.updateItemStatus(item.id, 'failed', 'Duplicate - You already imported this profile');
           duplicateCount++;
-          console.log('[IMPORT ERROR] Marked as duplicate (user already imported)');
         } else if (error.message && (
           error.message.includes('imported by another user') ||
           error.message.includes('423') ||
@@ -153,7 +139,6 @@ class QueueProcessor {
           // Another user's profile (constraint issue)
           await this.updateItemStatus(item.id, 'failed', 'Locked - Imported by another user');
           failedCount++;
-          console.log('[IMPORT ERROR] Profile locked by another user');
         } else if (error.message && (
           error.message.includes('already been imported') || 
           error.message.includes('updated existing') ||
@@ -164,18 +149,15 @@ class QueueProcessor {
           // Generic duplicate (fallback)
           await this.updateItemStatus(item.id, 'failed', 'Duplicate - Already imported');
           duplicateCount++;
-          console.log('[IMPORT ERROR] Marked as duplicate (generic)');
         } else {
           await this.updateItemStatus(item.id, 'failed', error.message || 'Unknown error');
           failedCount++;
-          console.log('[IMPORT ERROR] Marked as failed');
         }
       }
       
       // Delay between profiles to avoid detection
       if (!this.shouldStop) {
         const delay = RATE_LIMIT_CONFIG.MIN_DELAY + Math.random() * (RATE_LIMIT_CONFIG.MAX_DELAY - RATE_LIMIT_CONFIG.MIN_DELAY);
-        // console.log(`Waiting ${Math.round(delay/1000)} seconds before next profile...`);
         await this.delay(delay);
       }
     }
@@ -211,10 +193,8 @@ class QueueProcessor {
         pinned: true  // Make it pinned to reduce visual impact
       });
       
-      // console.log('Created processing tab:', tab.id);
       return tab;
     } catch (error) {
-      console.error('Failed to create pinned tab:', error);
       
       // Fallback: Create a normal background tab
       try {
@@ -222,10 +202,8 @@ class QueueProcessor {
           url: 'about:blank',
           active: false
         });
-        // console.log('Created fallback processing tab:', tab.id);
         return tab;
       } catch (fallbackError) {
-        console.error('All tab creation methods failed:', fallbackError);
         throw new Error('Unable to create processing tab. Please ensure you have at least one Chrome window open.');
       }
     }
@@ -261,11 +239,9 @@ class QueueProcessor {
       const [result] = await chrome.scripting.executeScript({
         target: { tabId },
         func: () => {
-          // console.log('Extracting profile data using ultra-clean extractor from:', window.location.href);
           
           // Use the ultra-clean extractor if available
           if (window.extractUltraCleanProfile) {
-            // console.log('Using ultra-clean extractor for comprehensive extraction');
             const profileData = window.extractUltraCleanProfile();
             
             // Ensure we have the required fields for the backend
@@ -288,7 +264,6 @@ class QueueProcessor {
           }
           
           // Fallback to inline extraction if ultra-clean extractor is not available
-          console.log('WARNING: Ultra-clean extractor not available, using fallback extraction');
           
           const data = {
             linkedin_url: window.location.href.split('?')[0],
@@ -371,7 +346,6 @@ class QueueProcessor {
           
           // For experience and skills, delegate to advanced functions if available
           if (window.calculateTotalExperienceAdvanced || window.calculateTotalExperience) {
-            console.log('Advanced experience calculation functions are available');
           }
           
           // Basic experience extraction (will be overridden by ultra-clean if available)
@@ -410,7 +384,6 @@ class QueueProcessor {
       
       return result.result;
     } catch (error) {
-      console.error('Failed to extract profile data:', error);
       return null;
     }
   }
@@ -513,7 +486,6 @@ const queueProcessor = new QueueProcessor();
 
 // Handle extension installation
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('Promtitude LinkedIn Integration installed');
   
   if (details.reason === 'install') {
     // Initialize storage
@@ -533,7 +505,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 // Message handler for communication with popup and content scripts
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  // console.log('Received message:', request);
   
   if (request.action === 'importProfile') {
     // Handle the API request in the background script to avoid CORS issues
@@ -547,11 +518,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // Extract full profile data from current tab and import
     handleExtractAndImportCurrentProfile(request.authToken, sender.tab?.id)
       .then(result => {
-        console.log('[SERVICE WORKER] Import success, result:', result);
         sendResponse({ success: true, data: result });
       })
       .catch(error => {
-        console.log('[SERVICE WORKER] Import failed, error:', error.message);
         sendResponse({ success: false, error: error.message });
       });
     return true;
@@ -606,14 +575,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'startQueueProcessing') {
-    // console.log('Received startQueueProcessing request');
     queueProcessor.start()
       .then(() => {
-        // console.log('Queue processing started successfully');
         sendResponse({ success: true });
       })
       .catch(error => {
-        console.error('Failed to start queue processing:', error);
         sendResponse({ success: false, error: error.message || 'Failed to start processing' });
       });
     return true;
@@ -634,14 +600,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === 'addToQueue') {
-    // console.log('Received addToQueue request with profiles:', request.profiles);
     handleAddToQueue(request.profiles)
       .then(result => {
-        console.log('AddToQueue success:', result);
         sendResponse(result);
       })
       .catch(error => {
-        console.error('AddToQueue error:', error);
         sendResponse({ success: false, error: error.message });
       });
     return true;
@@ -659,8 +622,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 // Import profile to backend
 async function handleImportProfile(profileData, authToken) {
-  // console.log('Background script importing profile...');
-  // console.log('Profile data to import:', profileData);
   
   if (!authToken) {
     throw new Error('Not authenticated');
@@ -678,20 +639,15 @@ async function handleImportProfile(profileData, authToken) {
   // Check if profile already exists before importing
   try {
     const existsResult = await checkProfileExists(profileData.linkedin_url, authToken);
-    console.log('[DUPLICATE DEBUG] Profile exists check result:', existsResult);
     
     if (existsResult.exists) {
       // Don't pre-check, let the backend handle it and return proper duplicate response
-      console.log('Profile may already exist, but letting backend handle it');
     }
   } catch (error) {
-    console.warn('[DUPLICATE DEBUG] Error checking profile existence (will continue with import):', error);
   }
   
   // Use the correct import endpoint
   const url = `${API_URL}/linkedin/import-profile`;
-  console.log('[DUPLICATE DEBUG] Making import request to:', url);
-  console.log('[DUPLICATE DEBUG] Profile URL:', profileData.linkedin_url);
   
   try {
     const response = await fetch(url, {
@@ -703,22 +659,14 @@ async function handleImportProfile(profileData, authToken) {
       body: JSON.stringify(profileData)
     });
     
-    console.log('[DUPLICATE DEBUG] Response status:', response.status);
-    console.log('[DUPLICATE DEBUG] Response status text:', response.statusText);
     
     if (!response.ok) {
-      console.log('[DUPLICATE DEBUG] Response not OK, status:', response.status);
       const errorText = await response.text();
-      console.error('[DUPLICATE DEBUG] Error response body:', errorText);
-      console.error('Response headers:', response.headers);
       
       let errorMessage = `Import failed: ${response.statusText}`;
-      console.log('[DUPLICATE DEBUG] Initial error message:', errorMessage);
-      console.log('[DUPLICATE DEBUG] Response statusText:', response.statusText);
       
       // Handle specific error codes
       if (response.status === 404) {
-        console.log('[DUPLICATE DEBUG] Got 404 response');
         errorMessage = 'Import endpoint not found. Please check if the backend is running.';
       } else if (response.status === 401) {
         errorMessage = 'Authentication failed. Please login again.';
@@ -726,7 +674,6 @@ async function handleImportProfile(profileData, authToken) {
         errorMessage = 'Invalid profile data. Please check if all required fields are present.';
       } else if (response.status === 409) {
         // Conflict - duplicate profile for current user
-        console.log('[DUPLICATE] Got 409 response - duplicate profile detected');
         await updateDuplicateCounter();
         
         // Send notification
@@ -737,11 +684,9 @@ async function handleImportProfile(profileData, authToken) {
           message: `You have already imported ${profileData.name || 'this profile'}`
         });
         
-        console.log('[DUPLICATE] Throwing duplicate error');
         throw new Error('You have already imported this profile');
       } else if (response.status === 423) {
         // Locked - profile imported by another user (old constraint issue)
-        console.log('[LOCKED] Got 423 response - profile imported by another user');
         errorMessage = 'This profile has been imported by another user. Multiple users cannot import the same profile due to a database constraint.';
         
         // Send notification with different message
@@ -778,7 +723,6 @@ async function handleImportProfile(profileData, authToken) {
             errorMessage = error.detail.map(e => e.msg || e.message).join(', ');
           }
         }
-        console.error('Parsed error:', error);
       } catch (e) {
         // If error text is not JSON, use it as is
         if (errorText && errorText.length < 200) {
@@ -789,20 +733,14 @@ async function handleImportProfile(profileData, authToken) {
     }
     
     const result = await response.json();
-    console.log('[IMPORT RESPONSE] Full response:', result);
-    console.log('[IMPORT RESPONSE] Status:', response.status);
-    console.log('[IMPORT RESPONSE] Has candidate_id:', !!result.candidate_id);
-    console.log('[IMPORT RESPONSE] Success flag:', result.success);
     
     // Validate the response has required fields
     if (!result.candidate_id) {
-      console.error('[IMPORT ERROR] No candidate_id in response:', result);
       throw new Error('Import failed - no candidate ID returned from server');
     }
     
     // Check if the response indicates this was a duplicate
     if (result.is_duplicate === true || result.action === 'updated' || result.status === 'updated' || result.updated === true) {
-      console.log('[IMPORT DUPLICATE] Profile is duplicate:', result);
       await updateDuplicateCounter();
       
       // Send notification
@@ -823,11 +761,9 @@ async function handleImportProfile(profileData, authToken) {
     
     // Update import counter only for new imports
     await updateImportCounter();
-    console.log('[IMPORT SUCCESS] New profile imported successfully');
     
     return result;
   } catch (error) {
-    console.error('Fetch error:', error);
     
     // Re-throw our duplicate error
     if (error.message && (error.message.includes('already been imported') || error.message.includes('updated existing'))) {
@@ -848,7 +784,6 @@ async function checkProfileExists(linkedinUrl, authToken) {
   }
   
   const url = `${API_URL}/linkedin/check-exists`;
-  console.log('[DUPLICATE DEBUG] Checking if profile exists:', linkedinUrl, 'at URL:', url);
   
   try {
     const response = await fetch(url, {
@@ -860,23 +795,18 @@ async function checkProfileExists(linkedinUrl, authToken) {
       body: JSON.stringify({ linkedin_url: linkedinUrl })
     });
     
-    console.log('[DUPLICATE DEBUG] Check exists response status:', response.status);
     
     if (response.status === 404) {
-      console.warn('[DUPLICATE DEBUG] Check-exists endpoint not found (404), will check during import');
       return { exists: false };
     }
     
     if (response.ok) {
       const data = await response.json();
-      console.log('[DUPLICATE DEBUG] Check exists response data:', data);
       return data;
     }
     
-    console.warn('[DUPLICATE DEBUG] Check exists failed with status:', response.status);
     return { exists: false };
   } catch (error) {
-    console.error('Error checking profile existence:', error);
     return { exists: false };
   }
 }
@@ -901,7 +831,6 @@ async function handleAddToQueue(profiles) {
     profiles.forEach(profile => {
       // Validate profile data
       if (!profile.profileUrl || !profile.profileName) {
-        console.warn('Skipping invalid profile:', profile);
         return;
       }
       
@@ -938,7 +867,6 @@ async function handleAddToQueue(profiles) {
       pendingCount: pendingCount
     };
   } catch (error) {
-    console.error('Error adding to queue:', error);
     throw error;
   }
 }
@@ -946,7 +874,6 @@ async function handleAddToQueue(profiles) {
 // Extract and import current profile
 async function handleExtractAndImportCurrentProfile(authToken, tabId) {
   try {
-    console.log('Extracting and importing current profile');
     
     // Get the active tab if not provided
     if (!tabId) {
@@ -965,13 +892,11 @@ async function handleExtractAndImportCurrentProfile(authToken, tabId) {
       throw new Error('Failed to extract profile data');
     }
     
-    console.log('Extracted profile data for import:', profileData);
     
     // Import the profile
     const result = await handleImportProfile(profileData, authToken);
     return result;
   } catch (error) {
-    console.error('Failed to extract and import profile:', error);
     throw error;
   }
 }
@@ -994,7 +919,6 @@ async function updateBadgeFromStorage() {
       chrome.action.setBadgeText({ text: '' });
     }
   } catch (error) {
-    console.error('Error updating badge:', error);
   }
 }
 
@@ -1005,7 +929,6 @@ async function updateDuplicateCounter() {
     const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
     
     if (!userEmail) {
-      console.error('No user logged in, cannot update duplicate counter');
       return;
     }
     
@@ -1028,7 +951,6 @@ async function updateDuplicateCounter() {
       // Ignore errors if popup is not open
     });
   } catch (error) {
-    console.error('Error updating duplicate counter:', error);
   }
 }
 
@@ -1039,7 +961,6 @@ async function updateImportCounter() {
     const { importStats = {}, userEmail } = await chrome.storage.local.get(['importStats', 'userEmail']);
     
     if (!userEmail) {
-      console.error('No user logged in, cannot update import counter');
       return;
     }
     
@@ -1062,7 +983,6 @@ async function updateImportCounter() {
       // Ignore errors if popup is not open
     });
   } catch (error) {
-    console.error('Error updating import counter:', error);
   }
 }
 
@@ -1089,7 +1009,6 @@ async function migrateExistingData() {
     });
     
     if (needsMigration) {
-      console.log('Migrating queue data to include userEmail');
       await chrome.storage.local.set({ 
         linkedinImportQueue: updatedQueue,
         dataMigrated: true 
@@ -1099,7 +1018,6 @@ async function migrateExistingData() {
       await chrome.storage.local.set({ dataMigrated: true });
     }
   } catch (error) {
-    console.error('Error migrating data:', error);
   }
 }
 
@@ -1141,7 +1059,6 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         });
       }
     } catch (error) {
-      console.error('Error checking queue:', error);
     }
   }
 });

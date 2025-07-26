@@ -32,14 +32,12 @@
       
       // If we're still checking for duplicates, wait for it to complete
       if (isCheckingDuplicate) {
-        console.log('Still checking for duplicates, waiting...');
         const checkInterval = setInterval(() => {
           if (!isCheckingDuplicate) {
             clearInterval(checkInterval);
             
             // Now check if it's a duplicate
             if (profileExistsStatus && profileExistsStatus.exists) {
-              console.log('Profile is known duplicate (after waiting), showing error');
               sendResponse({ success: false, error: 'This profile has already been imported' });
             } else {
               // Continue with normal import flow
@@ -52,7 +50,6 @@
       
       // Check if we already know this profile exists (before any import action)
       if (profileExistsStatus && profileExistsStatus.exists) {
-        console.log('Profile is known duplicate (from popup trigger), showing error immediately');
         sendResponse({ success: false, error: 'This profile has already been imported' });
         return true;
       }
@@ -68,7 +65,6 @@
               sendResponse({ success: true, data: result });
             }
           }).catch(error => {
-            console.error('Import error in content script:', error);
             sendResponse({ success: false, error: error.message });
           });
         } else {
@@ -90,28 +86,22 @@
   
   // Simple import function for popup - now using full extraction
   async function handleSimpleImport(authToken) {
-    console.log('Handling import from popup - requesting full extraction');
-    console.log('Current profileExistsStatus:', profileExistsStatus);
     
     // Wait for any early duplicate check to complete
     if (window.__duplicateCheckPromise) {
-      console.log('Waiting for early duplicate check to complete...');
       try {
         await window.__duplicateCheckPromise;
       } catch (err) {
-        console.error('Early duplicate check failed:', err);
       }
     }
     
     // Check if we already know this profile exists
     if (profileExistsStatus && profileExistsStatus.exists) {
-      console.log('Profile is known duplicate in handleSimpleImport, returning error');
       return { success: false, error: 'This profile has already been imported' };
     }
     
     // If still checking, wait for it (with timeout)
     if (isCheckingDuplicate) {
-      console.log('Still checking for duplicates in handleSimpleImport, waiting...');
       await new Promise((resolve) => {
         let waitTime = 0;
         const maxWaitTime = 5000; // 5 seconds max
@@ -120,7 +110,6 @@
           if (!isCheckingDuplicate || waitTime >= maxWaitTime) {
             clearInterval(checkInterval);
             if (waitTime >= maxWaitTime) {
-              console.log('Duplicate check timed out after', maxWaitTime, 'ms');
             }
             resolve();
           }
@@ -129,7 +118,6 @@
       
       // Check again after waiting
       if (profileExistsStatus && profileExistsStatus.exists) {
-        console.log('Profile is duplicate after waiting in handleSimpleImport');
         return { success: false, error: 'This profile has already been imported' };
       }
     }
@@ -151,11 +139,9 @@
     return;
   }
   
-  console.log('LinkedIn profile script loaded on:', pathname);
   
   // Don't run UI elements on detail pages (experience, education, etc)
   if (pathname.includes('/details/')) {
-    console.log('LinkedIn Import: Skipping details page. Navigate to main profile to import.');
     return;
   }
   
@@ -176,9 +162,7 @@
   // Also check immediately for popup requests
   // This ensures duplicate check starts ASAP
   const earlyCheckPromise = checkIfProfileExists().then(() => {
-    console.log('Early duplicate check complete:', profileExistsStatus);
   }).catch(err => {
-    console.error('Early duplicate check failed:', err);
   });
   
   // Store the promise globally so handleSimpleImport can wait for it
@@ -193,9 +177,7 @@
     // Start checking for duplicates immediately and wait for it
     try {
       await checkIfProfileExists();
-      console.log('Initial duplicate check complete:', profileExistsStatus);
     } catch (err) {
-      console.error('Initial duplicate check failed:', err);
     }
     
     // Wait a bit for LinkedIn to render
@@ -231,13 +213,11 @@
                           document.querySelector('.pv-top-card-v3__cta-container');
     
     if (!actionsSection) {
-      console.log('Actions section not found, retrying...');
       // Retry after a delay
       setTimeout(addImportButton, 1000);
       return;
     }
     
-    console.log('Found actions section:', actionsSection);
     
     // Create import button
     importButton = document.createElement('button');
@@ -346,7 +326,6 @@
         });
       });
       
-      console.log('Profile exists check response:', response);
       
       if (response && response.exists) {
         profileExistsStatus = {
@@ -360,7 +339,6 @@
         };
       }
     } catch (error) {
-      console.error('Error checking profile:', error);
       profileExistsStatus = { exists: false };
     } finally {
       isCheckingDuplicate = false;
@@ -369,14 +347,11 @@
   
   // Handle import button click
   handleImport = async function() {
-    console.log('=== Import Handler v2 - Enhanced Email Extraction ===');
-    console.log('Profile exists status:', profileExistsStatus);
     
     if (isProcessing) return;
     
     // Check if we already know this profile exists
     if (profileExistsStatus && profileExistsStatus.exists) {
-      console.log('Profile is known duplicate, showing error immediately');
       showStatus('This profile has already been imported', 'exists');
       if (importButton) {
         updateButtonState('exists', profileExistsStatus.candidate_id);
@@ -408,7 +383,6 @@
       // FIRST: Extract profile data (including experience) BEFORE opening any modals
       let profileData;
       if (window.extractUltraCleanProfile) {
-        console.log('Using ultra clean extraction for profile data...');
         profileData = window.extractUltraCleanProfile();
         
         // Check if extraction returned an error
@@ -424,102 +398,64 @@
           return;
         }
         
-        console.log('Profile extracted with', profileData.experience?.length || 0, 'experiences');
-        console.log('Years of experience from profile:', profileData.years_experience);
       } else {
-        console.log('Ultra clean extractor not available, using standard extraction');
         profileData = extractProfileData();
       }
       
       // SECOND: Extract contact info (this may open/close modals)
       let contactInfo = {};
       
-      console.log('\n=== CONTACT EXTRACTION START ===');
-      console.log('Available extractors:');
-      console.log('- extractInlineContactInfo:', typeof window.extractInlineContactInfo);
-      console.log('- extractContactInfo:', typeof window.extractContactInfo);
       
       // Try enhanced email extraction first
       if (window.extractEmailEnhanced) {
-        console.log('\nTrying enhanced email extraction...');
         try {
           const enhancedEmail = window.extractEmailEnhanced();
           if (enhancedEmail) {
             contactInfo.email = enhancedEmail;
-            console.log('Enhanced extraction found email:', enhancedEmail);
           }
         } catch (err) {
-          console.error('Error in enhanced email extraction:', err);
         }
       }
       
       // Try inline extraction if no email found yet
       if (!contactInfo.email && window.extractInlineContactInfo) {
-        console.log('\nTrying inline contact extraction...');
         try {
           const inlineInfo = window.extractInlineContactInfo();
-          console.log('Inline extraction returned:', JSON.stringify(inlineInfo));
-          console.log('Inline info type:', typeof inlineInfo);
-          console.log('Inline info is null?', inlineInfo === null);
-          console.log('Inline info is undefined?', inlineInfo === undefined);
           
           if (inlineInfo && typeof inlineInfo === 'object') {
             contactInfo = inlineInfo;
             if (inlineInfo.email) {
-              console.log('Inline extraction found email:', contactInfo.email);
             } else {
-              console.log('Inline extraction returned object but no email');
             }
           } else {
-            console.log('Inline extraction did not return valid object');
           }
         } catch (err) {
-          console.error('Error in inline extraction:', err);
-          console.error('Stack:', err.stack);
         }
       } else if (!window.extractInlineContactInfo) {
-        console.log('WARNING: Inline contact extractor not available');
       }
       
       // Only try modal extraction if inline didn't find email
       if (!contactInfo.email && window.extractContactInfo) {
-        console.log('No inline email found, attempting modal extraction...');
-        console.log('Contact extractor available:', typeof window.extractContactInfo);
         
         // Check connection level
         const connectionDegree = document.querySelector('.dist-value')?.textContent || 
                                 document.querySelector('.distance-badge')?.textContent || '';
-        console.log('Connection degree:', connectionDegree);
         
         if (connectionDegree.includes('3rd') || connectionDegree.includes('3°')) {
-          console.log('This is a 3rd degree connection - email likely not available');
         }
         
         try {
           const modalContactInfo = await window.extractContactInfo();
-          console.log('Modal extraction raw result:', modalContactInfo);
-          console.log('Modal contact info stringified:', JSON.stringify(modalContactInfo));
-          console.log('Modal result type:', typeof modalContactInfo);
-          console.log('Modal result keys:', modalContactInfo ? Object.keys(modalContactInfo) : 'null');
           
           if (modalContactInfo && modalContactInfo.email) {
             contactInfo = modalContactInfo;
-            console.log('Modal extraction found email:', contactInfo.email);
           } else {
-            console.log('Modal extraction did not find email');
-            console.log('Note: Email may not be available for non-1st degree connections');
           }
         } catch (err) {
-          console.error('Error during modal contact extraction:', err);
-          console.error('Error stack:', err.stack);
         }
       } else if (!window.extractContactInfo) {
-        console.error('Contact extractor function not available!');
       }
       
-      console.log('\n=== CONTACT EXTRACTION END ===');
-      console.log('Final contactInfo:', JSON.stringify(contactInfo));
-      console.log('Has email?', !!contactInfo.email);
       
       // Ensure email and phone fields exist in profile data
       if (!profileData.hasOwnProperty('email')) {
@@ -530,7 +466,6 @@
       }
       
       // Add contact info to profile data
-      console.log('Profile data before adding contact info:', {
         email: profileData.email,
         phone: profileData.phone,
         years_experience: profileData.years_experience,
@@ -539,20 +474,15 @@
       
       if (contactInfo.email) {
         profileData.email = contactInfo.email;
-        console.log('Added email to profile data:', contactInfo.email);
       } else {
-        console.log('No email in contact info to add');
       }
       
       if (contactInfo.phone) {
         profileData.phone = contactInfo.phone;
-        console.log('Added phone to profile data:', contactInfo.phone);
       } else {
-        console.log('No phone in contact info to add');
       }
       
       // Verify experience data wasn't lost
-      console.log('Profile data after adding contact info:', {
         email: profileData.email,
         phone: profileData.phone,
         years_experience: profileData.years_experience,
@@ -561,30 +491,23 @@
       
       // Force recalculation of years if needed
       if (profileData.experience && profileData.experience.length > 0) {
-        console.log('\n=== RECALCULATING EXPERIENCE ===');
         let recalculated;
         
         if (window.calculateTotalExperienceAdvanced) {
           recalculated = window.calculateTotalExperienceAdvanced(profileData.experience);
-          console.log('Using advanced calculator');
         } else if (window.calculateTotalExperience) {
           recalculated = window.calculateTotalExperience(profileData.experience);
-          console.log('Using basic calculator');
         }
         
         if (recalculated !== undefined) {
-          console.log('Original years:', profileData.years_experience);
-          console.log('Recalculated years:', recalculated);
           
           if (recalculated !== profileData.years_experience) {
-            console.log('Experience calculation mismatch - using recalculated value');
             profileData.years_experience = recalculated;
             
             // Apply manual override after recalculation
             if (window.applyManualOverride) {
               const overrideYears = window.applyManualOverride(profileData.linkedin_url, profileData.years_experience);
               if (overrideYears !== profileData.years_experience) {
-                console.log(`Manual override RE-APPLIED after recalculation: ${profileData.years_experience} -> ${overrideYears} years`);
                 profileData.years_experience = overrideYears;
               }
             }
@@ -592,7 +515,6 @@
         }
       }
       
-      console.log('Profile data after adding contact info:', {
         email: profileData.email,
         phone: profileData.phone
       });
@@ -601,30 +523,21 @@
       if (window.verifyCleanData) {
         const isClean = window.verifyCleanData(profileData);
         if (!isClean) {
-          console.warn('WARNING: Profile data contains irrelevant content!');
         }
       }
       
       // Final validation and email preservation
       if (!profileData.email && contactInfo && contactInfo.email) {
-        console.error('Email was lost! Recovering from contactInfo');
         profileData.email = contactInfo.email;
       }
       
       // Double-check email field exists
       if (!profileData.hasOwnProperty('email')) {
-        console.error('Email field missing from profileData! Adding it.');
         profileData.email = '';
       }
       
       // If we still don't have email, log what we tried
       if (!profileData.email) {
-        console.log('=== Email Extraction Debug ===');
-        console.log('ContactInfo object:', JSON.stringify(contactInfo));
-        console.log('ContactInfo has email property:', contactInfo.hasOwnProperty('email'));
-        console.log('ContactInfo.email value:', contactInfo.email);
-        console.log('ProfileData has email property:', profileData.hasOwnProperty('email'));
-        console.log('ProfileData.email value:', profileData.email);
       }
       
       // Validate and fix data before sending
@@ -632,12 +545,7 @@
         profileData = window.validateProfileData(profileData);
       }
       
-      console.log('Final profile data to import:', profileData);
-      console.log('Email in final data:', profileData.email || 'MISSING');
-      console.log('All profile data keys:', Object.keys(profileData));
       
-      console.log('Sending import request through background script...');
-      console.log('Auth token:', authToken ? 'Present' : 'Missing');
       
       // Send the request through the background script to avoid CORS issues
       const response = await chrome.runtime.sendMessage({
@@ -646,7 +554,6 @@
         authToken: authToken
       });
       
-      console.log('Background script response:', response);
       
       if (!response || !response.success) {
         // Check if it's a duplicate error
@@ -750,13 +657,11 @@
     // Extract experience - more robust approach
     const experienceSection = document.querySelector('#experience')?.parentElement?.parentElement;
     if (experienceSection) {
-      console.log('Found experience section, attempting extraction...');
       
       // Method 1: Try the most common structure first
       const experienceList = experienceSection.querySelector('ul') || experienceSection.querySelector('div > div > ul');
       if (experienceList) {
         const items = experienceList.querySelectorAll('li');
-        console.log(`Found ${items.length} experience items in list`);
         
         items.forEach((item, index) => {
           try {
@@ -766,7 +671,6 @@
               .map(span => span.textContent.trim())
               .filter(t => t && t.length > 1);
             
-            console.log(`Item ${index + 1} texts:`, texts);
             
             if (texts.length >= 2) {
               const exp = {
@@ -824,11 +728,9 @@
               // Only add if we have meaningful data
               if (exp.title || exp.company) {
                 data.experience.push(exp);
-                console.log(`Added experience ${data.experience.length}:`, exp);
               }
             }
           } catch (e) {
-            console.error(`Error parsing experience item ${index + 1}:`, e);
           }
         });
       }
@@ -838,7 +740,6 @@
         const experienceItems = experienceSection.querySelectorAll('[data-view-name="profile-component-entity"]') ||
                                experienceSection.querySelectorAll('.pvs-entity');
         
-        console.log(`Trying alternative method, found ${experienceItems.length} items`);
         
         experienceItems.forEach((item, index) => {
           try {
@@ -857,14 +758,12 @@
               });
             }
           } catch (e) {
-            console.error('Error in alternative experience parsing:', e);
           }
         });
       }
       
       // Method 3: Last resort - extract from section text
       if (data.experience.length === 0) {
-        console.log('No structured experience found, extracting from text');
         const sectionText = experienceSection.innerText || experienceSection.textContent || '';
         
         // Look for common patterns in the text
@@ -951,7 +850,6 @@
     data.full_text = ''; // Will be built by aggressive cleaning
     
     // Log what we found for debugging
-    console.log('Extracted LinkedIn data:', {
       name: data.name,
       headline: data.headline,
       location: data.location,

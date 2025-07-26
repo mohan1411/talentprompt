@@ -13,7 +13,6 @@
   
   // Check if we have access to Chrome APIs
   if (typeof chrome === 'undefined' || !chrome.storage) {
-    console.error('Chrome extension APIs not available');
     return;
   }
   
@@ -61,7 +60,6 @@
       
       // Handle logout message
       if (request.action === 'userLoggedOut') {
-        console.log('🎯 Bulk Import Sidebar: User logged out, closing sidebar');
         const sidebar = document.querySelector('#bulk-import-sidebar');
         if (sidebar) {
           sidebar.remove();
@@ -72,7 +70,6 @@
       }
     });
   } catch (error) {
-    console.error('Failed to register message listener:', error);
   }
   
   // Auto-initialize disabled - sidebar only opens when user clicks button
@@ -91,7 +88,6 @@
       if (!window.location.pathname.includes('/search/results/')) {
         const sidebar = document.querySelector('#bulk-import-sidebar');
         if (sidebar) {
-          console.log('🎯 Bulk Import Sidebar: Hiding - no longer on search results page');
           sidebar.style.display = 'none';
         }
       }
@@ -260,7 +256,6 @@
   }
   
   function updateProfileList() {
-    console.log('🔍 Starting profile detection...');
     
     // First, let's debug what's on the page
     const debugSelectors = [
@@ -284,7 +279,6 @@
     // Try each selector and log what we find
     for (const selector of debugSelectors) {
       const elements = document.querySelectorAll(selector);
-      console.log(`Selector "${selector}": found ${elements.length} elements`);
       if (elements.length > 0 && !foundSelector) {
         // Verify these are profile results by checking for profile links
         const validResults = Array.from(elements).filter(el => 
@@ -293,7 +287,6 @@
         if (validResults.length > 0) {
           results = validResults;
           foundSelector = selector;
-          console.log(`✅ Using selector "${selector}" with ${validResults.length} valid profile results`);
           break;
         }
       }
@@ -301,7 +294,6 @@
     
     // If still no results, try a more general approach
     if (results.length === 0) {
-      console.log('Trying general approach: finding all elements with profile links...');
       const allProfileLinks = document.querySelectorAll('a[href*="/in/"]:not([href*="/company/"]):not([href*="/school/"])');
       const uniqueContainers = new Set();
       
@@ -320,17 +312,14 @@
       });
       
       results = Array.from(uniqueContainers);
-      console.log(`Found ${results.length} profile containers using general approach`);
     }
     
     const profileList = document.getElementById('profile-list');
     
     if (!profileList) {
-      console.error('Profile list element not found!');
       return;
     }
     
-    console.log(`🎯 Processing ${results.length} profile results`);
     
     if (results.length === 0) {
       profileList.innerHTML = `
@@ -344,8 +333,6 @@
       `;
       
       // Log page structure for debugging
-      console.log('Page URL:', window.location.href);
-      console.log('Page title:', document.title);
       return;
     }
     
@@ -354,7 +341,6 @@
     results.forEach((result, index) => {
       const profileLink = result.querySelector('a[href*="/in/"]');
       if (!profileLink) {
-        console.log(`No profile link found in result ${index}`);
         return;
       }
       
@@ -386,7 +372,6 @@
           const text = element.textContent.trim();
           if (text && text.length > 0 && !text.includes('LinkedIn Member')) {
             name = text.split('\n')[0].trim(); // Take first line only
-            console.log(`Found name "${name}" using selector: ${selector}`);
             break;
           }
         }
@@ -430,7 +415,6 @@
         }
       }
       
-      console.log(`Profile ${index}: ${name} - ${profileUrl}`);
       
       const profileItem = document.createElement('div');
       profileItem.style.cssText = `
@@ -482,12 +466,10 @@
           selectedProfiles.add(profileUrl);
           profileItem.style.border = '2px solid #059669';
           profileItem.style.background = '#d1fae5';
-          console.log(`Selected: ${name} - ${profileUrl}`);
         } else {
           selectedProfiles.delete(profileUrl);
           profileItem.style.border = '2px solid #e5e7eb';
           profileItem.style.background = '#f9fafb';
-          console.log(`Deselected: ${name} - ${profileUrl}`);
         }
         
         updateSelectionCount();
@@ -540,7 +522,6 @@
   }
   
   async function addToQueue() {
-    console.log('Adding to queue, selected profiles:', selectedProfiles.size);
     
     if (selectedProfiles.size === 0) {
       showMessage('Please select at least one profile', 'error');
@@ -551,7 +532,6 @@
       // Prepare profiles to add
       const profilesToAdd = [];
       const profileItems = document.querySelectorAll('#profile-list > div');
-      console.log('Profile items found:', profileItems.length);
       
       profileItems.forEach(item => {
         const checkbox = item.querySelector('input[type="checkbox"]');
@@ -559,7 +539,6 @@
           const profileUrl = item.dataset.profileUrl;
           const profileName = item.dataset.profileName;
           
-          console.log('Adding profile:', profileName, profileUrl);
           
           if (profileUrl) {
             profilesToAdd.push({
@@ -581,15 +560,12 @@
       }
       
       // Send message to background script to add to queue
-      console.log('Sending addToQueue message with profiles:', profilesToAdd);
       const response = await chrome.runtime.sendMessage({
         action: 'addToQueue',
         profiles: profilesToAdd
       });
-      console.log('Received response:', response);
       
       if (response.success) {
-        console.log(`Added ${response.addedCount} profiles to queue`);
         
         // Update badge
         try {
@@ -598,7 +574,6 @@
             count: response.pendingCount
           });
         } catch (e) {
-          console.log('Badge update failed:', e);
         }
         
         if (response.addedCount > 0) {
@@ -611,7 +586,6 @@
         throw new Error(response.error || 'Failed to add profiles');
       }
     } catch (error) {
-      console.error('Error adding to queue:', error);
       
       // Handle extension context invalidated error
       if (error.message && error.message.includes('Extension context invalidated')) {
@@ -663,7 +637,6 @@
   
   function observeResults() {
     const observer = new MutationObserver(() => {
-      console.log('DOM changed, updating profile list...');
       setTimeout(updateProfileList, 500);
     });
     
@@ -681,7 +654,6 @@
     for (const selector of containerSelectors) {
       container = document.querySelector(selector);
       if (container) {
-        console.log(`Observing container: ${selector}`);
         break;
       }
     }
@@ -693,7 +665,6 @@
         characterData: true
       });
     } else {
-      console.warn('No suitable container found for mutation observer');
       // Fallback: observe the entire body
       observer.observe(document.body, {
         childList: true,
@@ -736,18 +707,11 @@
     debugBtn.textContent = '🐛 Debug Profiles';
     
     debugBtn.onclick = () => {
-      console.log('=== BULK IMPORT DEBUG ===');
-      console.log('URL:', window.location.href);
-      console.log('Page Title:', document.title);
-      console.log('Selected profiles:', selectedProfiles.size);
-      console.log('Selected URLs:', Array.from(selectedProfiles));
       
       // Check profile items in sidebar
       const profileItems = document.querySelectorAll('#profile-list > div');
-      console.log('Profile items in sidebar:', profileItems.length);
       profileItems.forEach((item, i) => {
         const checkbox = item.querySelector('input[type="checkbox"]');
-        console.log(`Item ${i}: ${item.dataset.profileName} - ${item.dataset.profileUrl} - Checked: ${checkbox?.checked}`);
       });
       
       // Check for various profile containers
@@ -760,10 +724,8 @@
       
       selectors.forEach(sel => {
         const elements = document.querySelectorAll(sel);
-        console.log(`${sel}: ${elements.length} found`);
         if (elements.length > 0 && elements.length < 5) {
           elements.forEach((el, i) => {
-            console.log(`  ${i}: `, el);
           });
         }
       });
@@ -773,10 +735,8 @@
       
       // Test Chrome storage
       chrome.storage.local.get('linkedinImportQueue', (result) => {
-        console.log('Current queue in storage:', result.linkedinImportQueue);
       });
       
-      alert(`Debug info logged to console. Found ${document.querySelectorAll('a[href*="/in/"]').length} profile links on page. Selected: ${selectedProfiles.size}`);
     };
     
     document.body.appendChild(debugBtn);

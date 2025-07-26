@@ -1,9 +1,6 @@
 // Extract contact information from LinkedIn profile
 window.extractContactInfo = async function() {
   try {
-    console.log('=== Starting Contact Info Extraction v3 ===');
-    console.log('Function called at:', new Date().toISOString());
-    console.log('Current URL:', window.location.href);
     
     const contactInfo = {
       email: '',
@@ -14,9 +11,6 @@ window.extractContactInfo = async function() {
     };
     
     // Quick DOM check
-    console.log('Profile name element exists:', !!document.querySelector('h1'));
-    console.log('Number of buttons on page:', document.querySelectorAll('button').length);
-    console.log('Number of links on page:', document.querySelectorAll('a').length);
     // Method 1: Look for Contact Info button with multiple selectors
     const contactButtonSelectors = [
       'a[id*="contact-info"]',
@@ -33,14 +27,10 @@ window.extractContactInfo = async function() {
     ];
     
     let contactButton = null;
-    console.log('Searching for contact button...');
     for (const selector of contactButtonSelectors) {
       try {
         contactButton = document.querySelector(selector);
         if (contactButton) {
-          console.log(`Found contact button with selector: ${selector}`);
-          console.log(`Button text: ${contactButton.textContent.trim()}`);
-          console.log(`Button visible: ${contactButton.offsetParent !== null}`);
           break;
         }
       } catch (e) {
@@ -49,11 +39,9 @@ window.extractContactInfo = async function() {
     }
     
     if (!contactButton) {
-      console.log('No contact button found with any selector');
     }
     
     if (contactButton) {
-      console.log('Contact info button found:', {
         tagName: contactButton.tagName,
         id: contactButton.id,
         className: contactButton.className,
@@ -67,13 +55,11 @@ window.extractContactInfo = async function() {
                       contactButton.textContent.toLowerCase().includes('unlock');
       
       if (isLocked) {
-        console.log('WARNING: Contact info appears to be locked/premium');
       }
       
       // First, close any messaging modals that might be open
       const messagingModals = document.querySelectorAll('.msg-overlay-conversation-bubble, [class*="msg-overlay"]');
       messagingModals.forEach(modal => {
-        console.log('Closing messaging modal first');
         const closeBtn = modal.querySelector('button[aria-label*="Close"]') || 
                         modal.querySelector('button[data-control-name="overlay.close"]');
         if (closeBtn) closeBtn.click();
@@ -102,7 +88,6 @@ window.extractContactInfo = async function() {
             if (!modalText.includes('msg-overlay') && 
                 !modalText.includes('conversation-bubble')) {
               contactModal = modal;
-              console.log(`Found contact modal with selector: ${selector}`);
               break;
             }
           }
@@ -123,14 +108,12 @@ window.extractContactInfo = async function() {
                dialogText.toLowerCase().includes('contact')) &&
               !dialogText.includes('msg-overlay')) {
             contactModal = dialog;
-            console.log('Found contact modal via dialog role');
             break;
           }
         }
       }
       
       if (!contactModal) {
-        console.log('Modal not open, clicking button...');
         
         // Close all modals first to ensure clean state
         const allModals = document.querySelectorAll('[role="dialog"], .artdeco-modal, .msg-overlay-container');
@@ -138,7 +121,6 @@ window.extractContactInfo = async function() {
           const closeBtn = modal.querySelector('button[aria-label*="Close"]') || 
                           modal.querySelector('button[aria-label*="Dismiss"]');
           if (closeBtn) {
-            console.log('Closing existing modal before opening contact info');
             closeBtn.click();
           }
         });
@@ -162,7 +144,6 @@ window.extractContactInfo = async function() {
                 if (!modalText.includes('msg-overlay') && 
                     !modalText.includes('conversation-bubble')) {
                   contactModal = modal;
-                  console.log(`Modal appeared after ${i + 1} attempts with selector: ${selector}`);
                   break;
                 }
               }
@@ -184,7 +165,6 @@ window.extractContactInfo = async function() {
                    dialogText.toLowerCase().includes('contact')) &&
                   !dialogText.includes('msg-overlay')) {
                 contactModal = dialog;
-                console.log(`Modal appeared after ${i + 1} attempts via dialog role`);
                 break;
               }
             }
@@ -195,46 +175,33 @@ window.extractContactInfo = async function() {
           }
         }
       } else {
-        console.log('Modal already open');
       }
       
       if (contactModal) {
-        console.log('Modal found, extracting contact info...');
         
         // Log modal content for debugging
-        console.log('Modal content preview:', contactModal.innerHTML.substring(0, 500));
         
         // Enhanced modal debugging
-        console.log('=== MODAL CONTENT DEBUG ===');
-        console.log('Modal class:', contactModal.className);
-        console.log('Modal id:', contactModal.id);
         
         // Log all text content in modal
         const allText = contactModal.innerText || contactModal.textContent || '';
-        console.log('Total modal text length:', allText.length);
-        console.log('Modal text preview:', allText.substring(0, 1000));
         
         // Check for email patterns in the entire modal
         const emailPattern = /[\w.-]+@[\w.-]+\.\w+/g;
         const allEmailMatches = allText.match(emailPattern);
         if (allEmailMatches) {
-          console.log('All email patterns found in modal:', allEmailMatches);
         } else {
-          console.log('NO EMAIL PATTERNS FOUND IN MODAL TEXT');
         }
         
         // Log all sections in modal
         const sections = contactModal.querySelectorAll('section');
-        console.log(`Found ${sections.length} sections in modal`);
         sections.forEach((section, idx) => {
           const sectionText = section.innerText || section.textContent || '';
-          console.log(`Section ${idx}:`, {
             className: section.className,
             textLength: sectionText.length,
             preview: sectionText.substring(0, 200)
           });
         });
-        console.log('=== END MODAL DEBUG ===');
         
         // Extract email - try multiple methods
         const emailSelectors = [
@@ -263,12 +230,10 @@ window.extractContactInfo = async function() {
         for (const selector of emailSelectors) {
           try {
             const emailElements = contactModal.querySelectorAll(selector);
-            console.log(`Selector "${selector}" found ${emailElements.length} elements`);
             
             emailElements.forEach(element => {
               if (element.href && element.href.includes('mailto:')) {
                 contactInfo.email = element.href.replace('mailto:', '').trim();
-                console.log(`Found email with selector: ${selector} - ${contactInfo.email}`);
                 emailFound = true;
               }
             });
@@ -281,29 +246,24 @@ window.extractContactInfo = async function() {
         
         // If no email link found, look for email in text content
         if (!contactInfo.email) {
-          console.log('No email link found, searching text content...');
           
           // Look for sections that might contain email
           const sections = contactModal.querySelectorAll('section');
           sections.forEach((section, idx) => {
             const text = section.textContent || '';
-            console.log(`Section ${idx} text:`, text.substring(0, 100));
             
             // Look for email pattern
             const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
             if (emailMatch && !contactInfo.email) {
               contactInfo.email = emailMatch[0];
-              console.log(`Found email in section ${idx} via regex: ${contactInfo.email}`);
             }
           });
         }
         
         // Debug: Log all links in modal
         if (!contactInfo.email) {
-          console.log('=== All links in modal ===');
           const allLinks = contactModal.querySelectorAll('a');
           allLinks.forEach((link, idx) => {
-            console.log(`Link ${idx}:`, {
               href: link.href,
               text: link.textContent.trim(),
               parent: link.parentElement?.tagName
@@ -318,7 +278,6 @@ window.extractContactInfo = async function() {
         
         // If still no email, it might be plain text (not a link)
         if (!contactInfo.email) {
-          console.log('Checking for plain text email...');
           
           // Look for divs that contain email addresses
           const allDivs = contactModal.querySelectorAll('div');
@@ -327,7 +286,6 @@ window.extractContactInfo = async function() {
             const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
             
             if (emailMatch && div.children.length === 0) { // Only leaf nodes
-              console.log(`Found potential email in div ${idx}:`, emailMatch[0]);
               if (!contactInfo.email) {
                 contactInfo.email = emailMatch[0];
               }
@@ -337,11 +295,9 @@ window.extractContactInfo = async function() {
         
         // Try the direct email extractor as a last resort
         if (!contactInfo.email && window.extractEmailDirect) {
-          console.log('Trying direct email extraction method...');
           const directEmail = window.extractEmailDirect(contactModal);
           if (directEmail) {
             contactInfo.email = directEmail;
-            console.log('Direct email extraction successful:', directEmail);
           }
         }
         
@@ -394,31 +350,24 @@ window.extractContactInfo = async function() {
         for (const selector of closeButtonSelectors) {
           closeButton = contactModal.querySelector(selector);
           if (closeButton) {
-            console.log(`Found close button with selector: ${selector}`);
             break;
           }
         }
         
         if (closeButton) {
-          console.log('Closing modal');
           closeButton.click();
           // Wait for modal to close
           await new Promise(resolve => setTimeout(resolve, 300));
         } else {
-          console.log('Warning: Could not find close button for modal');
           // Try clicking outside the modal or pressing Escape
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', keyCode: 27 }));
           await new Promise(resolve => setTimeout(resolve, 300));
         }
       } else {
-        console.log('WARNING: Contact modal did not appear after clicking button');
       }
     } else {
-      console.log('WARNING: No contact info button found on profile');
-      console.log('Searched selectors:', contactButtonSelectors);
       
       // Debug: Look for all links and buttons that might be contact info
-      console.log('=== Debugging Contact Button Search ===');
       
       // Check all links
       const allLinks = document.querySelectorAll('a');
@@ -426,7 +375,6 @@ window.extractContactInfo = async function() {
         const text = link.textContent.trim().toLowerCase();
         const href = link.href || '';
         if (text.includes('contact') || href.includes('contact')) {
-          console.log('Found potential contact link:', {
             text: link.textContent.trim(),
             href: href,
             classes: link.className
@@ -439,7 +387,6 @@ window.extractContactInfo = async function() {
       allButtons.forEach(button => {
         const text = button.textContent.trim().toLowerCase();
         if (text.includes('contact')) {
-          console.log('Found potential contact button:', {
             text: button.textContent.trim(),
             classes: button.className,
             ariaLabel: button.getAttribute('aria-label')
@@ -452,7 +399,6 @@ window.extractContactInfo = async function() {
                            document.querySelector('.pv-s-profile-actions') ||
                            document.querySelector('[data-view-name="profile-actions"]');
       if (profileActions) {
-        console.log('Profile actions area found, links:', profileActions.querySelectorAll('a').length);
       }
     }
     
@@ -470,7 +416,6 @@ window.extractContactInfo = async function() {
     
   // Method 4: Try finding email in specific profile sections
   if (!contactInfo.email) {
-    console.log('Trying additional email extraction methods...');
     
     // Look in the entire profile for email-like patterns
     const profileMain = document.querySelector('main') || document.body;
@@ -479,7 +424,6 @@ window.extractContactInfo = async function() {
     // More permissive email regex
     const emailMatches = allText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
     if (emailMatches) {
-      console.log('Found email patterns in page:', emailMatches);
       // Filter out common non-personal emails
       const personalEmail = emailMatches.find(email => 
         !email.includes('linkedin.com') && 
@@ -493,20 +437,11 @@ window.extractContactInfo = async function() {
       
       if (personalEmail) {
         contactInfo.email = personalEmail;
-        console.log('Found email via page text search:', personalEmail);
       }
     }
   }
   
   // Final summary
-  console.log('=== Contact Extraction Results ===');
-  console.log('Email:', contactInfo.email || 'Not found');
-  console.log('Phone:', contactInfo.phone || 'Not found');
-  console.log('Website:', contactInfo.website || 'Not found');
-  console.log('Address:', contactInfo.address || 'Not found');
-  console.log('Full contact info:', JSON.stringify(contactInfo));
-  console.log('Contact info type:', typeof contactInfo);
-  console.log('Contact info keys:', Object.keys(contactInfo));
   
   // Ensure we always return an object with email property
   const result = {
@@ -517,12 +452,9 @@ window.extractContactInfo = async function() {
     address: contactInfo.address || ''
   };
   
-  console.log('Returning contact info:', JSON.stringify(result));
   return result;
   
   } catch (error) {
-    console.error('Error in contact extraction:', error);
-    console.error('Stack:', error.stack);
     
     // Return empty contact info to prevent complete failure
     return {

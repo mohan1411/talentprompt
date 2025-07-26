@@ -11,7 +11,6 @@ let currentUser = null;
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
-  // console.log('Popup initialized');
   await checkAuthStatus();
   setupEventListeners();
   await updateUIState();
@@ -49,12 +48,10 @@ chrome.tabs.onActivated.addListener(async () => {
 // Check if user is authenticated
 async function checkAuthStatus() {
   const stored = await chrome.storage.local.get(['authToken', 'userEmail']);
-  console.log('Checking stored auth:', stored);
   
   if (stored.authToken) {
     authToken = stored.authToken;
     currentUser = stored.userEmail;
-    // console.log('Found stored token for:', currentUser);
     
     // Verify token is still valid by making a test request
     try {
@@ -65,17 +62,13 @@ async function checkAuthStatus() {
       });
       
       if (response.ok) {
-        // console.log('Token is still valid');
         await loadStats();
       } else if (response.status === 401) {
-        // console.log('Token expired, clearing auth');
         await handleLogout();
       }
     } catch (error) {
-      console.error('Failed to verify token:', error);
     }
   } else {
-    // console.log('No stored auth token found');
   }
 }
 
@@ -224,7 +217,6 @@ async function handleLogin() {
   }
   
   try {
-    // console.log('Attempting login with:', email);
     
     // Use FormData like the web app does
     const formData = new FormData();
@@ -283,11 +275,9 @@ async function handleLogin() {
 
 // Handle logout
 async function handleLogout() {
-  // console.log('Logging out user:', currentUser);
   authToken = null;
   currentUser = null;
   await chrome.storage.local.remove(['authToken', 'userEmail']);
-  // console.log('Cleared stored credentials');
   
   // Notify all tabs to close bulk import sidebar
   try {
@@ -300,7 +290,6 @@ async function handleLogout() {
       }
     }
   } catch (error) {
-    console.error('Failed to notify tabs of logout:', error);
   }
   
   await updateUIState();
@@ -318,7 +307,6 @@ async function loadStats() {
     document.getElementById('imported-today').textContent = todayStats.imported;
     document.getElementById('duplicates-found').textContent = todayStats.duplicates;
   } catch (error) {
-    console.error('Failed to load stats:', error);
   }
 }
 
@@ -342,19 +330,16 @@ async function handleImportAction() {
       showError('Navigate to a LinkedIn profile or search page');
     }
   } catch (error) {
-    console.error('Import action error:', error);
     showError('Failed to perform action: ' + error.message);
   }
 }
 
 // Handle import current profile
 async function handleImportProfile(tab) {
-  console.log('Import profile clicked');
   const importBtn = document.getElementById('import-action');
   const originalText = importBtn.textContent;
   
   try {
-    console.log('Current tab:', tab.url);
     
     if (!tab.url || !tab.url.includes('linkedin.com/in/')) {
       showError('Please navigate to a LinkedIn profile');
@@ -366,7 +351,6 @@ async function handleImportProfile(tab) {
     importBtn.disabled = true;
     
     // Try to send message to content script
-    console.log('Sending message to content script...');
     let response;
     try {
       response = await chrome.tabs.sendMessage(tab.id, {
@@ -374,7 +358,6 @@ async function handleImportProfile(tab) {
         authToken: authToken
       });
     } catch (error) {
-      console.log('Content script not loaded, injecting scripts...');
       
       // Get all content scripts from manifest
       const manifest = chrome.runtime.getManifest();
@@ -388,7 +371,6 @@ async function handleImportProfile(tab) {
             files: [script]
           });
         } catch (injectError) {
-          console.error(`Failed to inject ${script}:`, injectError);
         }
       }
       
@@ -399,7 +381,6 @@ async function handleImportProfile(tab) {
           files: ['content/styles.css']
         });
       } catch (cssError) {
-        console.error('Failed to inject CSS:', cssError);
       }
       
       // Wait a bit for scripts to initialize and duplicate check to start
@@ -416,12 +397,10 @@ async function handleImportProfile(tab) {
       }
     }
     
-    console.log('Import response:', response);
     
     if (response && response.success) {
       // Check if it's a duplicate
       if (response.data && response.data.is_duplicate) {
-        console.log('Success response indicates duplicate');
         // Don't update stats for duplicates
         showInfo('This profile has already been imported');
         // Update duplicate counter in stats
@@ -448,14 +427,12 @@ async function handleImportProfile(tab) {
       }
     } else {
       const errorMessage = response?.error || 'Import failed';
-      console.log('Import failed with error:', errorMessage);
       
       // Check if it's a duplicate error
       if (errorMessage.includes('already been imported') || 
           errorMessage.includes('already imported this profile') ||
           errorMessage.includes('already exists') ||
           errorMessage.includes('duplicate')) {
-        console.log('Error message indicates duplicate');
         // Show as info instead of error for duplicates
         showInfo('This profile has already been imported');
         // Update duplicate counter locally
@@ -475,7 +452,6 @@ async function handleImportProfile(tab) {
     }
     
   } catch (error) {
-    console.error('Import error:', error);
     showError('Failed to import profile: ' + error.message);
   } finally {
     // Restore button state
@@ -487,7 +463,6 @@ async function handleImportProfile(tab) {
 
 // Handle opening bulk import tool on search page
 async function handleOpenBulkImport(tab) {
-  console.log('Opening bulk import tool');
   const importBtn = document.getElementById('import-action');
   const originalText = importBtn.textContent;
   
@@ -499,21 +474,17 @@ async function handleOpenBulkImport(tab) {
     // Send message to content script to show/focus the bulk import toolbar
     let response;
     try {
-      console.log('Attempting to focus bulk import tool...');
       response = await chrome.tabs.sendMessage(tab.id, {
         action: 'showBulkImportSidebar'
       });
       
       if (response && response.success) {
-        console.log('Bulk import tool opened successfully');
         // Close the popup immediately
         window.close();
       } else {
-        console.error('Failed to open bulk import tool:', response);
         showError(response?.error || 'Failed to open bulk import tool');
       }
     } catch (error) {
-      console.log('Content script not loaded, injecting scripts...');
       
       // Get all content scripts from manifest
       const manifest = chrome.runtime.getManifest();
@@ -527,7 +498,6 @@ async function handleOpenBulkImport(tab) {
             files: [script]
           });
         } catch (injectError) {
-          console.error(`Failed to inject ${script}:`, injectError);
         }
       }
       
@@ -538,7 +508,6 @@ async function handleOpenBulkImport(tab) {
           files: ['content/styles.css']
         });
       } catch (cssError) {
-        console.error('Failed to inject CSS:', cssError);
       }
       
       // Wait for initialization
@@ -546,25 +515,21 @@ async function handleOpenBulkImport(tab) {
       
       // Try again
       try {
-        console.log('Retrying focusBulkImportTool message...');
         const retryResponse = await chrome.tabs.sendMessage(tab.id, {
           action: 'showBulkImportSidebar'
         });
         
         if (retryResponse && retryResponse.success) {
-          console.log('Bulk import tool opened successfully on retry');
           // Close the popup immediately
           window.close();
         } else {
           showError(retryResponse?.error || 'Bulk import tool not ready. Please refresh the page.');
         }
       } catch (retryError) {
-        console.error('Retry failed:', retryError);
         showError('Please refresh the LinkedIn page and try again');
       }
     }
   } catch (error) {
-    console.error('Failed to open bulk import tool:', error);
     showError('Failed to open bulk import tool: ' + error.message);
   } finally {
     // Restore button state
@@ -626,7 +591,6 @@ async function updateUIState() {
         importInfo.classList.add('hidden');
       }
     } catch (error) {
-      console.error('Failed to check current tab:', error);
       document.getElementById('import-action').disabled = true;
     }
   } else {
@@ -830,6 +794,5 @@ async function updateDuplicateStats() {
     importStats[today][userEmail].duplicates += 1;
     await chrome.storage.local.set({ importStats });
   } catch (error) {
-    console.error('Failed to update duplicate stats:', error);
   }
 }

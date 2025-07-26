@@ -1,6 +1,5 @@
 // Enhanced email extraction with multiple fallback methods
 window.extractEmailEnhanced = function() {
-  console.log('=== Enhanced Email Extraction ===');
   
   const emails = new Set();
   
@@ -9,7 +8,6 @@ window.extractEmailEnhanced = function() {
     const email = link.href.replace('mailto:', '').split('?')[0].trim();
     if (email && !email.includes('linkedin.com')) {
       emails.add(email);
-      console.log('Found mailto:', email);
     }
   });
   
@@ -29,7 +27,6 @@ window.extractEmailEnhanced = function() {
         !email.includes('github.com') &&
         email.length < 50) {
       emails.add(email);
-      console.log('Found in text:', email);
     }
   });
   
@@ -53,7 +50,6 @@ window.extractEmailEnhanced = function() {
         emailMatch.forEach(email => {
           if (!email.includes('linkedin.com') && email.length < 50) {
             emails.add(email);
-            console.log(`Found in ${selector}:`, email);
           }
         });
       }
@@ -65,13 +61,11 @@ window.extractEmailEnhanced = function() {
     const email = element.getAttribute('data-email') || element.getAttribute('data-contact-email');
     if (email && email.includes('@')) {
       emails.add(email);
-      console.log('Found in data attribute:', email);
     }
   });
   
   // Return the first valid email found
   const emailArray = Array.from(emails);
-  console.log('All unique emails found:', emailArray);
   
   // Prefer emails that look more personal (contain name parts from profile)
   const profileName = document.querySelector('h1')?.textContent?.toLowerCase() || '';
@@ -83,6 +77,5 @@ window.extractEmailEnhanced = function() {
   });
   
   const result = personalEmail || emailArray[0] || '';
-  console.log('Selected email:', result || 'None found');
   return result;
 };
