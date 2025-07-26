@@ -7,10 +7,7 @@ window.calculateTotalExperience = function(experiences) {
   let processedCount = 0;
   
   experiences.forEach((exp, index) => {
-      title: exp.title,
-      company: exp.company,
-      duration: exp.duration
-    });
+    // Process experience entry
     
     if (!exp.duration) {
       return;

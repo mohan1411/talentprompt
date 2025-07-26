@@ -42,12 +42,7 @@ window.extractContactInfo = async function() {
     }
     
     if (contactButton) {
-        tagName: contactButton.tagName,
-        id: contactButton.id,
-        className: contactButton.className,
-        href: contactButton.href,
-        text: contactButton.textContent.trim()
-      });
+      // Contact button found
       
       // Check if contact info is locked/premium
       const isLocked = contactButton.querySelector('[data-test-icon="lock"]') || 
@@ -197,10 +192,7 @@ window.extractContactInfo = async function() {
         const sections = contactModal.querySelectorAll('section');
         sections.forEach((section, idx) => {
           const sectionText = section.innerText || section.textContent || '';
-            className: section.className,
-            textLength: sectionText.length,
-            preview: sectionText.substring(0, 200)
-          });
+          // Process section
         });
         
         // Extract email - try multiple methods

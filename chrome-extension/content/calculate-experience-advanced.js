@@ -68,10 +68,7 @@ window.calculateTotalExperienceAdvanced = function(experiences) {
   let skippedCount = 0;
   
   experiences.forEach((exp, index) => {
-      title: exp.title,
-      company: exp.company,
-      duration: exp.duration
-    });
+    // Process experience entry
     
     if (!exp.duration) {
       skippedCount++;

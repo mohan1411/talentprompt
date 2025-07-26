@@ -415,11 +415,16 @@ async function handleImportProfile(tab) {
           window.close();
         }, 3000);
       } else {
-        // Update stats only for new imports
-        const imported = parseInt(document.getElementById('imported-today').textContent) + 1;
-        document.getElementById('imported-today').textContent = imported;
+        // Show appropriate success message
+        const message = response.data?.message || 'Profile imported successfully!';
+        showSuccess(message);
         
-        showSuccess('Profile imported successfully!');
+        // Update stats only if it was a real import (not just initiated)
+        if (!message.includes('initiated')) {
+          const imported = parseInt(document.getElementById('imported-today').textContent) + 1;
+          document.getElementById('imported-today').textContent = imported;
+        }
+        
         // Close popup after showing message
         setTimeout(() => {
           window.close();

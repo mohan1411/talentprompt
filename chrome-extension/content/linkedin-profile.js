@@ -84,7 +84,7 @@
     }
   });
   
-  // Simple import function for popup - now using full extraction
+  // Simple import function for popup - now extracting data locally
   async function handleSimpleImport(authToken) {
     
     // Wait for any early duplicate check to complete
@@ -122,15 +122,57 @@
       }
     }
     
-    // Request the background script to do a full extraction
-    const response = await chrome.runtime.sendMessage({
-      action: 'extractAndImportCurrentProfile',
-      authToken: authToken,
-      tabId: null // Will use current tab
-    });
-    
-    // Return the full response, not just the data
-    return response;
+    try {
+      // If we have a button on the page, click it instead of using messaging
+      // This is more reliable when extension context is problematic
+      if (importButton && typeof handleImport === 'function') {
+        await handleImport();
+        return { success: true, data: { message: 'Profile import initiated' } };
+      }
+      
+      // Otherwise fall back to the original approach
+      // Extract profile data locally
+      let profileData;
+      
+      // Use ultra-clean extractor if available
+      if (window.extractUltraCleanProfile) {
+        profileData = window.extractUltraCleanProfile();
+      } else {
+        profileData = extractProfileData();
+      }
+      
+      // Validate we have minimum required data
+      if (!profileData || !profileData.linkedin_url) {
+        throw new Error('Failed to extract LinkedIn URL');
+      }
+      
+      if (!profileData.name && !profileData.headline) {
+        throw new Error('Failed to extract profile information. Please ensure you are on a LinkedIn profile page.');
+      }
+      
+      // For now, just do a direct import like before since that was working
+      // Send the profile data directly to the background script for import
+      const response = await chrome.runtime.sendMessage({
+        action: 'importProfile',
+        data: profileData,
+        authToken: authToken
+      });
+      
+      // Return the response as-is
+      return response || { success: false, error: 'No response from background script' };
+    } catch (error) {
+      console.error('Import error:', error);
+      // If messaging fails, try clicking the button on the page
+      if (importButton && typeof handleImport === 'function') {
+        try {
+          await handleImport();
+          return { success: true, data: { message: 'Profile import initiated via button' } };
+        } catch (btnError) {
+          console.error('Button click also failed:', btnError);
+        }
+      }
+      return { success: false, error: error.message || 'Import failed' };
+    }
   }
   
   // Check if we're on a profile page for the UI elements
@@ -466,11 +508,6 @@
       }
       
       // Add contact info to profile data
-        email: profileData.email,
-        phone: profileData.phone,
-        years_experience: profileData.years_experience,
-        experience_count: profileData.experience?.length || 0
-      });
       
       if (contactInfo.email) {
         profileData.email = contactInfo.email;
@@ -483,11 +520,6 @@
       }
       
       // Verify experience data wasn't lost
-        email: profileData.email,
-        phone: profileData.phone,
-        years_experience: profileData.years_experience,
-        experience_count: profileData.experience?.length || 0
-      });
       
       // Force recalculation of years if needed
       if (profileData.experience && profileData.experience.length > 0) {
@@ -514,10 +546,6 @@
           }
         }
       }
-      
-        email: profileData.email,
-        phone: profileData.phone
-      });
       
       // Verify the data is clean
       if (window.verifyCleanData) {
@@ -849,16 +877,7 @@
     // DO NOT build full_text here - let aggressive cleaning handle it completely
     data.full_text = ''; // Will be built by aggressive cleaning
     
-    // Log what we found for debugging
-      name: data.name,
-      headline: data.headline,
-      location: data.location,
-      aboutLength: data.about.length,
-      experienceCount: data.experience.length,
-      educationCount: data.education.length,
-      skillsCount: data.skills.length,
-      fullTextLength: data.full_text.length
-    });
+    // Profile data extracted
     
     return data;
   }

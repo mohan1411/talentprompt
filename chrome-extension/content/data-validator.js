@@ -78,13 +78,7 @@ window.validateProfileData = function(data) {
     }
   }
   
-  // Log validation results
-    name: data.name || 'MISSING',
-    email: data.email || 'MISSING',
-    years_experience: data.years_experience,
-    experience_count: data.experience.length,
-    has_about: !!data.about && data.about.length > 10
-  });
+  // Validation complete
   
   return data;
 };

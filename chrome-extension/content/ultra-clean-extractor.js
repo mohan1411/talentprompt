@@ -174,10 +174,6 @@ window.extractUltraCleanProfile = function() {
     // Verify this is a real experience
     if (!isIrrelevant(exp.title) && !isIrrelevant(exp.company)) {
       data.experience.push(exp);
-        title: exp.title,
-        company: exp.company,
-        duration: exp.duration || 'NO DURATION FOUND'
-      });
     } else {
     }
   };
