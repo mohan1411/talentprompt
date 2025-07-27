@@ -2,10 +2,11 @@
 
 import logging
 import re
-from typing import List, Optional, Tuple, Dict, Any
+from typing import List, Optional, Tuple, Dict, Any, AsyncGenerator
 from uuid import UUID
 
-from sqlalchemy import select, or_, and_, func, String, cast, text
+from sqlalchemy import select, or_, and_, func, cast, text
+from sqlalchemy.types import String as SQLString
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -15,6 +16,10 @@ from app.services.search_skill_fix import (
     create_skill_search_conditions,
     enhance_search_query_for_skills
 )
+from app.services.query_parser import query_parser
+from app.services.search_metrics import search_metrics
+from app.services.progressive_search import progressive_search
+from app.services.gpt4_query_analyzer import gpt4_analyzer
 
 logger = logging.getLogger(__name__)
 
@@ -41,12 +46,24 @@ class SearchService:
         Returns:
             List of tuples (resume_data, similarity_score)
         """
+        print(f"\n{'='*60}", flush=True)
+        print(f"ENHANCED SEARCH ACTIVE - Starting search", flush=True)
+        print(f"Query: '{query}'", flush=True)
+        print(f"Limit: {limit}", flush=True)
+        print(f"Filters: {filters}", flush=True)
+        print(f"User ID: {user_id}", flush=True)
+        print(f"{'='*60}\n", flush=True)
+        
         logger.info(f"\n{'='*60}")
         logger.info(f"SEARCH SERVICE DEBUG - Starting search")
         logger.info(f"Query: '{query}'")
         logger.info(f"Limit: {limit}")
         logger.info(f"Filters: {filters}")
         logger.info(f"{'='*60}\n")
+        
+        # Start timing for metrics
+        import time
+        start_time = time.time()
         
         try:
             # First, try vector search with Qdrant
@@ -57,6 +74,7 @@ class SearchService:
                 limit=limit * 2,  # Get more results to filter
                 filters=filters
             )
+            print(f"*** VECTOR SEARCH RESULTS: {len(vector_results) if vector_results else 0} results for query '{query}'")
             logger.info(f"Vector search returned {len(vector_results) if vector_results else 0} results")
             
             if vector_results:
@@ -95,35 +113,139 @@ class SearchService:
                             "view_count": resume.view_count or 0
                         }
                         
-                        # Boost score if exact skill match
+                        # Enhanced skill matching with query parser
                         original_score = vr["score"]
-                        if resume.skills:
-                            query_lower = query.lower()
-                            has_exact_skill = any(
-                                query_lower in skill.lower() 
-                                for skill in resume.skills if skill
-                            )
-                            if has_exact_skill:
-                                # Boost score for exact skill matches
-                                resume_data["_has_exact_skill"] = True
-                                boosted_score = min(1.0, original_score * 1.5)
-                                search_results.append((resume_data, boosted_score))
-                                logger.info(f"Boosted score for {resume.first_name} {resume.last_name} from {original_score} to {boosted_score} (exact skill match)")
+                        
+                        # Parse the query to extract required skills
+                        parsed_query = query_parser.parse_query(query)
+                        required_skills = parsed_query["skills"]
+                        primary_skill = parsed_query.get("primary_skill")
+                        print(f"*** PARSED QUERY for '{query}': required_skills={required_skills}, primary={primary_skill}")
+                        
+                        if resume.skills and required_skills:
+                            # Calculate skill match score with primary skill weighting
+                            resume_skills_lower = [skill.lower() for skill in resume.skills if skill]
+                            matched_skills = []
+                            matched_primary = False
+                            total_required = len(required_skills)
+                            
+                            # Check which skills match
+                            for required_skill in required_skills:
+                                # Check for exact match or partial match
+                                if any(required_skill in skill for skill in resume_skills_lower):
+                                    matched_skills.append(required_skill)
+                                    if required_skill == primary_skill:
+                                        matched_primary = True
+                            
+                            # Calculate weighted score
+                            # Primary skill is worth 60% of the score if it's the only required skill
+                            # or 50% if there are multiple required skills
+                            if total_required == 1:
+                                skill_match_ratio = 1.0 if matched_primary else 0.0
                             else:
-                                search_results.append((resume_data, original_score))
+                                primary_weight = 0.5 if primary_skill else 0
+                                secondary_weight = (1.0 - primary_weight) / (total_required - 1) if total_required > 1 else 0
+                                
+                                weighted_score = 0.0
+                                if matched_primary:
+                                    weighted_score += primary_weight
+                                
+                                # Add score for secondary skills
+                                secondary_matches = len([s for s in matched_skills if s != primary_skill])
+                                if total_required > 1:
+                                    weighted_score += secondary_matches * secondary_weight
+                                
+                                skill_match_ratio = weighted_score
+                            
+                            # Store match details
+                            resume_data["_matched_skills"] = matched_skills
+                            resume_data["_has_primary"] = matched_primary
+                            resume_data["_skill_match_ratio"] = skill_match_ratio
+                            
+                            # 5-tier system based on skill matches
+                            if skill_match_ratio == 1.0:
+                                # Tier 1: All skills match (100%)
+                                hybrid_score = min(1.0, original_score * 1.5)
+                                resume_data["_skill_tier"] = 1
+                                tier_name = "TIER 1 PERFECT"
+                                print(f"*** {tier_name}: {resume.first_name} {resume.last_name} has ALL skills - boosted to {hybrid_score:.3f}")
+                            elif matched_primary and skill_match_ratio >= 0.75:
+                                # Tier 2: Has primary skill + most secondary (75%+)
+                                hybrid_score = original_score * 0.8
+                                resume_data["_skill_tier"] = 2
+                                tier_name = "TIER 2 PRIMARY+"
+                                print(f"*** {tier_name}: {resume.first_name} {resume.last_name} has primary + secondary - score: {hybrid_score:.3f}")
+                            elif matched_primary and skill_match_ratio >= 0.5:
+                                # Tier 3: Has primary skill only (50-74%)
+                                hybrid_score = original_score * 0.5
+                                resume_data["_skill_tier"] = 3
+                                tier_name = "TIER 3 PRIMARY"
+                                print(f"*** {tier_name}: {resume.first_name} {resume.last_name} has primary skill only - score: {hybrid_score:.3f}")
+                            elif not matched_primary and len(matched_skills) > 0:
+                                # Tier 4: Has secondary skills only
+                                hybrid_score = original_score * 0.2
+                                resume_data["_skill_tier"] = 4
+                                tier_name = "TIER 4 SECONDARY"
+                                print(f"*** {tier_name}: {resume.first_name} {resume.last_name} has secondary skills only - score: {hybrid_score:.3f}")
+                            else:
+                                # Tier 5: No relevant skills (0%)
+                                hybrid_score = original_score * 0.05
+                                resume_data["_skill_tier"] = 5
+                                tier_name = "TIER 5 NO MATCH"
+                                print(f"*** {tier_name}: {resume.first_name} {resume.last_name} has NO required skills - score: {hybrid_score:.3f}")
+                            
+                            search_results.append((resume_data, hybrid_score))
+                            logger.info(f"{tier_name} for {resume.first_name} {resume.last_name}: matched={matched_skills}, primary={matched_primary}, score={hybrid_score:.3f}")
                         else:
+                            # No skills to match or no skills in resume
                             search_results.append((resume_data, original_score))
                 
-                # Sort by score (highest first) and prioritize exact skill matches
-                search_results.sort(key=lambda x: (x[0].get("_has_exact_skill", False), x[1]), reverse=True)
+                # Sort with multiple criteria: first by skill tier, then by score
+                # This ensures candidates with all skills always rank above those with partial matches
+                def sort_key(item):
+                    resume_data, score = item
+                    # Lower tier number = better match (1=perfect, 2=primary+, 3=primary, 4=secondary, 5=none)
+                    skill_tier = resume_data.get("_skill_tier", 999)  # Default to worst tier
+                    # Return tuple: (tier, -score) for ascending tier order, descending score order
+                    return (skill_tier, -score)
                 
-                # Remove the temporary flag
+                search_results.sort(key=sort_key)
+                
+                # Clean up internal flags but keep useful match details
                 for result, _ in search_results:
-                    result.pop("_has_exact_skill", None)
+                    # Convert internal data to public fields
+                    result["skill_tier"] = result.pop("_skill_tier", None)
+                    result["matched_skills"] = result.pop("_matched_skills", [])
+                    result["has_primary_skill"] = result.pop("_has_primary", False)
+                    result["skill_match_score"] = result.pop("_skill_match_ratio", 0)
+                    
+                    # Remove any remaining internal flags
+                    result.pop("_all_skills_match", None)
                 
-                # If we have results, return them
+                # Additional filtering: If this is a specific skill search (e.g., "Python Developer")
+                # and we have enough results with all skills, filter out partial matches
+                if required_skills and len(search_results) > limit:
+                    # Count how many have all required skills
+                    full_matches = sum(1 for r, s in search_results if s > 0.65)  # Assume >0.65 means good match
+                    if full_matches >= limit:
+                        # Filter to only include high-scoring results
+                        logger.info(f"Filtering to high-quality matches only (found {full_matches} good matches)")
+                        search_results = [(r, s) for r, s in search_results if s > 0.5]
+                
+                # If we have results, log metrics and return
                 if search_results:
-                    return search_results[:limit]
+                    final_results = search_results[:limit]
+                    
+                    # Log search metrics
+                    elapsed_time = time.time() - start_time
+                    metrics = search_metrics.log_search(
+                        query=query,
+                        results=final_results,
+                        search_time=elapsed_time,
+                        search_type="vector"
+                    )
+                    
+                    return final_results
                 else:
                     logger.warning("Vector search returned IDs but no matching resumes found in PostgreSQL")
                     # Fall through to keyword search
@@ -134,7 +256,18 @@ class SearchService:
             # Fall back to keyword search
         
         # Fallback: Keyword-based search using PostgreSQL
-        return await self._keyword_search(db, query, user_id, limit, filters)
+        keyword_results = await self._keyword_search(db, query, user_id, limit, filters)
+        
+        # Log metrics for keyword search
+        elapsed_time = time.time() - start_time
+        metrics = search_metrics.log_search(
+            query=query,
+            results=keyword_results,
+            search_time=elapsed_time,
+            search_type="keyword"
+        )
+        
+        return keyword_results
     
     async def _keyword_search(
         self,
@@ -206,7 +339,7 @@ class SearchService:
                     # Use PostgreSQL JSON operators
                     # Cast JSON to text and use ILIKE for case-insensitive search
                     stmt = stmt.where(
-                        func.cast(Resume.skills, String).ilike(f'%"{skill}"%')
+                        func.cast(Resume.skills, SQLString).ilike(f'%"{skill}"%')
                     )
         
         # Log the final SQL conditions (simplified)
@@ -244,7 +377,7 @@ class SearchService:
             for term in search_terms:
                 for variation in enhance_search_query_for_skills(term):
                     skill_conditions.append(
-                        cast(Resume.skills, String).ilike(f'%"{variation}"%')
+                        cast(Resume.skills, SQLString).ilike(f'%"{variation}"%')
                     )
             
             if skill_conditions:
@@ -299,28 +432,47 @@ class SearchService:
                 "view_count": resume.view_count or 0
             }
             
-            # Check for exact skill match (similar to vector search logic)
-            has_exact_skill = False
-            if resume.skills:
-                query_lower = query.lower()
-                has_exact_skill = any(
-                    query_lower in skill.lower() 
-                    for skill in resume.skills if skill
-                )
-                if has_exact_skill:
-                    # Significant boost for exact skill matches
+            # Enhanced skill matching for keyword search
+            parsed_query = query_parser.parse_query(query)
+            required_skills = parsed_query["skills"]
+            
+            if resume.skills and required_skills:
+                # Calculate skill match score
+                resume_skills_lower = [skill.lower() for skill in resume.skills if skill]
+                matched_skills = 0
+                total_required = len(required_skills)
+                
+                for required_skill in required_skills:
+                    # Check for exact match or partial match
+                    if any(required_skill in skill for skill in resume_skills_lower):
+                        matched_skills += 1
+                
+                skill_match_ratio = matched_skills / total_required if total_required > 0 else 0
+                
+                # Apply skill-based scoring with aggressive penalties
+                if skill_match_ratio == 1.0:
+                    # All skills match - significant boost
                     score = min(1.0, score * 1.5)
-                    resume_data["_has_exact_skill"] = True
-                    logger.info(f"Boosted score for {resume.first_name} {resume.last_name} to {score} (exact skill match in keyword search)")
+                    resume_data["_all_skills_match"] = True
+                    logger.info(f"All skills match for {resume.first_name} {resume.last_name}, boosted score: {score:.3f}")
+                elif skill_match_ratio >= 0.5:
+                    # Partial match - apply significant penalty
+                    penalty_factor = 0.2 + (skill_match_ratio * 0.4)  # 0.4 for 50%, 0.6 for 75%
+                    score = score * penalty_factor
+                    logger.info(f"Partial skill match ({matched_skills}/{total_required}) for {resume.first_name} {resume.last_name}, penalty={penalty_factor:.2f}, score: {score:.3f}")
+                else:
+                    # Poor skill match - severe penalty
+                    score = score * 0.3
+                    logger.info(f"Poor skill match ({matched_skills}/{total_required}) for {resume.first_name} {resume.last_name} in keyword search, heavily penalized: {score:.3f}")
             
             search_results.append((resume_data, min(score, 1.0)))
         
-        # Sort by score AND prioritize exact skill matches (same as vector search)
-        search_results.sort(key=lambda x: (x[0].get("_has_exact_skill", False), x[1]), reverse=True)
+        # Sort by score AND prioritize all skill matches (same as vector search)
+        search_results.sort(key=lambda x: (x[0].get("_all_skills_match", False), x[1]), reverse=True)
         
         # Remove the temporary flag
         for result, _ in search_results:
-            result.pop("_has_exact_skill", None)
+            result.pop("_all_skills_match", None)
         
         # Limit results after sorting to ensure best matches are included
         search_results = search_results[:limit]
@@ -464,9 +616,9 @@ class SearchService:
                             Resume.summary.ilike(f"%{found_level}%")
                         ),
                         or_(
-                            func.cast(Resume.skills, String).ilike(f'%"{found_tech}"%'),
-                            func.cast(Resume.skills, String).ilike(f'%"{found_tech.title()}"%'),
-                            func.cast(Resume.skills, String).ilike(f'%"{found_tech.upper()}"%')
+                            func.cast(Resume.skills, SQLString).ilike(f'%"{found_tech}"%'),
+                            func.cast(Resume.skills, SQLString).ilike(f'%"{found_tech.title()}"%'),
+                            func.cast(Resume.skills, SQLString).ilike(f'%"{found_tech.upper()}"%')
                         )
                     )
                 )
@@ -482,8 +634,8 @@ class SearchService:
                     or_(
                         Resume.current_title.ilike(f"%{found_tech}%"),
                         Resume.summary.ilike(f"%{found_tech}%"),
-                        func.cast(Resume.skills, String).ilike(f'%"{found_tech}"%'),
-                        func.cast(Resume.skills, String).ilike(f'%"{found_tech.title()}"%')
+                        func.cast(Resume.skills, SQLString).ilike(f'%"{found_tech}"%'),
+                        func.cast(Resume.skills, SQLString).ilike(f'%"{found_tech.title()}"%')
                     )
                 )
                 tech_count_result = await db.execute(tech_count_stmt)
@@ -520,7 +672,7 @@ class SearchService:
                         or_(
                             Resume.summary.ilike(f"%{keyword}%"),
                             Resume.current_title.ilike(f"%{keyword}%"),
-                            func.cast(Resume.skills, String).ilike(f'%"{keyword}"%')
+                            func.cast(Resume.skills, SQLString).ilike(f'%"{keyword}"%')
                         )
                     )
                 count_result = await db.execute(count_stmt)
@@ -572,7 +724,7 @@ class SearchService:
                     fallback_stmt = select(Resume.skills).where(
                         Resume.skills.isnot(None),
                         Resume.user_id == user_id,  # SECURITY: Only search user's own resumes
-                        cast(Resume.skills, String).ilike(f'%{query}%')
+                        cast(Resume.skills, SQLString).ilike(f'%{query}%')
                     ).limit(20)
                     
                     fallback_result = await db.execute(fallback_stmt)
@@ -701,6 +853,82 @@ class SearchService:
         
         # Default
         return "skill"
+    
+    async def search_resumes_progressive(
+        self,
+        db: AsyncSession,
+        query: str,
+        user_id: UUID,
+        limit: int = 10,
+        filters: Optional[dict] = None
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Progressive search that yields results in stages.
+        
+        This is the new enhanced search method that provides:
+        1. Instant results from cache/keywords
+        2. Enhanced results with vector search
+        3. Intelligent results with GPT-4.1-mini analysis
+        
+        Yields:
+            Dictionary with stage info and results
+        """
+        # Use the progressive search engine
+        async for stage_result in progressive_search.search_progressive(
+            db=db,
+            query=query,
+            user_id=user_id,
+            limit=limit,
+            filters=filters
+        ):
+            yield stage_result
+    
+    async def analyze_query_advanced(
+        self,
+        query: str,
+        context: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Analyze query using GPT-4.1-mini for advanced understanding.
+        
+        Args:
+            query: Search query
+            context: Optional context (search history, preferences)
+            
+        Returns:
+            Advanced query analysis
+        """
+        return await gpt4_analyzer.analyze_query(query, context)
+    
+    async def search_resumes_progressive(
+        self,
+        db: AsyncSession,
+        query: str,
+        user_id: UUID,
+        limit: int = 10,
+        filters: Optional[dict] = None
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Progressive search that yields results in stages.
+        
+        Args:
+            db: Database session
+            query: Search query
+            user_id: User ID
+            limit: Maximum number of results
+            filters: Optional filters
+            
+        Yields:
+            Stage results with timing and metadata
+        """
+        async for stage_result in progressive_search.search_progressive(
+            db=db,
+            query=query,
+            user_id=user_id,
+            limit=limit,
+            filters=filters
+        ):
+            yield stage_result
 
 
 # Create singleton instance

@@ -69,6 +69,9 @@ async def search_resumes(
         filters_dict = search_query.filters.dict(exclude_none=True)
     
     # Debug logging
+    print(f"\n*** ENDPOINT CALLED: search_resumes", flush=True)
+    print(f"*** Query: '{search_query.query}'", flush=True)
+    print(f"*** User: {current_user.email}", flush=True)
     logger.info(f"=== SEARCH DEBUG: Starting search ===")
     logger.info(f"Query: '{search_query.query}'")
     logger.info(f"Limit: {search_query.limit}")
@@ -253,6 +256,7 @@ async def debug_search(
     - Results found
     """
     from sqlalchemy import select, func
+    from sqlalchemy.types import String as SQLString
     from app.models.resume import Resume
     
     # Count total resumes - CRITICAL: Filter by user
@@ -315,11 +319,11 @@ async def debug_search(
             Resume.first_name,
             Resume.last_name,
             Resume.skills,
-            func.cast(Resume.skills, String).label('skills_text')
+            func.cast(Resume.skills, SQLString).label('skills_text')
         ).where(
             Resume.status == 'active',
             Resume.user_id == current_user.id,  # SECURITY: Only show user's own resumes
-            func.cast(Resume.skills, String).ilike(search_pattern)
+            func.cast(Resume.skills, SQLString).ilike(search_pattern)
         ).limit(3)
         
         result = await db.execute(search_stmt)

@@ -83,8 +83,14 @@ class VectorSearchService:
             # Continue anyway - will fail on actual operations if Qdrant is not available
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def get_embedding(self, text: str) -> List[float]:
-        """Get embedding for text using OpenAI."""
+    async def get_embedding(self, text: str, use_ensemble: bool = False) -> List[float]:
+        """Get embedding for text using OpenAI or ensemble."""
+        if use_ensemble:
+            # Use embedding ensemble for better quality
+            from app.services.embedding_ensemble import embedding_ensemble
+            result = await embedding_ensemble.get_ensemble_embedding(text)
+            return result["combined"]
+        
         if not self.openai_client:
             logger.warning("OpenAI API key not configured - returning empty embedding")
             return [0.0] * 1536
