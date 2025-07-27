@@ -205,7 +205,7 @@ export default function EnhancedResultCard({
             </button>
             
             {/* Get AI Insights button for non-enhanced results */}
-            {!hasAIInsights && (stage === 'intelligent' || stage === 'complete') && onEnhance && query && (
+            {!hasAIInsights && stage === 'intelligent' && onEnhance && query && (
               <button
                 onClick={async () => {
                   setIsLoadingInsights(true);
