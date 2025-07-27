@@ -12,9 +12,7 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
-    SearchRequest,
-    PayloadSchemaType,
-    KeywordIndexParams
+    SearchRequest
 )
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -98,10 +96,7 @@ class VectorSearchService:
                 self.client.create_payload_index(
                     collection_name=self.collection_name,
                     field_name="user_id",
-                    field_schema=KeywordIndexParams(
-                        type=PayloadSchemaType.KEYWORD,
-                        is_tenant=True  # Optimize for tenant isolation
-                    )
+                    field_schema="keyword"  # Simple string type for compatibility
                 )
                 logger.info("Created index on 'user_id' field")
             except Exception as e:
@@ -113,9 +108,7 @@ class VectorSearchService:
                 self.client.create_payload_index(
                     collection_name=self.collection_name,
                     field_name="resume_id",
-                    field_schema=KeywordIndexParams(
-                        type=PayloadSchemaType.KEYWORD
-                    )
+                    field_schema="keyword"  # Simple string type for compatibility
                 )
                 logger.info("Created index on 'resume_id' field")
             except Exception as e:

@@ -12,12 +12,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance, 
     VectorParams, 
-    PointStruct,
-    PayloadSchemaType,
-    PayloadIndexParams,
-    TextIndexParams,
-    KeywordIndexParams,
-    IntegerIndexParams
+    PointStruct
 )
 
 from app.core.config import settings
@@ -68,13 +63,11 @@ async def fix_qdrant_indexes():
         # Create index on user_id field
         print("\nCreating index on 'user_id' field...")
         try:
+            # For older qdrant-client versions, use simpler syntax
             client.create_payload_index(
                 collection_name=collection_name,
                 field_name="user_id",
-                field_schema=KeywordIndexParams(
-                    type=PayloadSchemaType.KEYWORD,
-                    is_tenant=True  # Optimize for filtering by this field
-                )
+                field_schema="keyword"  # Simple string type for older versions
             )
             print("✓ Created keyword index on 'user_id'")
         except Exception as e:
@@ -89,9 +82,7 @@ async def fix_qdrant_indexes():
             client.create_payload_index(
                 collection_name=collection_name,
                 field_name="resume_id",
-                field_schema=KeywordIndexParams(
-                    type=PayloadSchemaType.KEYWORD
-                )
+                field_schema="keyword"  # Simple string type for older versions
             )
             print("✓ Created keyword index on 'resume_id'")
         except Exception as e:
@@ -197,19 +188,14 @@ async def recreate_collection_if_needed():
             client.create_payload_index(
                 collection_name=collection_name,
                 field_name="user_id",
-                field_schema=KeywordIndexParams(
-                    type=PayloadSchemaType.KEYWORD,
-                    is_tenant=True
-                )
+                field_schema="keyword"
             )
             print("✓ Created index on 'user_id'")
             
             client.create_payload_index(
                 collection_name=collection_name,
                 field_name="resume_id",
-                field_schema=KeywordIndexParams(
-                    type=PayloadSchemaType.KEYWORD
-                )
+                field_schema="keyword"
             )
             print("✓ Created index on 'resume_id'")
             
