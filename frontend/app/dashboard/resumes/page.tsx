@@ -33,6 +33,10 @@ export default function ResumesPage() {
   const [bulkJobPosition, setBulkJobPosition] = useState('');
   const [showOutreachModal, setShowOutreachModal] = useState(false);
   const [outreachCandidate, setOutreachCandidate] = useState<Resume | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalResumes, setTotalResumes] = useState(0);
+  const [allResumes, setAllResumes] = useState<Resume[]>([]);
+  const resumesPerPage = 100;
 
   useEffect(() => {
     fetchResumes();
@@ -40,13 +44,59 @@ export default function ResumesPage() {
 
   const fetchResumes = async () => {
     try {
-      const data = await resumeApi.getMyResumes();
-      setResumes(data);
+      console.log('Starting fetchResumes...');
+      
+      // Fetch all resumes - the backend error has been fixed
+      const allFetchedResumes: Resume[] = [];
+      let hasMore = true;
+      let skip = 0;
+      
+      // Fetch in chunks of 100
+      while (hasMore) {
+        try {
+          const data = await resumeApi.getMyResumes(skip, 100);
+          console.log(`Fetched ${data.length} resumes from skip=${skip}`);
+          allFetchedResumes.push(...data);
+          
+          // If we got less than 100, we've reached the end
+          if (data.length < 100) {
+            hasMore = false;
+          }
+          skip += 100;
+          
+          // Safety limit to prevent infinite loops
+          if (skip > 1000) {
+            console.warn('Reached safety limit of 1000 resumes');
+            hasMore = false;
+          }
+        } catch (error) {
+          console.error(`Error at skip=${skip}:`, error);
+          hasMore = false;
+        }
+      }
+      
+      console.log(`Fetched ${allFetchedResumes.length} total resumes`);
+      
+      setAllResumes(allFetchedResumes);
+      setTotalResumes(allFetchedResumes.length);
+      
+      // Show first page
+      const firstPageResumes = allFetchedResumes.slice(0, resumesPerPage);
+      setResumes(firstPageResumes);
     } catch (error) {
       console.error('Failed to fetch resumes:', error);
+      setResumes([]);
     } finally {
       setIsLoading(false);
     }
+  };
+  
+  const changePage = (newPage: number) => {
+    const startIndex = (newPage - 1) * resumesPerPage;
+    const endIndex = startIndex + resumesPerPage;
+    setResumes(allResumes.slice(startIndex, endIndex));
+    setCurrentPage(newPage);
+    window.scrollTo(0, 0);
   };
 
   const handleDelete = async (resumeId: string) => {
@@ -238,8 +288,26 @@ export default function ResumesPage() {
         <>
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Showing {resumes.length} resume{resumes.length !== 1 ? 's' : ''} • Sorted by newest first
+              Showing {((currentPage - 1) * resumesPerPage) + 1}-{Math.min(currentPage * resumesPerPage, totalResumes)} of {totalResumes} resumes • Page {currentPage} of {Math.ceil(totalResumes / resumesPerPage)}
             </p>
+            {totalResumes > resumesPerPage && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => changePage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => changePage(currentPage + 1)}
+                  disabled={currentPage >= Math.ceil(totalResumes / resumesPerPage)}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {resumes.map((resume) => (
@@ -390,6 +458,43 @@ export default function ResumesPage() {
             </div>
           ))}
         </div>
+        
+        {/* Pagination at bottom */}
+        {totalResumes > resumesPerPage && (
+          <div className="mt-6 flex items-center justify-center gap-2">
+            <button
+              onClick={() => changePage(1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              First
+            </button>
+            <button
+              onClick={() => changePage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-sm text-gray-600 dark:text-gray-400">
+              Page {currentPage} of {Math.ceil(totalResumes / resumesPerPage)}
+            </span>
+            <button
+              onClick={() => changePage(currentPage + 1)}
+              disabled={currentPage >= Math.ceil(totalResumes / resumesPerPage)}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Next
+            </button>
+            <button
+              onClick={() => changePage(Math.ceil(totalResumes / resumesPerPage))}
+              disabled={currentPage >= Math.ceil(totalResumes / resumesPerPage)}
+              className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+            >
+              Last
+            </button>
+          </div>
+        )}
         </>
       )}
 
