@@ -12,7 +12,9 @@ from qdrant_client.models import (
     Filter,
     FieldCondition,
     MatchValue,
-    SearchRequest
+    SearchRequest,
+    PayloadSchemaType,
+    KeywordIndexParams
 )
 from openai import AsyncOpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -58,7 +60,7 @@ class VectorSearchService:
         self._ensure_collection()
     
     def _ensure_collection(self):
-        """Ensure the collection exists in Qdrant."""
+        """Ensure the collection exists in Qdrant with proper indexes."""
         try:
             # Check if collection exists
             collections = self.client.get_collections()
@@ -74,13 +76,54 @@ class VectorSearchService:
                     )
                 )
                 logger.info(f"Created Qdrant collection: {self.collection_name}")
+                
+                # Create indexes immediately after collection creation
+                self._create_indexes()
             else:
                 logger.info(f"Qdrant collection exists: {self.collection_name}")
+                
+                # Ensure indexes exist on existing collection
+                self._create_indexes()
                 
         except Exception as e:
             logger.warning(f"Could not ensure Qdrant collection: {e}")
             logger.warning("Qdrant is not available - vector search will be disabled")
             # Continue anyway - will fail on actual operations if Qdrant is not available
+    
+    def _create_indexes(self):
+        """Create necessary indexes on the collection."""
+        try:
+            # Create index on user_id field - CRITICAL for filtering
+            try:
+                self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name="user_id",
+                    field_schema=KeywordIndexParams(
+                        type=PayloadSchemaType.KEYWORD,
+                        is_tenant=True  # Optimize for tenant isolation
+                    )
+                )
+                logger.info("Created index on 'user_id' field")
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    logger.warning(f"Could not create user_id index: {e}")
+            
+            # Create index on resume_id field
+            try:
+                self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name="resume_id",
+                    field_schema=KeywordIndexParams(
+                        type=PayloadSchemaType.KEYWORD
+                    )
+                )
+                logger.info("Created index on 'resume_id' field")
+            except Exception as e:
+                if "already exists" not in str(e).lower():
+                    logger.warning(f"Could not create resume_id index: {e}")
+                    
+        except Exception as e:
+            logger.warning(f"Error creating indexes: {e}")
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def get_embedding(self, text: str, use_ensemble: bool = False) -> List[float]:
