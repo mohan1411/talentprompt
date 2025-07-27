@@ -1,0 +1,4829 @@
+{
+  "generated_at": "2025-07-27T10:27:46.497626",
+  "total_count": 100,
+  "test_user_email": "promtitude@gmail.com",
+  "resumes": [
+    {
+      "first_name": "William",
+      "last_name": "Alves",
+      "email": "william.alves1@example.com",
+      "phone": "(854) 314-1409",
+      "location": "New York, NY",
+      "current_title": "Backend Developer",
+      "years_experience": 8,
+      "skills": [
+        "Python",
+        "AWS",
+        "Django",
+        "PostgreSQL",
+        "Docker",
+        "REST APIs",
+        "Git",
+        "Agile"
+      ],
+      "summary": "Results-driven Backend Developer with 8+ years of experience specializing in Python, AWS, Django. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Docker, Django. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, PostgreSQL, Docker. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Docker, Django. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Sarah",
+      "last_name": "Chen",
+      "email": "sarah.chen2@example.com",
+      "phone": "(933) 865-9928",
+      "location": "Los Angeles, CA",
+      "current_title": "Full Stack Developer",
+      "years_experience": 10,
+      "skills": [
+        "Python",
+        "AWS",
+        "Azure",
+        "React",
+        "Node.js",
+        "MongoDB",
+        "Kubernetes",
+        "CI/CD"
+      ],
+      "summary": "Innovative Full Stack Developer with 10 years of hands-on experience in Python, AWS, Azure. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Data Dynamics",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, Azure, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Azure, Node.js, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Full Stack Developer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Node.js, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Michael",
+      "last_name": "Johnson",
+      "email": "michael.johnson3@example.com",
+      "phone": "(818) 470-1711",
+      "location": "Chicago, IL",
+      "current_title": "Data Scientist",
+      "years_experience": 6,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "TensorFlow",
+        "SQL",
+        "Pandas",
+        "NumPy",
+        "Statistics"
+      ],
+      "summary": "Results-driven Data Scientist with 6+ years of experience specializing in Python, Machine Learning, TensorFlow. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, SQL, Pandas. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Global Software Partners",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using TensorFlow, Machine Learning, Pandas. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2012"
+        }
+      ]
+    },
+    {
+      "first_name": "Emily",
+      "last_name": "Williams",
+      "email": "emily.williams4@example.com",
+      "phone": "(991) 496-2307",
+      "location": "Houston, TX",
+      "current_title": "DevOps Engineer",
+      "years_experience": 7,
+      "skills": [
+        "AWS",
+        "Terraform",
+        "Docker",
+        "Kubernetes",
+        "Jenkins",
+        "Bash",
+        "Monitoring"
+      ],
+      "summary": "Innovative DevOps Engineer with 7 years of hands-on experience in AWS, Terraform, Docker. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Kubernetes, Docker, Terraform. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Docker, Jenkins, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "State University",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "David",
+      "last_name": "Brown",
+      "email": "david.brown5@example.com",
+      "phone": "(746) 946-5010",
+      "location": "Phoenix, AZ",
+      "current_title": "Backend Developer",
+      "years_experience": 2,
+      "skills": [
+        "Python",
+        "Flask",
+        "MySQL",
+        "Git",
+        "Linux",
+        "REST APIs"
+      ],
+      "summary": "Experienced Backend Developer with 2 years of expertise in Python, Flask, MySQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Git, MySQL, Linux. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Jessica",
+      "last_name": "Garcia",
+      "email": "jessica.garcia6@example.com",
+      "phone": "(232) 523-7572",
+      "location": "Philadelphia, PA",
+      "current_title": "Data Scientist",
+      "years_experience": 1,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "TensorFlow",
+        "PyTorch",
+        "R",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Results-driven Data Scientist with 1+ years of experience specializing in Python, Machine Learning, SQL. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": true,
+          "description": "Developed and maintained applications using SQL, Machine Learning, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "James",
+      "last_name": "Miller",
+      "email": "james.miller7@example.com",
+      "phone": "(608) 570-4593",
+      "location": "San Antonio, TX",
+      "current_title": "Mobile Developer",
+      "years_experience": 3,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "GraphQL",
+        "REST APIs",
+        "Git",
+        "Team Collaboration",
+        "AWS"
+      ],
+      "summary": "Innovative Mobile Developer with 3 years of hands-on experience in React Native, Flutter, Swift. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using GraphQL, React Native, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Jennifer",
+      "last_name": "Davis",
+      "email": "jennifer.davis8@example.com",
+      "phone": "(457) 766-1188",
+      "location": "San Diego, CA",
+      "current_title": "QA Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "JIRA",
+        "Cypress",
+        "JUnit",
+        "Postman",
+        "Communication",
+        "Git",
+        "AWS"
+      ],
+      "summary": "Innovative QA Engineer with 3 years of hands-on experience in Selenium, Python, Test Automation. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using JIRA, Python, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Software Craftsmen",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using JIRA, Python, Selenium. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Tech Institute",
+          "year": "2005"
+        }
+      ]
+    },
+    {
+      "first_name": "Robert",
+      "last_name": "Rodriguez",
+      "email": "robert.rodriguez9@example.com",
+      "phone": "(531) 700-1319",
+      "location": "Dallas, TX",
+      "current_title": "Security Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Metasploit",
+        "Firewall",
+        "Agile",
+        "Git"
+      ],
+      "summary": "Results-driven Security Engineer with 3+ years of experience specializing in Python, Security, AWS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Penetration Testing, Python, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Penetration Testing, Security, Metasploit. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Tech Institute",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Lisa",
+      "last_name": "Martinez",
+      "email": "lisa.martinez10@example.com",
+      "phone": "(519) 608-7118",
+      "location": "San Jose, CA",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Linux",
+        "Go",
+        "Prometheus",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Site Reliability Engineer with 3 years of expertise in Kubernetes, Python, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Kubernetes, Monitoring. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Tech Institute",
+          "year": "2007"
+        }
+      ]
+    },
+    {
+      "first_name": "William",
+      "last_name": "Hernandez",
+      "email": "william.hernandez11@example.com",
+      "phone": "(538) 272-9423",
+      "location": "Austin, TX",
+      "current_title": "Frontend Developer",
+      "years_experience": 1,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "Webpack",
+        "SASS",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Frontend Developer with 1 years of expertise in JavaScript, React, HTML/CSS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Data Dynamics",
+          "duration": "1 years",
+          "current": true,
+          "description": "Developed and maintained applications using TypeScript, Webpack, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Mary",
+      "last_name": "Lopez",
+      "email": "mary.lopez12@example.com",
+      "phone": "(633) 620-8651",
+      "location": "Jacksonville, FL",
+      "current_title": "Backend Developer",
+      "years_experience": 2,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Django",
+        "Microservices",
+        "RabbitMQ",
+        "Express.js",
+        "Communication",
+        "Git",
+        "AWS"
+      ],
+      "summary": "Senior Backend Developer with 2+ years building production applications using Python, Node.js, PostgreSQL. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using REST APIs, Node.js, Django. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Tech Institute",
+          "year": "2007"
+        }
+      ]
+    },
+    {
+      "first_name": "Richard",
+      "last_name": "Gonzalez",
+      "email": "richard.gonzalez13@example.com",
+      "phone": "(763) 300-1828",
+      "location": "Fort Worth, TX",
+      "current_title": "Full Stack Developer",
+      "years_experience": 2,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "GraphQL",
+        "Docker",
+        "CI/CD",
+        "MongoDB",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Experienced Full Stack Developer with 2 years of expertise in JavaScript, Python, React. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Patricia",
+      "last_name": "Wilson",
+      "email": "patricia.wilson14@example.com",
+      "phone": "(633) 913-8973",
+      "location": "Columbus, OH",
+      "current_title": "DevOps Engineer",
+      "years_experience": 2,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Ansible",
+        "Python",
+        "Agile",
+        "Git"
+      ],
+      "summary": "Innovative DevOps Engineer with 2 years of hands-on experience in Docker, Kubernetes, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Docker, Terraform, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "State University",
+          "year": "2007"
+        }
+      ]
+    },
+    {
+      "first_name": "Thomas",
+      "last_name": "Anderson",
+      "email": "thomas.anderson15@example.com",
+      "phone": "(270) 809-2113",
+      "location": "San Francisco, CA",
+      "current_title": "Data Engineer",
+      "years_experience": 1,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Kafka",
+        "ETL",
+        "Airflow",
+        "Hadoop",
+        "Agile",
+        "Git"
+      ],
+      "summary": "Senior Data Engineer with 1+ years building production applications using Python, SQL, Apache Spark. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Software Craftsmen",
+          "duration": "1 years",
+          "current": true,
+          "description": "Developed and maintained applications using SQL, Apache Spark, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "Linda",
+      "last_name": "Thomas",
+      "email": "linda.thomas16@example.com",
+      "phone": "(860) 507-8491",
+      "location": "Charlotte, NC",
+      "current_title": "Data Scientist",
+      "years_experience": 3,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "TensorFlow",
+        "Scikit-learn",
+        "Pandas",
+        "Team Collaboration",
+        "Git"
+      ],
+      "summary": "Experienced Data Scientist with 3 years of expertise in Python, Machine Learning, SQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using SQL, Python, Statistics. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "Charles",
+      "last_name": "Taylor",
+      "email": "charles.taylor17@example.com",
+      "phone": "(756) 920-5956",
+      "location": "Indianapolis, IN",
+      "current_title": "Mobile Developer",
+      "years_experience": 2,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Redux",
+        "GraphQL",
+        "iOS",
+        "Firebase",
+        "Team Collaboration",
+        "Communication",
+        "AWS"
+      ],
+      "summary": "Innovative Mobile Developer with 2 years of hands-on experience in React Native, Flutter, Swift. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using React Native, Redux, Swift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2014"
+        }
+      ]
+    },
+    {
+      "first_name": "Barbara",
+      "last_name": "Moore",
+      "email": "barbara.moore18@example.com",
+      "phone": "(415) 934-6617",
+      "location": "Seattle, WA",
+      "current_title": "QA Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "JIRA",
+        "JUnit",
+        "Team Collaboration",
+        "Problem Solving"
+      ],
+      "summary": "Innovative QA Engineer with 3 years of hands-on experience in Selenium, Python, Test Automation. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using API Testing, Test Automation, Selenium. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Agile Development Co",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Test Automation, Selenium. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Joseph",
+      "last_name": "Jackson",
+      "email": "joseph.jackson19@example.com",
+      "phone": "(209) 314-2232",
+      "location": "Denver, CO",
+      "current_title": "Security Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Burp Suite",
+        "Compliance",
+        "OWASP",
+        "Firewall",
+        "Team Collaboration",
+        "Agile"
+      ],
+      "summary": "Innovative Security Engineer with 3 years of hands-on experience in Python, Security, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Security, Burp Suite. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "State University",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Elizabeth",
+      "last_name": "Martin",
+      "email": "elizabeth.martin20@example.com",
+      "phone": "(616) 835-3532",
+      "location": "Washington, DC",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 3,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Grafana",
+        "Incident Response",
+        "Problem Solving",
+        "Git"
+      ],
+      "summary": "Experienced Site Reliability Engineer with 3 years of expertise in Kubernetes, Python, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Data Dynamics",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Python, Grafana. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Christopher",
+      "last_name": "Lee",
+      "email": "christopher.lee21@example.com",
+      "phone": "(427) 404-8541",
+      "location": "Boston, MA",
+      "current_title": "Frontend Developer",
+      "years_experience": 7,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "Webpack",
+        "Angular",
+        "Redux",
+        "Git",
+        "Agile"
+      ],
+      "summary": "Senior Frontend Developer with 7+ years building production applications using JavaScript, React, HTML/CSS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using HTML/CSS, TypeScript, Webpack. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using JavaScript, HTML/CSS, Webpack. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using JavaScript, TypeScript, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Susan",
+      "last_name": "Perez",
+      "email": "susan.perez22@example.com",
+      "phone": "(790) 394-5173",
+      "location": "El Paso, TX",
+      "current_title": "Backend Developer",
+      "years_experience": 7,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Microservices",
+        "Redis",
+        "Git",
+        "Agile",
+        "AWS"
+      ],
+      "summary": "Experienced Backend Developer with 7 years of expertise in Python, Node.js, PostgreSQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using PostgreSQL, Python, Microservices. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, REST APIs, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "Daniel",
+      "last_name": "Thompson",
+      "email": "daniel.thompson23@example.com",
+      "phone": "(630) 880-7211",
+      "location": "Detroit, MI",
+      "current_title": "Full Stack Developer",
+      "years_experience": 5,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "CI/CD",
+        "AWS",
+        "TypeScript",
+        "GraphQL",
+        "Team Collaboration",
+        "Git"
+      ],
+      "summary": "Innovative Full Stack Developer with 5 years of hands-on experience in JavaScript, Python, React. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Node.js, PostgreSQL, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Smart Systems Inc",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Node.js, Python, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2015"
+        }
+      ]
+    },
+    {
+      "first_name": "Margaret",
+      "last_name": "White",
+      "email": "margaret.white24@example.com",
+      "phone": "(969) 440-6085",
+      "location": "Nashville, TN",
+      "current_title": "DevOps Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Ansible",
+        "Linux",
+        "Git",
+        "Team Collaboration"
+      ],
+      "summary": "Innovative DevOps Engineer with 4 years of hands-on experience in Docker, Kubernetes, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Terraform, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Terraform, Kubernetes, Docker. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Matthew",
+      "last_name": "Harris",
+      "email": "matthew.harris25@example.com",
+      "phone": "(380) 912-9486",
+      "location": "Portland, OR",
+      "current_title": "Data Engineer",
+      "years_experience": 5,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Airflow",
+        "Redshift",
+        "Kafka",
+        "Git",
+        "Problem Solving"
+      ],
+      "summary": "Experienced Data Engineer with 5 years of expertise in Python, SQL, Apache Spark. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Airflow, AWS, Apache Spark. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Airflow, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2020"
+        }
+      ]
+    },
+    {
+      "first_name": "Dorothy",
+      "last_name": "Sanchez",
+      "email": "dorothy.sanchez26@example.com",
+      "phone": "(481) 650-2269",
+      "location": "Memphis, TN",
+      "current_title": "Data Scientist",
+      "years_experience": 5,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "R",
+        "PyTorch",
+        "Scikit-learn",
+        "NumPy",
+        "Communication",
+        "Git"
+      ],
+      "summary": "Innovative Data Scientist with 5 years of hands-on experience in Python, Machine Learning, SQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Data Dynamics",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Statistics, Machine Learning. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, R, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2017"
+        }
+      ]
+    },
+    {
+      "first_name": "Anthony",
+      "last_name": "Clark",
+      "email": "anthony.clark27@example.com",
+      "phone": "(912) 220-7232",
+      "location": "Oklahoma City, OK",
+      "current_title": "Mobile Developer",
+      "years_experience": 8,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "iOS",
+        "Firebase",
+        "GraphQL",
+        "Problem Solving",
+        "Team Collaboration"
+      ],
+      "summary": "Senior Mobile Developer with 8+ years building production applications using React Native, Flutter, Swift. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Flutter, Swift, iOS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kotlin, Swift, iOS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Tech Institute",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Nancy",
+      "last_name": "Ramirez",
+      "email": "nancy.ramirez28@example.com",
+      "phone": "(837) 746-1441",
+      "location": "Las Vegas, NV",
+      "current_title": "QA Engineer",
+      "years_experience": 5,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "LoadRunner",
+        "JIRA",
+        "Cypress",
+        "Git",
+        "Problem Solving"
+      ],
+      "summary": "Innovative QA Engineer with 5 years of hands-on experience in Selenium, Python, Test Automation. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using API Testing, Test Automation, Selenium. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Test Automation, API Testing, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2007"
+        }
+      ]
+    },
+    {
+      "first_name": "Mark",
+      "last_name": "Lewis",
+      "email": "mark.lewis29@example.com",
+      "phone": "(219) 967-9837",
+      "location": "Louisville, KY",
+      "current_title": "Security Engineer",
+      "years_experience": 7,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Metasploit",
+        "Burp Suite",
+        "Git",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Security Engineer with 7 years of expertise in Python, Security, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Metasploit, Security, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Security, Penetration Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Security, Python, Penetration Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "State University",
+          "year": "2005"
+        }
+      ]
+    },
+    {
+      "first_name": "Karen",
+      "last_name": "Robinson",
+      "email": "karen.robinson30@example.com",
+      "phone": "(789) 893-7149",
+      "location": "Baltimore, MD",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 6,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Incident Response",
+        "Grafana",
+        "Prometheus",
+        "Team Collaboration",
+        "Agile"
+      ],
+      "summary": "Senior Site Reliability Engineer with 6+ years building production applications using Kubernetes, Python, AWS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Monitoring. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Agile Development Co",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Incident Response. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Engineering College",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Paul",
+      "last_name": "Walker",
+      "email": "paul.walker31@example.com",
+      "phone": "(570) 850-8532",
+      "location": "Milwaukee, WI",
+      "current_title": "Frontend Developer",
+      "years_experience": 7,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "Angular",
+        "SASS",
+        "GraphQL",
+        "Webpack",
+        "Team Collaboration",
+        "Communication"
+      ],
+      "summary": "Results-driven Frontend Developer with 7+ years of experience specializing in JavaScript, React, HTML/CSS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Future Tech Solutions",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using TypeScript, HTML/CSS, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using HTML/CSS, TypeScript, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2017"
+        }
+      ]
+    },
+    {
+      "first_name": "Betty",
+      "last_name": "Young",
+      "email": "betty.young32@example.com",
+      "phone": "(229) 706-6325",
+      "location": "Albuquerque, NM",
+      "current_title": "Backend Developer",
+      "years_experience": 6,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Redis",
+        "Express.js",
+        "Communication",
+        "Team Collaboration"
+      ],
+      "summary": "Innovative Backend Developer with 6 years of hands-on experience in Python, Node.js, PostgreSQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Node.js, Redis. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Node.js, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Engineering College",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Steven",
+      "last_name": "Allen",
+      "email": "steven.allen33@example.com",
+      "phone": "(295) 501-4630",
+      "location": "Tucson, AZ",
+      "current_title": "Full Stack Developer",
+      "years_experience": 4,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "CI/CD",
+        "AWS",
+        "TypeScript",
+        "Team Collaboration",
+        "Communication"
+      ],
+      "summary": "Experienced Full Stack Developer with 4 years of expertise in JavaScript, Python, React. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Smart Systems Inc",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, PostgreSQL, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2014"
+        }
+      ]
+    },
+    {
+      "first_name": "Helen",
+      "last_name": "King",
+      "email": "helen.king34@example.com",
+      "phone": "(436) 323-4155",
+      "location": "Fresno, CA",
+      "current_title": "DevOps Engineer",
+      "years_experience": 6,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Jenkins",
+        "Monitoring",
+        "Ansible",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced DevOps Engineer with 6 years of expertise in Docker, Kubernetes, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Docker. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Docker, Jenkins. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Andrew",
+      "last_name": "Wright",
+      "email": "andrew.wright35@example.com",
+      "phone": "(766) 499-3068",
+      "location": "Mesa, AZ",
+      "current_title": "Data Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "ETL",
+        "Airflow",
+        "Redshift",
+        "Hadoop",
+        "Communication",
+        "Problem Solving"
+      ],
+      "summary": "Results-driven Data Engineer with 4+ years of experience specializing in Python, SQL, Apache Spark. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Python, ETL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, ETL, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Computer Science University",
+          "year": "2014"
+        }
+      ]
+    },
+    {
+      "first_name": "Sandra",
+      "last_name": "Scott",
+      "email": "sandra.scott36@example.com",
+      "phone": "(454) 321-7818",
+      "location": "Sacramento, CA",
+      "current_title": "Data Scientist",
+      "years_experience": 4,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "NumPy",
+        "Scikit-learn",
+        "PyTorch",
+        "R",
+        "Problem Solving",
+        "Team Collaboration"
+      ],
+      "summary": "Results-driven Data Scientist with 4+ years of experience specializing in Python, Machine Learning, SQL. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Software Craftsmen",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using NumPy, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Tech Institute",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Kenneth",
+      "last_name": "Torres",
+      "email": "kenneth.torres37@example.com",
+      "phone": "(876) 283-3573",
+      "location": "Atlanta, GA",
+      "current_title": "Mobile Developer",
+      "years_experience": 6,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Android",
+        "GraphQL",
+        "Git",
+        "Agile",
+        "Python"
+      ],
+      "summary": "Experienced Mobile Developer with 6 years of expertise in React Native, Flutter, Swift. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Software Craftsmen",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using React Native, Flutter, Kotlin. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Future Tech Solutions",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using React Native, Flutter, Kotlin. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Donna",
+      "last_name": "Nguyen",
+      "email": "donna.nguyen38@example.com",
+      "phone": "(430) 863-3441",
+      "location": "Kansas City, MO",
+      "current_title": "QA Engineer",
+      "years_experience": 8,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "Jest",
+        "Cypress",
+        "LoadRunner",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Results-driven QA Engineer with 8+ years of experience specializing in Selenium, Python, Test Automation. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Selenium, API Testing, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Test Automation, API Testing, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Joshua",
+      "last_name": "Hill",
+      "email": "joshua.hill39@example.com",
+      "phone": "(952) 530-5102",
+      "location": "Colorado Springs, CO",
+      "current_title": "Security Engineer",
+      "years_experience": 7,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "OWASP",
+        "Burp Suite",
+        "Team Collaboration",
+        "Git"
+      ],
+      "summary": "Innovative Security Engineer with 7 years of hands-on experience in Python, Security, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Security, Penetration Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Software Craftsmen",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Security, Penetration Testing, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "State University",
+          "year": "2020"
+        }
+      ]
+    },
+    {
+      "first_name": "Carol",
+      "last_name": "Flores",
+      "email": "carol.flores40@example.com",
+      "phone": "(618) 541-6260",
+      "location": "Miami, FL",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 6,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Prometheus",
+        "Grafana",
+        "Terraform",
+        "Linux",
+        "Problem Solving",
+        "Communication"
+      ],
+      "summary": "Experienced Site Reliability Engineer with 6 years of expertise in Kubernetes, Python, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Monitoring, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Engineering College",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Kevin",
+      "last_name": "Green",
+      "email": "kevin.green41@example.com",
+      "phone": "(730) 570-9167",
+      "location": "New York, NY",
+      "current_title": "Frontend Developer",
+      "years_experience": 5,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "SASS",
+        "Vue.js",
+        "Angular",
+        "GraphQL",
+        "Team Collaboration",
+        "Agile"
+      ],
+      "summary": "Senior Frontend Developer with 5+ years building production applications using JavaScript, React, HTML/CSS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using JavaScript, React, HTML/CSS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2005"
+        }
+      ]
+    },
+    {
+      "first_name": "Ruth",
+      "last_name": "Adams",
+      "email": "ruth.adams42@example.com",
+      "phone": "(617) 295-4681",
+      "location": "Los Angeles, CA",
+      "current_title": "Backend Developer",
+      "years_experience": 8,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Redis",
+        "Django",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Experienced Backend Developer with 8 years of expertise in Python, Node.js, PostgreSQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using REST APIs, Redis, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Node.js, REST APIs, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "State University",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Brian",
+      "last_name": "Nelson",
+      "email": "brian.nelson43@example.com",
+      "phone": "(548) 719-5377",
+      "location": "Chicago, IL",
+      "current_title": "Full Stack Developer",
+      "years_experience": 7,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "TypeScript",
+        "CI/CD",
+        "Team Collaboration",
+        "Problem Solving"
+      ],
+      "summary": "Experienced Full Stack Developer with 7 years of expertise in JavaScript, Python, React. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Agile Development Co",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, Node.js, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Data Dynamics",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "State University",
+          "year": "2015"
+        }
+      ]
+    },
+    {
+      "first_name": "Sharon",
+      "last_name": "Baker",
+      "email": "sharon.baker44@example.com",
+      "phone": "(922) 590-7325",
+      "location": "Houston, TX",
+      "current_title": "DevOps Engineer",
+      "years_experience": 7,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Linux",
+        "Ansible",
+        "Bash",
+        "Jenkins",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Results-driven DevOps Engineer with 7+ years of experience specializing in Docker, Kubernetes, AWS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Linux, Terraform, Docker. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, Docker, Linux. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2017"
+        }
+      ]
+    },
+    {
+      "first_name": "George",
+      "last_name": "Hall",
+      "email": "george.hall45@example.com",
+      "phone": "(536) 890-9742",
+      "location": "Phoenix, AZ",
+      "current_title": "Data Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Hadoop",
+        "ETL",
+        "Airflow",
+        "Team Collaboration",
+        "Git"
+      ],
+      "summary": "Experienced Data Engineer with 4 years of expertise in Python, SQL, Apache Spark. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, AWS, Hadoop. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "Michelle",
+      "last_name": "Rivera",
+      "email": "michelle.rivera46@example.com",
+      "phone": "(229) 247-6314",
+      "location": "Philadelphia, PA",
+      "current_title": "Data Scientist",
+      "years_experience": 6,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "R",
+        "Scikit-learn",
+        "Communication",
+        "Problem Solving"
+      ],
+      "summary": "Innovative Data Scientist with 6 years of hands-on experience in Python, Machine Learning, SQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Machine Learning, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Machine Learning, Statistics, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Tech Institute",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Edward",
+      "last_name": "Campbell",
+      "email": "edward.campbell47@example.com",
+      "phone": "(670) 461-1153",
+      "location": "San Antonio, TX",
+      "current_title": "Mobile Developer",
+      "years_experience": 6,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Firebase",
+        "GraphQL",
+        "Android",
+        "Git",
+        "Problem Solving"
+      ],
+      "summary": "Results-driven Mobile Developer with 6+ years of experience specializing in React Native, Flutter, Swift. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Swift, Kotlin, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kotlin, React Native, Firebase. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Laura",
+      "last_name": "Smith",
+      "email": "laura.smith48@example.com",
+      "phone": "(502) 916-5837",
+      "location": "San Diego, CA",
+      "current_title": "QA Engineer",
+      "years_experience": 8,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "JIRA",
+        "Postman",
+        "Communication",
+        "Git"
+      ],
+      "summary": "Results-driven QA Engineer with 8+ years of experience specializing in Selenium, Python, Test Automation. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using API Testing, Test Automation, Selenium. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Test Automation, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Selenium, Test Automation, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Ronald",
+      "last_name": "Johnson",
+      "email": "ronald.johnson49@example.com",
+      "phone": "(292) 502-6352",
+      "location": "Dallas, TX",
+      "current_title": "Security Engineer",
+      "years_experience": 5,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Cryptography",
+        "Burp Suite",
+        "Compliance",
+        "OWASP",
+        "Team Collaboration",
+        "Communication"
+      ],
+      "summary": "Innovative Security Engineer with 5 years of hands-on experience in Python, Security, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Software Craftsmen",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Penetration Testing, AWS, Cryptography. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Penetration Testing, Python, Cryptography. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Sarah",
+      "last_name": "Williams",
+      "email": "sarah.williams50@example.com",
+      "phone": "(604) 214-5332",
+      "location": "San Jose, CA",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Prometheus",
+        "Go",
+        "Terraform",
+        "Linux",
+        "Communication",
+        "Problem Solving"
+      ],
+      "summary": "Innovative Site Reliability Engineer with 4 years of hands-on experience in Kubernetes, Python, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Data Dynamics",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Monitoring, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Timothy",
+      "last_name": "Brown",
+      "email": "timothy.brown51@example.com",
+      "phone": "(343) 246-1609",
+      "location": "Austin, TX",
+      "current_title": "Frontend Developer",
+      "years_experience": 4,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "SASS",
+        "Vue.js",
+        "Redux",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Frontend Developer with 4 years of expertise in JavaScript, React, HTML/CSS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, TypeScript, HTML/CSS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Kimberly",
+      "last_name": "Jones",
+      "email": "kimberly.jones52@example.com",
+      "phone": "(233) 906-7070",
+      "location": "Jacksonville, FL",
+      "current_title": "Backend Developer",
+      "years_experience": 6,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Redis",
+        "Microservices",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Experienced Backend Developer with 6 years of expertise in Python, Node.js, PostgreSQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using REST APIs, PostgreSQL, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Node.js, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2015"
+        }
+      ]
+    },
+    {
+      "first_name": "Jason",
+      "last_name": "Garcia",
+      "email": "jason.garcia53@example.com",
+      "phone": "(328) 778-4362",
+      "location": "Fort Worth, TX",
+      "current_title": "Full Stack Developer",
+      "years_experience": 5,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "GraphQL",
+        "AWS",
+        "Team Collaboration",
+        "Agile"
+      ],
+      "summary": "Results-driven Full Stack Developer with 5+ years of experience specializing in JavaScript, Python, React. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using JavaScript, React, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using React, Python, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Tech Institute",
+          "year": "2005"
+        }
+      ]
+    },
+    {
+      "first_name": "Deborah",
+      "last_name": "Miller",
+      "email": "deborah.miller54@example.com",
+      "phone": "(443) 802-6304",
+      "location": "Columbus, OH",
+      "current_title": "DevOps Engineer",
+      "years_experience": 6,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Ansible",
+        "Python",
+        "Git",
+        "Agile"
+      ],
+      "summary": "Innovative DevOps Engineer with 6 years of hands-on experience in Docker, Kubernetes, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Terraform, AWS, Ansible. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Ansible, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "DevOps Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Terraform, Ansible. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2020"
+        }
+      ]
+    },
+    {
+      "first_name": "John",
+      "last_name": "Davis",
+      "email": "john.davis55@example.com",
+      "phone": "(636) 902-2768",
+      "location": "San Francisco, CA",
+      "current_title": "Data Engineer",
+      "years_experience": 7,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Snowflake",
+        "ETL",
+        "Airflow",
+        "Git",
+        "Communication"
+      ],
+      "summary": "Innovative Data Engineer with 7 years of hands-on experience in Python, SQL, Apache Spark. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Snowflake, Apache Spark, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Snowflake, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Sarah",
+      "last_name": "Rodriguez",
+      "email": "sarah.rodriguez56@example.com",
+      "phone": "(662) 433-7779",
+      "location": "Charlotte, NC",
+      "current_title": "Data Scientist",
+      "years_experience": 7,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "Pandas",
+        "Scikit-learn",
+        "NumPy",
+        "Git",
+        "Communication"
+      ],
+      "summary": "Results-driven Data Scientist with 7+ years of experience specializing in Python, Machine Learning, SQL. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Statistics, Python, Pandas. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Pandas, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "State University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Michael",
+      "last_name": "Martinez",
+      "email": "michael.martinez57@example.com",
+      "phone": "(881) 968-7929",
+      "location": "Indianapolis, IN",
+      "current_title": "Mobile Developer",
+      "years_experience": 6,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "iOS",
+        "Firebase",
+        "GraphQL",
+        "Android",
+        "Git",
+        "Agile",
+        "Python"
+      ],
+      "summary": "Experienced Mobile Developer with 6 years of expertise in React Native, Flutter, Swift. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using iOS, Swift, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Flutter, Kotlin, Swift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Emily",
+      "last_name": "Hernandez",
+      "email": "emily.hernandez58@example.com",
+      "phone": "(384) 479-6062",
+      "location": "Seattle, WA",
+      "current_title": "QA Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "JUnit",
+        "Cypress",
+        "Jest",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Senior QA Engineer with 4+ years building production applications using Selenium, Python, Test Automation. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using JUnit, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Test Automation, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2007"
+        }
+      ]
+    },
+    {
+      "first_name": "David",
+      "last_name": "Lopez",
+      "email": "david.lopez59@example.com",
+      "phone": "(359) 361-1815",
+      "location": "Denver, CO",
+      "current_title": "Security Engineer",
+      "years_experience": 4,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "OWASP",
+        "Metasploit",
+        "Cryptography",
+        "Compliance",
+        "Problem Solving",
+        "Team Collaboration"
+      ],
+      "summary": "Results-driven Security Engineer with 4+ years of experience specializing in Python, Security, AWS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, AWS, Security. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Software Craftsmen",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using OWASP, Penetration Testing, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "State University",
+          "year": "2012"
+        }
+      ]
+    },
+    {
+      "first_name": "Jessica",
+      "last_name": "Gonzalez",
+      "email": "jessica.gonzalez60@example.com",
+      "phone": "(813) 256-1125",
+      "location": "Washington, DC",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 7,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Terraform",
+        "Grafana",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Results-driven Site Reliability Engineer with 7+ years of experience specializing in Kubernetes, Python, AWS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Innovation Labs",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Terraform, Monitoring. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Terraform, AWS, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "State University",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "James",
+      "last_name": "Wilson",
+      "email": "james.wilson61@example.com",
+      "phone": "(670) 279-6129",
+      "location": "Boston, MA",
+      "current_title": "Frontend Developer",
+      "years_experience": 9,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "SASS",
+        "Redux",
+        "GraphQL",
+        "Webpack",
+        "Problem Solving",
+        "Communication",
+        "Python",
+        "AWS"
+      ],
+      "summary": "Senior Frontend Developer with 9+ years building production applications using JavaScript, React, HTML/CSS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using SASS, TypeScript, HTML/CSS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using TypeScript, JavaScript, SASS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Global Software Partners",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using TypeScript, JavaScript, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2012"
+        }
+      ]
+    },
+    {
+      "first_name": "Jennifer",
+      "last_name": "Anderson",
+      "email": "jennifer.anderson62@example.com",
+      "phone": "(997) 372-2251",
+      "location": "El Paso, TX",
+      "current_title": "Backend Developer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Microservices",
+        "Django",
+        "Express.js",
+        "Redis",
+        "Communication",
+        "Agile",
+        "AWS"
+      ],
+      "summary": "Innovative Backend Developer with 11 years of hands-on experience in Python, Node.js, PostgreSQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Microservices, Node.js, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Microservices, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Global Software Partners",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Microservices, PostgreSQL, REST APIs. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Python, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Robert",
+      "last_name": "Thomas",
+      "email": "robert.thomas63@example.com",
+      "phone": "(257) 560-9312",
+      "location": "Detroit, MI",
+      "current_title": "Full Stack Developer",
+      "years_experience": 13,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "TypeScript",
+        "MongoDB",
+        "Problem Solving",
+        "Git"
+      ],
+      "summary": "Innovative Full Stack Developer with 13 years of hands-on experience in JavaScript, Python, React. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using PostgreSQL, Node.js, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, Python, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Full Stack Developer",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, JavaScript, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Full Stack Developer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using JavaScript, Python, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Lisa",
+      "last_name": "Taylor",
+      "email": "lisa.taylor64@example.com",
+      "phone": "(735) 824-3600",
+      "location": "Nashville, TN",
+      "current_title": "DevOps Engineer",
+      "years_experience": 13,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Python",
+        "Linux",
+        "Bash",
+        "Problem Solving",
+        "Communication"
+      ],
+      "summary": "Senior DevOps Engineer with 13+ years building production applications using Docker, Kubernetes, AWS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Docker, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Software Craftsmen",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Kubernetes, Terraform. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "DevOps Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior DevOps Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Docker, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "William",
+      "last_name": "Moore",
+      "email": "william.moore65@example.com",
+      "phone": "(919) 956-9624",
+      "location": "Portland, OR",
+      "current_title": "Data Engineer",
+      "years_experience": 14,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Snowflake",
+        "ETL",
+        "Team Collaboration",
+        "Communication"
+      ],
+      "summary": "Innovative Data Engineer with 14 years of hands-on experience in Python, SQL, Apache Spark. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, SQL, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Apache Spark, Snowflake. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Engineer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Snowflake, SQL, Apache Spark. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Data Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using SQL, Snowflake, Apache Spark. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Mary",
+      "last_name": "Jackson",
+      "email": "mary.jackson66@example.com",
+      "phone": "(573) 892-4891",
+      "location": "Memphis, TN",
+      "current_title": "Data Scientist",
+      "years_experience": 12,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "NumPy",
+        "R",
+        "Pandas",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Senior Data Scientist with 12+ years building production applications using Python, Machine Learning, SQL. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Data Dynamics",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using SQL, Statistics, Machine Learning. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using NumPy, Statistics, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Scientist",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Machine Learning, SQL, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Richard",
+      "last_name": "Martin",
+      "email": "richard.martin67@example.com",
+      "phone": "(728) 327-5670",
+      "location": "Oklahoma City, OK",
+      "current_title": "Mobile Developer",
+      "years_experience": 14,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Android",
+        "Firebase",
+        "Problem Solving",
+        "Agile",
+        "AWS"
+      ],
+      "summary": "Senior Mobile Developer with 14+ years building production applications using React Native, Flutter, Swift. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Swift, React Native, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Android, Swift, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Mobile Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Swift, Flutter, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Mobile Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Swift, Flutter, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2020"
+        }
+      ]
+    },
+    {
+      "first_name": "Patricia",
+      "last_name": "Lee",
+      "email": "patricia.lee68@example.com",
+      "phone": "(342) 977-8685",
+      "location": "Las Vegas, NV",
+      "current_title": "QA Engineer",
+      "years_experience": 14,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "LoadRunner",
+        "Cypress",
+        "JIRA",
+        "Git",
+        "Communication",
+        "AWS"
+      ],
+      "summary": "Senior QA Engineer with 14+ years building production applications using Selenium, Python, Test Automation. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Test Automation, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, API Testing, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Selenium, API Testing, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior QA Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using LoadRunner, Python, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "University of Technology",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Thomas",
+      "last_name": "Perez",
+      "email": "thomas.perez69@example.com",
+      "phone": "(829) 561-4941",
+      "location": "Louisville, KY",
+      "current_title": "Security Engineer",
+      "years_experience": 9,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Cryptography",
+        "Burp Suite",
+        "OWASP",
+        "Metasploit",
+        "Communication",
+        "Git"
+      ],
+      "summary": "Innovative Security Engineer with 9 years of hands-on experience in Python, Security, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Penetration Testing, Python, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Python, Security. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Security, Python, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Tech Institute",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Linda",
+      "last_name": "Thompson",
+      "email": "linda.thompson70@example.com",
+      "phone": "(759) 546-3868",
+      "location": "Baltimore, MD",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 11,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Go",
+        "Incident Response",
+        "Grafana",
+        "Prometheus",
+        "Git",
+        "Problem Solving"
+      ],
+      "summary": "Senior Site Reliability Engineer with 11+ years building production applications using Kubernetes, Python, AWS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Go, Monitoring. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Monitoring, AWS, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Site Reliability Engineer",
+          "company": "Software Craftsmen",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Kubernetes, Go. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Charles",
+      "last_name": "White",
+      "email": "charles.white71@example.com",
+      "phone": "(576) 647-7553",
+      "location": "Milwaukee, WI",
+      "current_title": "Frontend Developer",
+      "years_experience": 15,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "SASS",
+        "GraphQL",
+        "Webpack",
+        "Vue.js",
+        "Problem Solving",
+        "Team Collaboration"
+      ],
+      "summary": "Innovative Frontend Developer with 15 years of hands-on experience in JavaScript, React, HTML/CSS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using TypeScript, JavaScript, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using HTML/CSS, SASS, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using HTML/CSS, SASS, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Frontend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using TypeScript, HTML/CSS, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Barbara",
+      "last_name": "Harris",
+      "email": "barbara.harris72@example.com",
+      "phone": "(854) 258-2229",
+      "location": "Albuquerque, NM",
+      "current_title": "Backend Developer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Microservices",
+        "Redis",
+        "MongoDB",
+        "RabbitMQ",
+        "Agile",
+        "Git"
+      ],
+      "summary": "Senior Backend Developer with 11+ years building production applications using Python, Node.js, PostgreSQL. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Node.js, Python, REST APIs. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Agile Development Co",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Python, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, Microservices, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "Joseph",
+      "last_name": "Sanchez",
+      "email": "joseph.sanchez73@example.com",
+      "phone": "(575) 607-6150",
+      "location": "Tucson, AZ",
+      "current_title": "Full Stack Developer",
+      "years_experience": 13,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "TypeScript",
+        "AWS",
+        "Docker",
+        "MongoDB",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Results-driven Full Stack Developer with 13+ years of experience specializing in JavaScript, Python, React. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, JavaScript, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Full Stack Developer",
+          "company": "Agile Development Co",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using JavaScript, React, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Tech Institute",
+          "year": "2016"
+        }
+      ]
+    },
+    {
+      "first_name": "Elizabeth",
+      "last_name": "Clark",
+      "email": "elizabeth.clark74@example.com",
+      "phone": "(429) 324-4292",
+      "location": "Fresno, CA",
+      "current_title": "DevOps Engineer",
+      "years_experience": 13,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Ansible",
+        "Bash",
+        "Git",
+        "Communication"
+      ],
+      "summary": "Innovative DevOps Engineer with 13 years of hands-on experience in Docker, Kubernetes, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Docker, Ansible, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Ansible, Terraform, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "DevOps Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Docker, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior DevOps Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Kubernetes, Ansible. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Tech Institute",
+          "year": "2018"
+        }
+      ]
+    },
+    {
+      "first_name": "Christopher",
+      "last_name": "Ramirez",
+      "email": "christopher.ramirez75@example.com",
+      "phone": "(256) 327-9488",
+      "location": "Mesa, AZ",
+      "current_title": "Data Engineer",
+      "years_experience": 13,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Hadoop",
+        "Kafka",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Innovative Data Engineer with 13 years of hands-on experience in Python, SQL, Apache Spark. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Apache Spark, SQL, Hadoop. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Apache Spark, Python, Hadoop. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Engineer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Hadoop, SQL, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Data Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Hadoop, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Susan",
+      "last_name": "Lewis",
+      "email": "susan.lewis76@example.com",
+      "phone": "(415) 985-7825",
+      "location": "Sacramento, CA",
+      "current_title": "Data Scientist",
+      "years_experience": 14,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "Scikit-learn",
+        "TensorFlow",
+        "Pandas",
+        "R",
+        "Team Collaboration",
+        "Communication"
+      ],
+      "summary": "Senior Data Scientist with 14+ years building production applications using Python, Machine Learning, SQL. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using SQL, Statistics, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Scikit-learn, Machine Learning. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Scientist",
+          "company": "Data Dynamics",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using SQL, Machine Learning, Statistics. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Data Scientist",
+          "company": "Agile Development Co",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Machine Learning, Scikit-learn. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2012"
+        }
+      ]
+    },
+    {
+      "first_name": "Daniel",
+      "last_name": "Robinson",
+      "email": "daniel.robinson77@example.com",
+      "phone": "(325) 473-8366",
+      "location": "Atlanta, GA",
+      "current_title": "Mobile Developer",
+      "years_experience": 12,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "Android",
+        "iOS",
+        "Git",
+        "Communication"
+      ],
+      "summary": "Results-driven Mobile Developer with 12+ years of experience specializing in React Native, Flutter, Swift. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Data Dynamics",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Flutter, Swift, Kotlin. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Flutter, Kotlin, Swift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Mobile Developer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Swift, Kotlin, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Margaret",
+      "last_name": "Walker",
+      "email": "margaret.walker78@example.com",
+      "phone": "(420) 797-6781",
+      "location": "Kansas City, MO",
+      "current_title": "QA Engineer",
+      "years_experience": 10,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "Cypress",
+        "JUnit",
+        "Problem Solving",
+        "Team Collaboration",
+        "AWS"
+      ],
+      "summary": "Senior QA Engineer with 10+ years building production applications using Selenium, Python, Test Automation. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Python, Test Automation, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Test Automation, Selenium, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "QA Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Cypress, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using API Testing, Cypress, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2008"
+        }
+      ]
+    },
+    {
+      "first_name": "Matthew",
+      "last_name": "Young",
+      "email": "matthew.young79@example.com",
+      "phone": "(299) 603-7114",
+      "location": "Colorado Springs, CO",
+      "current_title": "Security Engineer",
+      "years_experience": 10,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Compliance",
+        "Metasploit",
+        "Burp Suite",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Innovative Security Engineer with 10 years of hands-on experience in Python, Security, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Penetration Testing, Compliance, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Compliance, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Security Engineer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Compliance, Penetration Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2014"
+        }
+      ]
+    },
+    {
+      "first_name": "Dorothy",
+      "last_name": "Allen",
+      "email": "dorothy.allen80@example.com",
+      "phone": "(217) 577-6427",
+      "location": "Miami, FL",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 12,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Prometheus",
+        "Go",
+        "Terraform",
+        "Linux",
+        "Git",
+        "Problem Solving"
+      ],
+      "summary": "Results-driven Site Reliability Engineer with 12+ years of experience specializing in Kubernetes, Python, AWS. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Prometheus, Monitoring, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Kubernetes, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Site Reliability Engineer",
+          "company": "Data Dynamics",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, Monitoring, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Site Reliability Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Monitoring, Python, Prometheus. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "State University",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "Anthony",
+      "last_name": "King",
+      "email": "anthony.king81@example.com",
+      "phone": "(412) 774-6325",
+      "location": "New York, NY",
+      "current_title": "Frontend Developer",
+      "years_experience": 13,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "SASS",
+        "Redux",
+        "GraphQL",
+        "Angular",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Senior Frontend Developer with 13+ years building production applications using JavaScript, React, HTML/CSS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Software Craftsmen",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using SASS, TypeScript, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Software Craftsmen",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using SASS, HTML/CSS, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Software Craftsmen",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using React, TypeScript, SASS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Frontend Developer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using SASS, HTML/CSS, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Computer Science University",
+          "year": "2017"
+        }
+      ]
+    },
+    {
+      "first_name": "Nancy",
+      "last_name": "Wright",
+      "email": "nancy.wright82@example.com",
+      "phone": "(553) 991-3399",
+      "location": "Los Angeles, CA",
+      "current_title": "Backend Developer",
+      "years_experience": 12,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Django",
+        "MongoDB",
+        "Microservices",
+        "Communication",
+        "Problem Solving"
+      ],
+      "summary": "Innovative Backend Developer with 12 years of hands-on experience in Python, Node.js, PostgreSQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Data Dynamics",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Django, PostgreSQL, REST APIs. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Node.js, Django. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Node.js, Django, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Backend Developer",
+          "company": "Innovation Labs",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, REST APIs, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "State University",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "Mark",
+      "last_name": "Scott",
+      "email": "mark.scott83@example.com",
+      "phone": "(868) 687-8822",
+      "location": "Chicago, IL",
+      "current_title": "Full Stack Developer",
+      "years_experience": 12,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "AWS",
+        "TypeScript",
+        "GraphQL",
+        "CI/CD",
+        "Git",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Full Stack Developer with 12 years of expertise in JavaScript, Python, React. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Node.js, Python, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, React, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Full Stack Developer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, JavaScript, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Karen",
+      "last_name": "Torres",
+      "email": "karen.torres84@example.com",
+      "phone": "(315) 538-3662",
+      "location": "Houston, TX",
+      "current_title": "DevOps Engineer",
+      "years_experience": 15,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Bash",
+        "Python",
+        "Ansible",
+        "Jenkins",
+        "Communication",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced DevOps Engineer with 15 years of expertise in Docker, Kubernetes, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Terraform, Bash, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Terraform, Docker, Bash. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "DevOps Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Kubernetes, Docker. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior DevOps Engineer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, Terraform, Bash. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "University of Technology",
+          "year": "2005"
+        }
+      ]
+    },
+    {
+      "first_name": "Paul",
+      "last_name": "Nguyen",
+      "email": "paul.nguyen85@example.com",
+      "phone": "(869) 568-4871",
+      "location": "Phoenix, AZ",
+      "current_title": "Data Engineer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Snowflake",
+        "Airflow",
+        "Problem Solving",
+        "Communication"
+      ],
+      "summary": "Innovative Data Engineer with 11 years of hands-on experience in Python, SQL, Apache Spark. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using Apache Spark, Snowflake, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Data Dynamics",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using SQL, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Engineer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Apache Spark, AWS, Snowflake. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Computer Science University",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Betty",
+      "last_name": "Hill",
+      "email": "betty.hill86@example.com",
+      "phone": "(453) 896-2341",
+      "location": "Philadelphia, PA",
+      "current_title": "Data Scientist",
+      "years_experience": 15,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "Pandas",
+        "NumPy",
+        "R",
+        "TensorFlow",
+        "Team Collaboration",
+        "Git"
+      ],
+      "summary": "Innovative Data Scientist with 15 years of hands-on experience in Python, Machine Learning, SQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Pandas, Machine Learning, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Smart Systems Inc",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Scientist",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Python, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Data Scientist",
+          "company": "Tech Innovations Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Statistics, Machine Learning, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Engineering College",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Steven",
+      "last_name": "Flores",
+      "email": "steven.flores87@example.com",
+      "phone": "(673) 888-6049",
+      "location": "San Antonio, TX",
+      "current_title": "Mobile Developer",
+      "years_experience": 13,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "iOS",
+        "REST APIs",
+        "Firebase",
+        "Redux",
+        "Agile",
+        "Git",
+        "Python"
+      ],
+      "summary": "Innovative Mobile Developer with 13 years of hands-on experience in React Native, Flutter, Swift. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Smart Systems Inc",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using React Native, iOS, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Software Craftsmen",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kotlin, Flutter, React Native. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Mobile Developer",
+          "company": "Agile Development Co",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kotlin, iOS, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Mobile Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using iOS, Flutter, Swift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "State University",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "Helen",
+      "last_name": "Green",
+      "email": "helen.green88@example.com",
+      "phone": "(602) 741-3086",
+      "location": "San Diego, CA",
+      "current_title": "QA Engineer",
+      "years_experience": 13,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "Jest",
+        "Cypress",
+        "LoadRunner",
+        "JIRA",
+        "Problem Solving",
+        "Team Collaboration"
+      ],
+      "summary": "Senior QA Engineer with 13+ years building production applications using Selenium, Python, Test Automation. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Test Automation, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Selenium, API Testing, Test Automation. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "QA Engineer",
+          "company": "Data Dynamics",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Selenium, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior QA Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Jest, Selenium, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2019"
+        }
+      ]
+    },
+    {
+      "first_name": "Andrew",
+      "last_name": "Adams",
+      "email": "andrew.adams89@example.com",
+      "phone": "(752) 422-1924",
+      "location": "Dallas, TX",
+      "current_title": "Security Engineer",
+      "years_experience": 10,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Compliance",
+        "Metasploit",
+        "Agile",
+        "Communication"
+      ],
+      "summary": "Experienced Security Engineer with 10 years of expertise in Python, Security, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using AWS, Security, Compliance. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Compliance, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Security Engineer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Compliance, Penetration Testing, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2015"
+        }
+      ]
+    },
+    {
+      "first_name": "Sandra",
+      "last_name": "Nelson",
+      "email": "sandra.nelson90@example.com",
+      "phone": "(626) 618-3444",
+      "location": "San Jose, CA",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 14,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Go",
+        "Grafana",
+        "Incident Response",
+        "Agile",
+        "Team Collaboration"
+      ],
+      "summary": "Innovative Site Reliability Engineer with 14 years of hands-on experience in Kubernetes, Python, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Go, Monitoring, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, AWS, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Site Reliability Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Monitoring, AWS, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Site Reliability Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Monitoring, Go. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Kenneth",
+      "last_name": "Baker",
+      "email": "kenneth.baker91@example.com",
+      "phone": "(979) 801-4555",
+      "location": "Austin, TX",
+      "current_title": "Frontend Developer",
+      "years_experience": 15,
+      "skills": [
+        "JavaScript",
+        "React",
+        "HTML/CSS",
+        "TypeScript",
+        "Angular",
+        "Webpack",
+        "Redux",
+        "Git",
+        "Agile"
+      ],
+      "summary": "Innovative Frontend Developer with 15 years of hands-on experience in JavaScript, React, HTML/CSS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Frontend Developer",
+          "company": "Future Tech Solutions",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using React, Angular, TypeScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Frontend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using HTML/CSS, Angular, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Frontend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using HTML/CSS, Angular, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Frontend Developer",
+          "company": "Smart Systems Inc",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using TypeScript, Angular, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2011"
+        }
+      ]
+    },
+    {
+      "first_name": "Donna",
+      "last_name": "Hall",
+      "email": "donna.hall92@example.com",
+      "phone": "(520) 623-1749",
+      "location": "Jacksonville, FL",
+      "current_title": "Backend Developer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "Node.js",
+        "PostgreSQL",
+        "REST APIs",
+        "Express.js",
+        "Microservices",
+        "Django",
+        "RabbitMQ",
+        "Team Collaboration",
+        "Problem Solving",
+        "AWS"
+      ],
+      "summary": "Innovative Backend Developer with 11 years of hands-on experience in Python, Node.js, PostgreSQL. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Backend Developer",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Express.js, Node.js, REST APIs. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Backend Developer",
+          "company": "Software Craftsmen",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Express.js, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Backend Developer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Node.js, Express.js, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Backend Developer",
+          "company": "Cloud Systems Corp",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Express.js, Python, PostgreSQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "State University",
+          "year": "2006"
+        }
+      ]
+    },
+    {
+      "first_name": "Joshua",
+      "last_name": "Rivera",
+      "email": "joshua.rivera93@example.com",
+      "phone": "(206) 622-3252",
+      "location": "Fort Worth, TX",
+      "current_title": "Full Stack Developer",
+      "years_experience": 15,
+      "skills": [
+        "JavaScript",
+        "Python",
+        "React",
+        "Node.js",
+        "PostgreSQL",
+        "AWS",
+        "Docker",
+        "CI/CD",
+        "GraphQL",
+        "Agile",
+        "Problem Solving"
+      ],
+      "summary": "Senior Full Stack Developer with 15+ years building production applications using JavaScript, Python, React. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Full Stack Developer",
+          "company": "Future Tech Solutions",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using JavaScript, PostgreSQL, React. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Full Stack Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using JavaScript, React, Node.js. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Full Stack Developer",
+          "company": "Tech Innovations Inc",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, Node.js, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Full Stack Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using PostgreSQL, Python, JavaScript. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Computer Science University",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Carol",
+      "last_name": "Campbell",
+      "email": "carol.campbell94@example.com",
+      "phone": "(562) 473-7502",
+      "location": "Columbus, OH",
+      "current_title": "DevOps Engineer",
+      "years_experience": 15,
+      "skills": [
+        "Docker",
+        "Kubernetes",
+        "AWS",
+        "Terraform",
+        "Python",
+        "Bash",
+        "Problem Solving",
+        "Agile"
+      ],
+      "summary": "Senior DevOps Engineer with 15+ years building production applications using Docker, Kubernetes, AWS. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior DevOps Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Docker, Terraform, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff DevOps Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Terraform, Docker, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "DevOps Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Docker, Terraform, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior DevOps Engineer",
+          "company": "Global Software Partners",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Docker, Python, Terraform. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Computer Science University",
+          "year": "2020"
+        }
+      ]
+    },
+    {
+      "first_name": "Kevin",
+      "last_name": "Smith",
+      "email": "kevin.smith95@example.com",
+      "phone": "(247) 276-5593",
+      "location": "San Francisco, CA",
+      "current_title": "Data Engineer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "SQL",
+        "Apache Spark",
+        "AWS",
+        "Redshift",
+        "Airflow",
+        "Kafka",
+        "ETL",
+        "Git",
+        "Agile"
+      ],
+      "summary": "Results-driven Data Engineer with 11+ years of experience specializing in Python, SQL, Apache Spark. Proven track record of delivering high-quality software solutions on time. Excellent communication skills and experience working in Agile teams.",
+      "work_experience": [
+        {
+          "title": "Senior Data Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Apache Spark, SQL, Redshift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Engineer",
+          "company": "Global Software Partners",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Apache Spark, SQL. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Redshift, Apache Spark, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2012"
+        }
+      ]
+    },
+    {
+      "first_name": "Ruth",
+      "last_name": "Johnson",
+      "email": "ruth.johnson96@example.com",
+      "phone": "(277) 548-7499",
+      "location": "Charlotte, NC",
+      "current_title": "Data Scientist",
+      "years_experience": 15,
+      "skills": [
+        "Python",
+        "Machine Learning",
+        "SQL",
+        "Statistics",
+        "TensorFlow",
+        "R",
+        "Pandas",
+        "Problem Solving",
+        "Agile"
+      ],
+      "summary": "Experienced Data Scientist with 15 years of expertise in Python, Machine Learning, SQL. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Data Scientist",
+          "company": "Cloud Systems Corp",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using TensorFlow, Statistics, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Data Scientist",
+          "company": "Data Dynamics",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, TensorFlow, Machine Learning. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Data Scientist",
+          "company": "Innovation Labs",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Machine Learning, Statistics, TensorFlow. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Data Scientist",
+          "company": "Digital Solutions LLC",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, TensorFlow, Machine Learning. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "University of Technology",
+          "year": "2013"
+        }
+      ]
+    },
+    {
+      "first_name": "Brian",
+      "last_name": "Williams",
+      "email": "brian.williams97@example.com",
+      "phone": "(335) 289-4070",
+      "location": "Indianapolis, IN",
+      "current_title": "Mobile Developer",
+      "years_experience": 9,
+      "skills": [
+        "React Native",
+        "Flutter",
+        "Swift",
+        "Kotlin",
+        "REST APIs",
+        "GraphQL",
+        "Redux",
+        "Git",
+        "Team Collaboration",
+        "Python"
+      ],
+      "summary": "Senior Mobile Developer with 9+ years building production applications using React Native, Flutter, Swift. Experience leading technical initiatives and mentoring junior developers. Focused on delivering business value through technology.",
+      "work_experience": [
+        {
+          "title": "Senior Mobile Developer",
+          "company": "Innovation Labs",
+          "duration": "4 years",
+          "current": true,
+          "description": "Developed and maintained applications using React Native, Swift, Flutter. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Mobile Developer",
+          "company": "Digital Solutions LLC",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using REST APIs, Flutter, Swift. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2010"
+        }
+      ]
+    },
+    {
+      "first_name": "Sharon",
+      "last_name": "Brown",
+      "email": "sharon.brown98@example.com",
+      "phone": "(475) 508-5397",
+      "location": "Seattle, WA",
+      "current_title": "QA Engineer",
+      "years_experience": 10,
+      "skills": [
+        "Selenium",
+        "Python",
+        "Test Automation",
+        "API Testing",
+        "Jest",
+        "Cypress",
+        "JIRA",
+        "Problem Solving",
+        "Communication"
+      ],
+      "summary": "Innovative QA Engineer with 10 years of hands-on experience in Selenium, Python, Test Automation. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior QA Engineer",
+          "company": "Agile Development Co",
+          "duration": "2 years",
+          "current": true,
+          "description": "Developed and maintained applications using Test Automation, Python, Jest. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff QA Engineer",
+          "company": "Global Software Partners",
+          "duration": "5 years",
+          "current": false,
+          "description": "Developed and maintained applications using Jest, Python, API Testing. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "QA Engineer",
+          "company": "Cloud Systems Corp",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Test Automation, Selenium, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior QA Engineer",
+          "company": "Global Software Partners",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using API Testing, Test Automation, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Master of Science in Computer Science",
+          "institution": "Engineering College",
+          "year": "2009"
+        }
+      ]
+    },
+    {
+      "first_name": "George",
+      "last_name": "Jones",
+      "email": "george.jones99@example.com",
+      "phone": "(528) 817-4290",
+      "location": "Denver, CO",
+      "current_title": "Security Engineer",
+      "years_experience": 11,
+      "skills": [
+        "Python",
+        "Security",
+        "AWS",
+        "Penetration Testing",
+        "Metasploit",
+        "Burp Suite",
+        "Cryptography",
+        "Communication",
+        "Team Collaboration"
+      ],
+      "summary": "Experienced Security Engineer with 11 years of expertise in Python, Security, AWS. Passionate about building scalable solutions and working in collaborative environments. Strong problem-solving skills and commitment to code quality.",
+      "work_experience": [
+        {
+          "title": "Senior Security Engineer",
+          "company": "Agile Development Co",
+          "duration": "3 years",
+          "current": true,
+          "description": "Developed and maintained applications using Penetration Testing, AWS, Security. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Security Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "4 years",
+          "current": false,
+          "description": "Developed and maintained applications using Metasploit, Security, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Security Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "3 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, Penetration Testing, AWS. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Security Engineer",
+          "company": "Future Tech Solutions",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using AWS, Python, Security. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Science in Information Technology",
+          "institution": "Tech Institute",
+          "year": "2014"
+        }
+      ]
+    },
+    {
+      "first_name": "Michelle",
+      "last_name": "Garcia",
+      "email": "michelle.garcia100@example.com",
+      "phone": "(458) 874-3525",
+      "location": "Washington, DC",
+      "current_title": "Site Reliability Engineer",
+      "years_experience": 10,
+      "skills": [
+        "Kubernetes",
+        "Python",
+        "AWS",
+        "Monitoring",
+        "Go",
+        "Incident Response",
+        "Prometheus",
+        "Grafana",
+        "Team Collaboration",
+        "Problem Solving"
+      ],
+      "summary": "Innovative Site Reliability Engineer with 10 years of hands-on experience in Kubernetes, Python, AWS. Dedicated to continuous learning and staying current with industry best practices. Strong analytical skills and attention to detail.",
+      "work_experience": [
+        {
+          "title": "Senior Site Reliability Engineer",
+          "company": "Smart Systems Inc",
+          "duration": "5 years",
+          "current": true,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Monitoring. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Staff Site Reliability Engineer",
+          "company": "Digital Solutions LLC",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Python, AWS, Kubernetes. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Site Reliability Engineer",
+          "company": "Global Software Partners",
+          "duration": "2 years",
+          "current": false,
+          "description": "Developed and maintained applications using Monitoring, AWS, Python. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        },
+        {
+          "title": "Junior Site Reliability Engineer",
+          "company": "Tech Innovations Inc",
+          "duration": "1 years",
+          "current": false,
+          "description": "Developed and maintained applications using Kubernetes, AWS, Go. Collaborated with cross-functional teams to deliver high-quality software solutions."
+        }
+      ],
+      "education": [
+        {
+          "degree": "Bachelor of Engineering in Software Engineering",
+          "institution": "Engineering College",
+          "year": "2016"
+        }
+      ]
+    }
+  ]
+}
