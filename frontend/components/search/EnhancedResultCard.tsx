@@ -40,9 +40,9 @@ export default function EnhancedResultCard({
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
   
   const hasAIInsights = !!(
-    result.key_strengths?.length > 0 || 
-    result.potential_concerns?.length > 0 || 
-    result.interview_focus?.length > 0 || 
+    (result.key_strengths?.length && result.key_strengths.length > 0) || 
+    (result.potential_concerns?.length && result.potential_concerns.length > 0) || 
+    (result.interview_focus?.length && result.interview_focus.length > 0) || 
     result.hiring_recommendation
   );
 
