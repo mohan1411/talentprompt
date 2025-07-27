@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, oauth, oauth_v2, search_progressive
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, oauth, oauth_v2, search_progressive, dev_oauth
 # bulk_import temporarily disabled - pandas not in Docker image
 
 api_router = APIRouter()
@@ -33,5 +33,6 @@ api_router.include_router(outreach.router, prefix="/outreach", tags=["outreach"]
 api_router.include_router(admin_migrate.router, prefix="/admin/migrate", tags=["admin"])
 api_router.include_router(oauth.router, prefix="/auth/oauth", tags=["oauth"])
 api_router.include_router(oauth_v2.router, prefix="/auth/oauth/v2", tags=["oauth-v2"])
+api_router.include_router(dev_oauth.router, prefix="/auth", tags=["dev"])  # DEV ONLY - Remove in production
 # Analytics temporarily disabled due to import issues
 # api_router.include_router(analytics.router, prefix="/analytics", tags=["analytics"])

@@ -63,6 +63,33 @@ async def get_current_active_user(
     return current_user
 
 
+async def get_current_user_optional(
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme)
+) -> Optional[User]:
+    """Get current user from JWT token, returns None if invalid."""
+    try:
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms=[security.ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+        user = await crud.user.get(db, id=str(token_data.sub))
+        return user
+    except:
+        return None
+
+
+async def get_current_active_user_optional(
+    current_user: Optional[User] = Depends(get_current_user_optional),
+) -> Optional[User]:
+    """Get current active user, returns None if not authenticated."""
+    if current_user and current_user.is_active:
+        return current_user
+    return None
+
+
 async def get_current_active_superuser(
     current_user: User = Depends(get_current_user),
 ) -> User:
