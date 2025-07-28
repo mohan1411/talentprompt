@@ -109,11 +109,30 @@ class HybridSearchService:
             term_lower = term.lower()
             
             # Create conditions for exact term match
-            exact_conditions = or_(
-                func.lower(Resume.full_text).contains(term_lower),
-                func.lower(Resume.summary).contains(term_lower),
-                func.lower(Resume.skills_text).contains(term_lower)
+            # Use actual columns that exist in the model
+            conditions_list = []
+            
+            # Add condition for raw_text if it exists
+            conditions_list.append(
+                func.lower(func.coalesce(Resume.raw_text, '')).contains(term_lower)
             )
+            
+            # Add condition for summary
+            conditions_list.append(
+                func.lower(func.coalesce(Resume.summary, '')).contains(term_lower)
+            )
+            
+            # Add condition for current_title
+            conditions_list.append(
+                func.lower(func.coalesce(Resume.current_title, '')).contains(term_lower)
+            )
+            
+            # Add condition for skills array
+            conditions_list.append(
+                func.lower(func.coalesce(func.array_to_string(Resume.skills, ' '), '')).contains(term_lower)
+            )
+            
+            exact_conditions = or_(*conditions_list)
             
             # Add fuzzy match conditions for skills
             # Note: This is simplified - in production, you'd want to use PostgreSQL's fuzzy search
@@ -125,8 +144,8 @@ class HybridSearchService:
                 corrected = corrections[term].lower()
                 fuzzy_conditions.append(
                     or_(
-                        func.lower(Resume.full_text).contains(corrected),
-                        func.lower(Resume.skills_text).contains(corrected)
+                        func.lower(func.coalesce(Resume.raw_text, '')).contains(corrected),
+                        func.lower(func.coalesce(func.array_to_string(Resume.skills, ' '), '')).contains(corrected)
                     )
                 )
             
@@ -220,11 +239,12 @@ class HybridSearchService:
         - N = total number of documents
         - df = document frequency (docs containing term)
         """
-        # Combine all searchable text
+        # Combine all searchable text from actual columns
+        skills_text = " ".join(resume.skills) if resume.skills else ""
         doc_text = " ".join(filter(None, [
-            resume.full_text or "",
+            resume.raw_text or "",
             resume.summary or "",
-            resume.skills_text or "",
+            skills_text,
             resume.current_title or ""
         ])).lower()
         

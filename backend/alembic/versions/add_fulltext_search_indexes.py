@@ -21,25 +21,25 @@ def upgrade():
     
     # Create GIN indexes for full-text search
     op.execute("""
-        -- Create GIN index on full_text column for fast text search
-        CREATE INDEX IF NOT EXISTS idx_resumes_full_text_gin 
-        ON resumes USING GIN (to_tsvector('english', COALESCE(full_text, '')));
+        -- Create GIN index on raw_text column for fast text search
+        CREATE INDEX IF NOT EXISTS idx_resumes_raw_text_gin 
+        ON resumes USING GIN (to_tsvector('english', COALESCE(raw_text, '')));
         
         -- Create GIN index on summary column
         CREATE INDEX IF NOT EXISTS idx_resumes_summary_gin 
         ON resumes USING GIN (to_tsvector('english', COALESCE(summary, '')));
         
-        -- Create GIN index on skills_text column
-        CREATE INDEX IF NOT EXISTS idx_resumes_skills_text_gin 
-        ON resumes USING GIN (to_tsvector('english', COALESCE(skills_text, '')));
+        -- Create GIN index on skills array column
+        CREATE INDEX IF NOT EXISTS idx_resumes_skills_gin 
+        ON resumes USING GIN (to_tsvector('english', COALESCE(array_to_string(skills, ' '), '')));
         
         -- Create composite GIN index for searching across multiple fields
         CREATE INDEX IF NOT EXISTS idx_resumes_composite_search_gin 
         ON resumes USING GIN (
             to_tsvector('english', 
-                COALESCE(full_text, '') || ' ' || 
+                COALESCE(raw_text, '') || ' ' || 
                 COALESCE(summary, '') || ' ' || 
-                COALESCE(skills_text, '') || ' ' ||
+                COALESCE(array_to_string(skills, ' '), '') || ' ' ||
                 COALESCE(current_title, '')
             )
         );
@@ -48,8 +48,8 @@ def upgrade():
         CREATE EXTENSION IF NOT EXISTS pg_trgm;
         
         -- Trigram indexes for fuzzy skill matching
-        CREATE INDEX IF NOT EXISTS idx_resumes_skills_text_trgm 
-        ON resumes USING GIN (skills_text gin_trgm_ops);
+        CREATE INDEX IF NOT EXISTS idx_resumes_skills_trgm 
+        ON resumes USING GIN (array_to_string(skills, ' ') gin_trgm_ops);
         
         CREATE INDEX IF NOT EXISTS idx_resumes_current_title_trgm 
         ON resumes USING GIN (current_title gin_trgm_ops);
@@ -58,16 +58,16 @@ def upgrade():
         CREATE INDEX IF NOT EXISTS idx_resumes_user_id 
         ON resumes (user_id);
         
-        -- Composite index for user_id + skills_text for efficient filtering
-        CREATE INDEX IF NOT EXISTS idx_resumes_user_skills 
-        ON resumes (user_id, skills_text);
+        -- Composite index for user_id for efficient filtering
+        CREATE INDEX IF NOT EXISTS idx_resumes_user_status 
+        ON resumes (user_id, status);
         
         -- Create a materialized view for pre-computed document stats (optional)
         CREATE MATERIALIZED VIEW IF NOT EXISTS resume_doc_stats AS
         SELECT 
             user_id,
             COUNT(*) as doc_count,
-            AVG(LENGTH(COALESCE(full_text, ''))) as avg_doc_length,
+            AVG(LENGTH(COALESCE(raw_text, ''))) as avg_doc_length,
             MAX(updated_at) as last_update
         FROM resumes
         GROUP BY user_id;
@@ -94,9 +94,9 @@ def upgrade():
             RETURN QUERY
             SELECT 
                 r.id as resume_id,
-                similarity(query_skill, r.skills_text) as similarity
+                similarity(query_skill, array_to_string(r.skills, ' ')) as similarity
             FROM resumes r
-            WHERE similarity(query_skill, r.skills_text) > threshold
+            WHERE similarity(query_skill, array_to_string(r.skills, ' ')) > threshold
             ORDER BY similarity DESC;
         END;
         $$ LANGUAGE plpgsql;
@@ -108,14 +108,14 @@ def downgrade():
     
     # Drop indexes
     op.execute("""
-        DROP INDEX IF EXISTS idx_resumes_full_text_gin;
+        DROP INDEX IF EXISTS idx_resumes_raw_text_gin;
         DROP INDEX IF EXISTS idx_resumes_summary_gin;
-        DROP INDEX IF EXISTS idx_resumes_skills_text_gin;
+        DROP INDEX IF EXISTS idx_resumes_skills_gin;
         DROP INDEX IF EXISTS idx_resumes_composite_search_gin;
-        DROP INDEX IF EXISTS idx_resumes_skills_text_trgm;
+        DROP INDEX IF EXISTS idx_resumes_skills_trgm;
         DROP INDEX IF EXISTS idx_resumes_current_title_trgm;
         DROP INDEX IF EXISTS idx_resumes_user_id;
-        DROP INDEX IF EXISTS idx_resumes_user_skills;
+        DROP INDEX IF EXISTS idx_resumes_user_status;
         DROP INDEX IF EXISTS idx_resume_doc_stats_user_id;
     """)
     
