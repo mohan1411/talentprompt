@@ -108,6 +108,7 @@ class QueryParser:
         }
     
     def parse_query(self, query: str) -> Dict[str, Any]:
+        print(f"[DEBUG] QueryParser.parse_query called with: '{query}'")
         """
         Parse a search query to extract skills, seniority, and role information.
         
