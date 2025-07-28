@@ -91,10 +91,10 @@ export function useProgressiveSearch() {
       eventSourceRef.current = null;
     }
 
-    // Reset state
+    // Reset state and immediately show progress
     setState({
-      stage: 'idle',
-      stageNumber: 0,
+      stage: 'instant',  // Start with instant stage to show progress immediately
+      stageNumber: 1,
       totalStages: 3,
       results: [],
       isLoading: true,
@@ -105,20 +105,9 @@ export function useProgressiveSearch() {
     startTimeRef.current = Date.now();
 
     try {
-      // First, analyze the query
-      // The endpoint expects query as a query parameter, not in the body
-      const analysisUrl = `/search/analyze-query?query=${encodeURIComponent(query)}`;
-      const analysisResponse = await apiClient.post(analysisUrl, {});
+      // Start progressive search immediately without waiting for analysis
+      // Analysis will come with the first stage results
       
-      const queryAnalysis = analysisResponse.analysis;
-      const suggestions = analysisResponse.suggestions || [];
-      
-      setState(prev => ({
-        ...prev,
-        queryAnalysis,
-        suggestions,
-      }));
-
       // Create EventSource for progressive search
       const token = localStorage.getItem('access_token');
       
@@ -181,6 +170,7 @@ export function useProgressiveSearch() {
           totalStages: data.total_stages,
           results: data.results,
           searchId: data.search_id,
+          queryAnalysis: data.parsed_query || prev.queryAnalysis, // Include parsed_query from first stage
           timing: {
             ...prev.timing,
             [data.stage]: data.timing_ms,
@@ -251,10 +241,10 @@ export function useProgressiveSearchWS() {
       wsRef.current = null;
     }
 
-    // Reset state
+    // Reset state and immediately show progress
     setState({
-      stage: 'idle',
-      stageNumber: 0,
+      stage: 'instant',  // Start with instant stage to show progress immediately
+      stageNumber: 1,
       totalStages: 3,
       results: [],
       isLoading: true,

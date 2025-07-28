@@ -401,7 +401,7 @@ export default function ProgressiveSearchPage() {
       />
 
       {/* Search Progress */}
-      {isLoading && (
+      {(isLoading || stage !== 'idle') && stage !== 'error' && (
         <SearchProgress
           stage={stage}
           stageNumber={stageNumber}
