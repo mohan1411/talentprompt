@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, Filter, X, Users, Mail, Sparkles, Zap } from 'lucide-react';
+import { Search, Filter, X, Users, Mail, Sparkles, Zap, Radar, List } from 'lucide-react';
 import { useProgressiveSearch, SearchResult } from '@/hooks/useProgressiveSearch';
 import EnhancedResultCard from '@/components/search/EnhancedResultCard';
 import QueryIntelligence from '@/components/search/QueryIntelligence';
 import SearchProgress from '@/components/search/SearchProgress';
 import { OutreachModal } from '@/components/outreach/OutreachModal';
 import TagCloud from '@/components/search/TagCloud';
+import TalentRadar from '@/components/search/TalentRadar';
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '@/lib/api/client';
 
@@ -29,6 +30,7 @@ export default function ProgressiveSearchPage() {
   const [showOutreachModal, setShowOutreachModal] = useState(false);
   const [outreachCandidate, setOutreachCandidate] = useState<any>(null);
   const [enhancedResults, setEnhancedResults] = useState<Record<string, SearchResult>>({});
+  const [viewMode, setViewMode] = useState<'list' | 'radar'>('list');
 
   const { 
     stage, 
@@ -386,28 +388,73 @@ export default function ProgressiveSearchPage() {
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
                 Found {results.length} candidates
               </h2>
-              {stage === 'complete' && (
-                <span className="text-sm text-gray-600">
-                  Search completed in {timing.total || 0}ms
-                </span>
-              )}
+              <div className="flex items-center gap-4">
+                {stage === 'complete' && (
+                  <span className="text-sm text-gray-600">
+                    Search completed in {timing.total || 0}ms
+                  </span>
+                )}
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-3 py-1 rounded flex items-center gap-2 transition-colors ${
+                      viewMode === 'list' 
+                        ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <List className="h-4 w-4" />
+                    <span className="text-sm">List</span>
+                  </button>
+                  <button
+                    onClick={() => setViewMode('radar')}
+                    className={`px-3 py-1 rounded flex items-center gap-2 transition-colors ${
+                      viewMode === 'radar' 
+                        ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' 
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <Radar className="h-4 w-4" />
+                    <span className="text-sm">Radar</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {results.map((result, index) => {
-              // Use enhanced result if available, otherwise use original
-              const displayResult = enhancedResults[result.id] || result;
-              return (
-                <EnhancedResultCard
-                  key={result.id}
-                  result={displayResult}
-                  rank={index + 1}
-                  stage={stage as any}
-                  query={query}
-                  onView={(id) => router.push(`/dashboard/resumes/${id}`)}
-                  onEnhance={handleEnhanceResult}
-                />
-              );
-            })}
+            {viewMode === 'list' ? (
+              results.map((result, index) => {
+                // Use enhanced result if available, otherwise use original
+                const displayResult = enhancedResults[result.id] || result;
+                return (
+                  <EnhancedResultCard
+                    key={result.id}
+                    result={displayResult}
+                    rank={index + 1}
+                    stage={stage as any}
+                    query={query}
+                    onView={(id) => router.push(`/dashboard/resumes/${id}`)}
+                    onEnhance={handleEnhanceResult}
+                  />
+                );
+              })
+            ) : (
+              <TalentRadar
+                candidates={results.map((result: any, index) => ({
+                  id: result.id,
+                  name: `${result.first_name} ${result.last_name}`,
+                  title: result.current_title || 'Not specified',
+                  matchScore: result.score,
+                  skillsGap: result.skill_analysis ? 
+                    (1 - (result.skill_analysis.match_percentage / 100)) : 0.5,
+                  availability: result.availability_score || 0.5,
+                  learningVelocity: result.learning_velocity || 0.5,
+                  experience: result.years_experience || 0,
+                  skills: result.skills || []
+                }))}
+                onCandidateClick={(candidate) => router.push(`/dashboard/resumes/${candidate.id}`)}
+                isLoading={isLoading && stage !== 'complete'}
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

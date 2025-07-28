@@ -25,6 +25,16 @@ export interface SearchResult {
   interview_focus?: string[];
   overall_fit?: string;
   hiring_recommendation?: string;
+  availability_score?: number;
+  learning_velocity?: number;
+  career_trajectory?: {
+    pattern: string;
+    current_level: string;
+    years_to_current: number;
+    role_changes: number;
+    industry_changes: number;
+    is_ascending: boolean;
+  };
 }
 
 export interface ProgressiveSearchState {

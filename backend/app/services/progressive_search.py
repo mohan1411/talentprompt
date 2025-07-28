@@ -17,6 +17,7 @@ from app.services.vector_search import vector_search
 from app.services.query_parser import query_parser
 from app.services.hybrid_search import hybrid_search
 from app.services.gpt4_query_analyzer import gpt4_analyzer
+from app.services.candidate_analytics import candidate_analytics_service
 from app.core.redis import get_redis_client
 from app.core.config import settings
 
@@ -198,6 +199,11 @@ class ProgressiveSearchEngine:
             # Add additional skill analysis
             skill_analysis = self._analyze_skill_match(resume_data, parsed_query)
             resume_data["skill_analysis"] = skill_analysis
+            
+            # Add candidate analytics (availability, learning velocity, etc.)
+            resume_data["availability_score"] = candidate_analytics_service.calculate_availability_score(resume_data)
+            resume_data["learning_velocity"] = candidate_analytics_service.calculate_learning_velocity(resume_data)
+            resume_data["career_trajectory"] = candidate_analytics_service.analyze_career_trajectory(resume_data)
             
             # Calculate final enhanced score
             skill_boost = 0.0
