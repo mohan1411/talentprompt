@@ -472,9 +472,10 @@ export default function AIInterviewCopilot({
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      {React.createElement(getSentimentIcon(), {
-                        className: `h-8 w-8 ${getSentimentColor()}`
-                      })}
+                      {(() => {
+                        const Icon = getSentimentIcon();
+                        return <Icon className={`h-8 w-8 ${getSentimentColor()}`} />;
+                      })()}
                       <div>
                         <p className="font-medium capitalize">{sentiment.overall}</p>
                         <p className="text-xs text-muted-foreground">
