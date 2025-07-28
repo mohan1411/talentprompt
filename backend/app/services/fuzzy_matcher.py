@@ -192,8 +192,8 @@ class FuzzyMatcher:
             # One is abbreviation of the other
             (str1.startswith(str2[:3]) or str2.startswith(str1[:3])) and abs(len(str1) - len(str2)) > 3,
             # Common suffixes
-            str1.endswith("js") and str2.endswith("script") or vice_versa,
-            str1.endswith("db") and "database" in str2 or vice_versa,
+            (str1.endswith("js") and str2.endswith("script")) or (str2.endswith("js") and str1.endswith("script")),
+            (str1.endswith("db") and "database" in str2) or (str2.endswith("db") and "database" in str1),
             # Version numbers
             re.search(r'\d+', str1) and re.search(r'\d+', str2) and str1.replace(re.search(r'\d+', str1).group(), '') == str2.replace(re.search(r'\d+', str2).group(), '')
         ]
