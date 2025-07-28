@@ -38,6 +38,10 @@ class GPT4QueryAnalyzer:
         # Start with basic parsing
         basic_parse = query_parser.parse_query(query)
         
+        # Log if query was corrected
+        if basic_parse.get('corrected_query'):
+            logger.info(f"Query corrected from '{query}' to '{basic_parse['corrected_query']}'")
+        
         # If no OpenAI key, return enhanced basic parse
         if not self.client:
             return self._enhance_basic_parse(basic_parse)

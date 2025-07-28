@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class FuzzyMatcher:
     """Handle fuzzy matching for skills and other text comparisons."""
     
-    def __init__(self, threshold: float = 0.8):
+    def __init__(self, threshold: float = 0.75):
         """
         Initialize fuzzy matcher.
         
@@ -253,8 +253,12 @@ class FuzzyMatcher:
         
         corrected_words = []
         for word in words:
+            # Check both original case and lowercase
+            word_lower = word.lower()
             if word in corrections:
                 corrected_words.append(corrections[word])
+            elif word_lower in corrections:
+                corrected_words.append(corrections[word_lower])
             else:
                 corrected_words.append(word)
         
