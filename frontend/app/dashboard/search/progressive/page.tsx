@@ -127,8 +127,18 @@ export default function ProgressiveSearchPage() {
   const handleFindSimilar = async (candidateId: string) => {
     // Find the candidate in results
     const candidate = results.find(r => r.id === candidateId);
+    
+    // Debug logging
+    console.log('[FindSimilar] Candidate ID:', candidateId);
+    console.log('[FindSimilar] Found candidate:', candidate);
+    console.log('[FindSimilar] Career DNA:', candidate?.career_dna);
+    
     if (!candidate || !candidate.career_dna) {
-      console.error('Cannot find similar candidates: No career DNA data');
+      console.error('Cannot find similar candidates: No career DNA data', {
+        candidateId,
+        candidateExists: !!candidate,
+        hasCareerDNA: !!candidate?.career_dna
+      });
       return;
     }
 

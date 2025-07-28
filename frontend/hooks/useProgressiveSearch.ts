@@ -35,6 +35,14 @@ export interface SearchResult {
     industry_changes: number;
     is_ascending: boolean;
   };
+  career_dna?: {
+    pattern: string;
+    progression_speed: number;
+    skill_evolution: string;
+    strengths: string[];
+    unique_traits: string[];
+    growth_indicators: string[];
+  };
 }
 
 export interface ProgressiveSearchState {
@@ -137,6 +145,12 @@ export function useProgressiveSearch() {
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
+        
+        // Debug logging for production
+        if (data.results && data.results.length > 0) {
+          console.log('[ProgressiveSearch] Stage:', data.stage);
+          console.log('[ProgressiveSearch] First result career_dna:', data.results[0].career_dna);
+        }
 
         if (data.event === 'complete') {
           setState(prev => ({
