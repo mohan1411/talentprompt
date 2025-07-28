@@ -8,8 +8,8 @@ to your top performers or specific career paths.
 import logging
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
-import numpy as np
 from collections import defaultdict
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -133,13 +133,20 @@ class CareerDNAService:
         if not dna1.get('DNA_vector') or not dna2.get('DNA_vector'):
             return 0.0
         
-        # Calculate cosine similarity between DNA vectors
-        vector1 = np.array(dna1['DNA_vector'])
-        vector2 = np.array(dna2['DNA_vector'])
+        # Calculate cosine similarity between DNA vectors without numpy
+        vector1 = dna1['DNA_vector']
+        vector2 = dna2['DNA_vector']
         
-        dot_product = np.dot(vector1, vector2)
-        norm1 = np.linalg.norm(vector1)
-        norm2 = np.linalg.norm(vector2)
+        # Ensure vectors are same length
+        if len(vector1) != len(vector2):
+            return 0.0
+        
+        # Calculate dot product
+        dot_product = sum(a * b for a, b in zip(vector1, vector2))
+        
+        # Calculate norms
+        norm1 = math.sqrt(sum(a * a for a in vector1))
+        norm2 = math.sqrt(sum(b * b for b in vector2))
         
         if norm1 == 0 or norm2 == 0:
             return 0.0

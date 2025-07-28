@@ -163,6 +163,17 @@ async def search_progressive_sse(
                     if resume_data.get("hidden_gems") and len(resume_data["hidden_gems"]) > 0:
                         result_item["hidden_gems"] = resume_data["hidden_gems"]
                     
+                    # Add career analytics data if available
+                    if resume_data.get("availability_score") is not None:
+                        result_item["availability_score"] = resume_data["availability_score"]
+                        print(f"[API] Adding availability_score: {resume_data['availability_score']} for {result_item['first_name']}")
+                    if resume_data.get("learning_velocity") is not None:
+                        result_item["learning_velocity"] = resume_data["learning_velocity"]
+                    if resume_data.get("career_trajectory"):
+                        result_item["career_trajectory"] = resume_data["career_trajectory"]
+                    if resume_data.get("career_dna"):
+                        result_item["career_dna"] = resume_data["career_dna"]
+                    
                     event_data["results"].append(result_item)
                 
                 # Send SSE event
@@ -303,6 +314,16 @@ async def search_progressive_websocket(
                     result_item["overall_fit"] = resume_data["overall_fit"]
                 if resume_data.get("hidden_gems") and len(resume_data["hidden_gems"]) > 0:
                     result_item["hidden_gems"] = resume_data["hidden_gems"]
+                
+                # Add career analytics data if available
+                if resume_data.get("availability_score") is not None:
+                    result_item["availability_score"] = resume_data["availability_score"]
+                if resume_data.get("learning_velocity") is not None:
+                    result_item["learning_velocity"] = resume_data["learning_velocity"]
+                if resume_data.get("career_trajectory"):
+                    result_item["career_trajectory"] = resume_data["career_trajectory"]
+                if resume_data.get("career_dna"):
+                    result_item["career_dna"] = resume_data["career_dna"]
                 
                 event_data["results"].append(result_item)
             

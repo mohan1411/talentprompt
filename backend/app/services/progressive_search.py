@@ -18,6 +18,7 @@ from app.services.query_parser import query_parser
 from app.services.hybrid_search import hybrid_search
 from app.services.gpt4_query_analyzer import gpt4_analyzer
 from app.services.candidate_analytics import candidate_analytics_service
+from app.services.career_dna import career_dna_service
 from app.core.redis import get_redis_client
 from app.core.config import settings
 
@@ -65,6 +66,7 @@ class ProgressiveSearchEngine:
         primary_skill = parsed_query.get("primary_skill")
         
         logger.info(f"Progressive search started: '{query}' for user {user_id}")
+        print(f"\n[PROGRESSIVE SEARCH] Started for query: '{query}'")
         
         # Stage 1: Instant Results (Cache + Basic Keyword)
         stage1_results = await self._stage1_instant_results(
@@ -85,12 +87,19 @@ class ProgressiveSearchEngine:
         }
         
         # Stage 2: Enhanced Results (Vector Search + Skill Matching)
+        logger.info(f"[PROGRESSIVE] Starting Stage 2 for query: {query}")
         stage2_results = await self._stage2_enhanced_results(
             db, query, user_id, limit * 2, filters, parsed_query, stage1_results
         )
+        logger.info(f"[PROGRESSIVE] Stage 2 returned {len(stage2_results)} results")
         
         # Merge and deduplicate results
         merged_results = self._merge_results(stage1_results, stage2_results, limit)
+        
+        print(f"[PROGRESSIVE] Stage 2 yielding {len(merged_results)} results")
+        if merged_results and len(merged_results) > 0:
+            first_result = merged_results[0][0]
+            print(f"[PROGRESSIVE] First result has availability: {first_result.get('availability_score')}")
         
         yield {
             "stage": "enhanced", 
@@ -181,6 +190,7 @@ class ProgressiveSearchEngine:
         hybrid_search.adjust_weights(query_type)
         
         # Perform hybrid search
+        logger.info(f"[STAGE2] Performing hybrid search for query: {query}")
         hybrid_results = await hybrid_search.search(
             db=db,
             query=query,
@@ -190,7 +200,10 @@ class ProgressiveSearchEngine:
             use_synonyms=True
         )
         
+        logger.info(f"[STAGE2] Hybrid search returned {len(hybrid_results) if hybrid_results else 0} results")
+        
         if not hybrid_results:
+            logger.warning("[STAGE2] No hybrid results found, returning empty")
             return []
         
         # Apply skill-based scoring enhancements
@@ -201,9 +214,32 @@ class ProgressiveSearchEngine:
             resume_data["skill_analysis"] = skill_analysis
             
             # Add candidate analytics (availability, learning velocity, etc.)
-            resume_data["availability_score"] = candidate_analytics_service.calculate_availability_score(resume_data)
-            resume_data["learning_velocity"] = candidate_analytics_service.calculate_learning_velocity(resume_data)
-            resume_data["career_trajectory"] = candidate_analytics_service.analyze_career_trajectory(resume_data)
+            try:
+                print(f"[ANALYTICS] Calculating for {resume_data.get('first_name')} {resume_data.get('last_name')}")
+                resume_data["availability_score"] = candidate_analytics_service.calculate_availability_score(resume_data)
+                resume_data["learning_velocity"] = candidate_analytics_service.calculate_learning_velocity(resume_data)
+                resume_data["career_trajectory"] = candidate_analytics_service.analyze_career_trajectory(resume_data)
+                print(f"[ANALYTICS] Success: availability={resume_data.get('availability_score')}, velocity={resume_data.get('learning_velocity')}")
+            except Exception as e:
+                print(f"[ANALYTICS] ERROR: {e}")
+                import traceback
+                print(traceback.format_exc())
+            
+            # Add career DNA profile
+            try:
+                career_dna = career_dna_service.extract_career_dna(resume_data)
+                resume_data["career_dna"] = {
+                    "pattern": career_dna["pattern_type"],
+                    "progression_speed": career_dna["progression_speed"],
+                    "skill_evolution": career_dna["skill_evolution"],
+                    "strengths": career_dna["strengths"],
+                    "unique_traits": career_dna["unique_traits"],
+                    "growth_indicators": career_dna["growth_indicators"]
+                }
+                logger.info(f"Added career DNA for {resume_data.get('first_name')} {resume_data.get('last_name')}: pattern={career_dna['pattern_type']}")
+            except Exception as e:
+                logger.error(f"Error extracting career DNA: {e}")
+                resume_data["career_dna"] = None
             
             # Calculate final enhanced score
             skill_boost = 0.0
@@ -242,11 +278,32 @@ class ProgressiveSearchEngine:
         Stage 3: Add intelligent analysis and explanations using GPT-4.1-mini.
         Target: <500ms
         """
-        # First add basic analysis
+        # First add basic analysis and ensure all results have analytics
         for resume_data, score in results:
             # Add skill match details
             skill_analysis = self._analyze_skill_match(resume_data, parsed_query)
             resume_data["skill_analysis"] = skill_analysis
+            
+            # Add analytics if not already present (for Stage 1 results)
+            if resume_data.get("availability_score") is None:
+                try:
+                    print(f"[STAGE3] Adding missing analytics for {resume_data.get('first_name')} {resume_data.get('last_name')}")
+                    resume_data["availability_score"] = candidate_analytics_service.calculate_availability_score(resume_data)
+                    resume_data["learning_velocity"] = candidate_analytics_service.calculate_learning_velocity(resume_data)
+                    resume_data["career_trajectory"] = candidate_analytics_service.analyze_career_trajectory(resume_data)
+                    
+                    # Also add career DNA
+                    career_dna = career_dna_service.extract_career_dna(resume_data)
+                    resume_data["career_dna"] = {
+                        "pattern": career_dna["pattern_type"],
+                        "progression_speed": career_dna["progression_speed"],
+                        "skill_evolution": career_dna["skill_evolution"],
+                        "strengths": career_dna["strengths"],
+                        "unique_traits": career_dna["unique_traits"],
+                        "growth_indicators": career_dna["growth_indicators"]
+                    }
+                except Exception as e:
+                    print(f"[STAGE3] Error adding analytics: {e}")
         
         # Then enhance with GPT-4.1-mini if available
         try:
@@ -349,19 +406,37 @@ class ProgressiveSearchEngine:
         limit: int
     ) -> List[Tuple[dict, float]]:
         """Merge and deduplicate results from multiple stages."""
-        seen_ids = set()
-        merged = []
+        # Create a map to store the best version of each result
+        results_map = {}
         
-        # Add all results, deduplicating by ID
-        for results in [stage1, stage2]:
-            for resume_data, score in results:
-                resume_id = resume_data["id"]
-                if resume_id not in seen_ids:
-                    seen_ids.add(resume_id)
-                    merged.append((resume_data, score))
+        # First add stage1 results
+        for resume_data, score in stage1:
+            resume_id = resume_data["id"]
+            results_map[resume_id] = (resume_data, score)
         
-        # Sort by score and return top results
+        # Then add/update with stage2 results (which have analytics)
+        for resume_data, score in stage2:
+            resume_id = resume_data["id"]
+            if resume_id in results_map:
+                # Merge the data, preserving analytics from stage2
+                existing_data, existing_score = results_map[resume_id]
+                # Update with enhanced data from stage2
+                merged_data = {**existing_data, **resume_data}
+                # Use the better score
+                best_score = max(score, existing_score)
+                results_map[resume_id] = (merged_data, best_score)
+            else:
+                results_map[resume_id] = (resume_data, score)
+        
+        # Convert back to list and sort by score
+        merged = list(results_map.values())
         merged.sort(key=lambda x: x[1], reverse=True)
+        
+        print(f"[MERGE] Merged {len(merged)} results")
+        if merged:
+            first = merged[0][0]
+            print(f"[MERGE] First merged result has availability: {first.get('availability_score')}")
+        
         return merged[:limit]
     
     def _generate_basic_explanation(
