@@ -65,6 +65,11 @@ class GPT4QueryAnalyzer:
             # Merge with basic parse
             enhanced_analysis = self._merge_analyses(basic_parse, gpt_analysis)
             
+            # Debug logging
+            logger.info(f"Basic parse skills: {basic_parse.get('skills', [])}")
+            logger.info(f"GPT primary skills: {gpt_analysis.get('primary_skills', [])}")
+            logger.info(f"Final primary skills: {enhanced_analysis.get('primary_skills', [])}")
+            
             logger.info(f"GPT-4.1-mini analysis for '{query}': {enhanced_analysis}")
             return enhanced_analysis
             
@@ -167,16 +172,30 @@ Be comprehensive but realistic. Don't over-interpret."""
         # Determine query type
         query_type = self._determine_query_type(enhanced)
         
+        # Deduplicate skills before building enhanced analysis
+        def dedupe_skills(skills_list):
+            seen = {}
+            result = []
+            for skill in skills_list:
+                skill_lower = skill.lower()
+                if skill_lower not in seen:
+                    seen[skill_lower] = skill
+                    result.append(skill)
+            return result
+        
+        # Get deduplicated skills
+        all_skills = dedupe_skills(enhanced.get("skills", []))
+        
         # Build enhanced analysis
         enhanced.update({
-            "primary_skills": enhanced.get("skills", [])[:3],
-            "secondary_skills": enhanced.get("skills", [])[3:],
-            "implied_skills": list(set(implied_skills) - set(enhanced.get("skills", []))),
+            "primary_skills": all_skills[:3],
+            "secondary_skills": all_skills[3:],
+            "implied_skills": dedupe_skills(list(set(implied_skills) - set([s.lower() for s in all_skills]))),
             "experience_level": experience_level,
             "role_type": role_type,
-            "search_intent": "skill_focused" if enhanced.get("skills") else "exploratory",
+            "search_intent": "skill_focused" if all_skills else "exploratory",
             "query_type": query_type,
-            "query_quality": "high" if enhanced.get("skills") else "medium"
+            "query_quality": "high" if all_skills else "medium"
         })
         
         return enhanced
@@ -275,10 +294,20 @@ Be comprehensive but realistic. Don't over-interpret."""
         # Preserve original query info from basic parse
         merged["original_query"] = basic["original_query"]
         
-        # Deduplicate skills across all categories
-        primary_skills = list(dict.fromkeys(merged.get("primary_skills", [])))
-        secondary_skills = list(dict.fromkeys(merged.get("secondary_skills", [])))
-        implied_skills = list(dict.fromkeys(merged.get("implied_skills", [])))
+        # Deduplicate skills across all categories (case-insensitive)
+        def dedupe_skills(skills_list):
+            seen = {}
+            result = []
+            for skill in skills_list:
+                skill_lower = skill.lower()
+                if skill_lower not in seen:
+                    seen[skill_lower] = skill
+                    result.append(skill)
+            return result
+        
+        primary_skills = dedupe_skills(merged.get("primary_skills", []))
+        secondary_skills = dedupe_skills(merged.get("secondary_skills", []))
+        implied_skills = dedupe_skills(merged.get("implied_skills", []))
         
         # Ensure basic parse skills are included without duplication
         for skill in basic.get("skills", []):

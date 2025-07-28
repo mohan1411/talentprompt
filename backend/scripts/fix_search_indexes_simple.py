@@ -11,6 +11,7 @@ print("="*60)
 
 # Get database URL from environment or prompt
 database_url = os.getenv("DATABASE_URL")
+database_url = "postgresql://postgres:jLtKYrHkYlXjWNrlVYPuDfaDznlvvSGH@gondola.proxy.rlwy.net:40203/railway"
 if not database_url:
     print("\nPlease provide your Railway database URL.")
     print("You can find it in Railway dashboard > Your Service > Variables > DATABASE_URL")
