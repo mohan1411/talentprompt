@@ -59,7 +59,10 @@ export default function QueryIntelligence({
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Looking for:</p>
             <div className="flex flex-wrap gap-1">
-              {analysis.primary_skills.map((skill, idx) => (
+              {/* Deduplicate skills on frontend as safety measure */}
+              {Array.from(new Map(
+                analysis.primary_skills.map(skill => [skill.toLowerCase(), skill])
+              ).values()).map((skill, idx) => (
                 <span
                   key={idx}
                   className="px-2 py-1 bg-blue-600 text-white text-xs rounded-md font-medium"
@@ -76,7 +79,9 @@ export default function QueryIntelligence({
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Nice to have:</p>
             <div className="flex flex-wrap gap-1">
-              {analysis.secondary_skills.map((skill, idx) => (
+              {Array.from(new Map(
+                analysis.secondary_skills.map(skill => [skill.toLowerCase(), skill])
+              ).values()).map((skill, idx) => (
                 <span
                   key={idx}
                   className="px-2 py-1 bg-blue-200 text-blue-800 text-xs rounded-md"
@@ -93,7 +98,9 @@ export default function QueryIntelligence({
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Also considering:</p>
             <div className="flex flex-wrap gap-1">
-              {analysis.implied_skills.map((skill, idx) => (
+              {Array.from(new Map(
+                analysis.implied_skills.map(skill => [skill.toLowerCase(), skill])
+              ).values()).map((skill, idx) => (
                 <span
                   key={idx}
                   className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded-md"
@@ -141,7 +148,8 @@ export default function QueryIntelligence({
         <div className="mt-3 pt-3 border-t border-blue-100">
           <p className="text-xs text-gray-600 mb-2">Suggestions to improve results:</p>
           <div className="space-y-1">
-            {suggestions.map((suggestion, idx) => (
+            {/* Deduplicate suggestions */}
+            {Array.from(new Set(suggestions)).map((suggestion, idx) => (
               <p key={idx} className="text-xs text-gray-700 flex items-start">
                 <span className="text-blue-600 mr-1">•</span>
                 {suggestion}
