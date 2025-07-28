@@ -67,7 +67,7 @@ export default function QueryIntelligence({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Primary Skills */}
-        {analysis.primary_skills.length > 0 && (
+        {analysis.primary_skills && analysis.primary_skills.length > 0 && (
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Looking for:</p>
             <div className="flex flex-wrap gap-1">
@@ -87,7 +87,7 @@ export default function QueryIntelligence({
         )}
 
         {/* Secondary Skills */}
-        {analysis.secondary_skills.length > 0 && (
+        {analysis.secondary_skills && analysis.secondary_skills.length > 0 && (
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Nice to have:</p>
             <div className="flex flex-wrap gap-1">
@@ -106,7 +106,7 @@ export default function QueryIntelligence({
         )}
 
         {/* Implied Skills */}
-        {analysis.implied_skills.length > 0 && (
+        {analysis.implied_skills && analysis.implied_skills.length > 0 && (
           <div>
             <p className="text-xs text-gray-600 mb-1 font-medium">Also considering:</p>
             <div className="flex flex-wrap gap-1">
