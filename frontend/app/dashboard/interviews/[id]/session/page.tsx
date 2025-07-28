@@ -45,6 +45,7 @@ import { WebSocketDebug } from '@/components/interview/WebSocketDebug'
 import { UploadRecordingDialog } from '@/components/interview/UploadRecordingDialog'
 import { InterviewScorecard } from '@/components/interview/InterviewScorecard'
 import { DualTrackAnalysis } from '@/components/interview/DualTrackAnalysis'
+import AIInterviewCopilot from '@/components/interview/AIInterviewCopilot'
 
 export default function InterviewSessionPage() {
   const params = useParams()
@@ -449,7 +450,7 @@ export default function InterviewSessionPage() {
                 onClick={() => setShowLiveAssist(!showLiveAssist)}
               >
                 <HeadphonesIcon className="h-4 w-4" />
-                Live Assist {showLiveAssist ? "On" : "Off"}
+                AI Copilot {showLiveAssist ? "On" : "Off"}
               </Button>
               <Button variant="destructive" onClick={handleEndInterview}>
                 End Interview
@@ -1131,12 +1132,31 @@ Example:
                 />
               </div>
               
-              {/* Tabs for Insights and Coaching */}
-              <Tabs defaultValue="insights" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
+              {/* Tabs for Insights, Coaching, and AI Copilot */}
+              <Tabs defaultValue="copilot" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="copilot">AI Copilot</TabsTrigger>
                   <TabsTrigger value="insights">Live Insights</TabsTrigger>
                   <TabsTrigger value="coaching">AI Coaching</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="copilot" className="space-y-4">
+                  <AIInterviewCopilot
+                    transcript={transcription.map(t => t.text).join('\n')}
+                    currentQuestion={currentQuestion}
+                    candidateInfo={{
+                      name: candidateInfo?.name || 'Unknown',
+                      role: candidateInfo?.position || session?.job_position || 'Unknown',
+                      resumeId: session?.resume_id
+                    }}
+                    isRecording={isRecording}
+                    onUseQuestion={handleUseQuestion}
+                    onInsightAction={(insight) => {
+                      console.log('Insight action:', insight)
+                      // Handle insight actions if needed
+                    }}
+                  />
+                </TabsContent>
                 
                 <TabsContent value="insights" className="space-y-4">
                   <LiveInsightsPanel

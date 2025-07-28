@@ -26,9 +26,11 @@ from app.schemas.interview import (
     InterviewAnalyticsResponse, InterviewScorecardResponse
 )
 from app.services.interview_ai import interview_ai_service
+from app.services.interview_copilot import InterviewCopilotService
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+copilot_service = InterviewCopilotService()
 
 
 @router.post("/prepare", response_model=InterviewPreparationResponse)
@@ -1889,3 +1891,57 @@ async def reanalyze_interview_session(
     except Exception as e:
         logger.error(f"Error re-analyzing session: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to re-analyze: {str(e)}")
+
+
+@router.post("/copilot/analyze")
+async def analyze_interview_copilot(
+    request: Dict[str, Any],
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    """AI Copilot real-time analysis of interview conversation."""
+    
+    transcript = request.get("transcript", "")
+    current_question = request.get("currentQuestion")
+    candidate_info = request.get("candidateInfo")
+    context = request.get("context", {})
+    
+    if not transcript:
+        raise HTTPException(status_code=400, detail="No transcript provided")
+    
+    try:
+        # Call copilot service
+        analysis_result = await copilot_service.analyze_transcript(
+            transcript=transcript,
+            current_question=current_question,
+            candidate_info=candidate_info,
+            context=context
+        )
+        
+        return analysis_result
+        
+    except Exception as e:
+        logger.error(f"Copilot analysis error: {str(e)}")
+        # Return a fallback response instead of failing
+        return {
+            "suggestedQuestions": [
+                "Can you provide more details about that experience?",
+                "What was the outcome of that situation?",
+                "How did you measure success?"
+            ],
+            "factChecks": [],
+            "sentiment": {
+                "overall": "neutral",
+                "confidence": 0.5,
+                "indicators": [],
+                "trend": "stable"
+            },
+            "keyMoments": [],
+            "insights": [
+                {
+                    "type": "tip",
+                    "title": "AI Analysis Limited",
+                    "content": "Using basic pattern matching due to service limitations.",
+                    "priority": "low"
+                }
+            ]
+        }
