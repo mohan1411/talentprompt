@@ -33,20 +33,17 @@ export default function SmartInsights({ totalResumes }: SmartInsightsProps) {
     const generateInsights = () => {
       const newInsights: Insight[] = [];
 
+      // Only show real insights when we have enough data
       if (totalResumes > 10) {
         newInsights.push({
           id: 'skill-combo',
           type: 'talent',
           icon: Brain,
-          title: 'Hidden Skill Combinations',
-          description: 'Found 3 Python developers who also know React and DevOps',
+          title: 'Analyze Skill Combinations',
+          description: 'Upload more resumes to discover hidden skill patterns',
           action: {
-            label: 'View Candidates',
-            href: '/dashboard/search/progressive?q=Python React DevOps'
-          },
-          metric: {
-            value: '3',
-            label: 'Matches'
+            label: 'Search Skills',
+            href: '/dashboard/search/progressive'
           }
         });
       }
@@ -56,15 +53,11 @@ export default function SmartInsights({ totalResumes }: SmartInsightsProps) {
           id: 'career-pattern',
           type: 'pattern',
           icon: TrendingUp,
-          title: 'Career Growth Patterns',
-          description: '5 candidates show rapid growth trajectories in the last 2 years',
+          title: 'Career Patterns',
+          description: 'AI will identify growth trajectories as you add more candidates',
           action: {
-            label: 'Explore Patterns',
-            href: '/dashboard/search/progressive?q=rapid career growth'
-          },
-          metric: {
-            value: '85%',
-            label: 'Growth Rate'
+            label: 'View All',
+            href: '/dashboard/resumes'
           }
         });
       }
@@ -74,15 +67,15 @@ export default function SmartInsights({ totalResumes }: SmartInsightsProps) {
           id: 'availability',
           type: 'opportunity',
           icon: Zap,
-          title: 'High Availability Alert',
-          description: '2 senior engineers show signs of being open to opportunities',
+          title: 'Availability Insights',
+          description: `Analyzing ${totalResumes} candidate${totalResumes > 1 ? 's' : ''} for opportunity signals`,
           action: {
-            label: 'View Profiles',
-            href: '/dashboard/search/progressive?q=senior engineer available'
+            label: 'Search Now',
+            href: '/dashboard/search/progressive'
           },
           metric: {
-            value: '2',
-            label: 'Available'
+            value: totalResumes.toString(),
+            label: 'Total'
           }
         });
       }

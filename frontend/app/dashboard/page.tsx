@@ -20,6 +20,7 @@ import SmartInsights from '@/components/dashboard/SmartInsights';
 import TalentRadarPreview from '@/components/dashboard/TalentRadarPreview';
 import QuickActions from '@/components/dashboard/QuickActions';
 import ActivityFeed from '@/components/dashboard/ActivityFeed';
+import DataDisclaimer from '@/components/dashboard/DataDisclaimer';
 import { motion } from 'framer-motion';
 
 export default function DashboardPage() {
@@ -67,12 +68,18 @@ export default function DashboardPage() {
     }
   };
 
-  // Transform resumes for radar
-  const radarCandidates = recentResumes.slice(0, 10).map((resume) => ({
+  // Transform resumes for radar - using real data
+  const radarCandidates = recentResumes.slice(0, 10).map((resume, index) => ({
     id: resume.id,
     name: `${resume.first_name} ${resume.last_name}`,
     title: resume.current_title || 'Not specified',
-    score: Math.random() * 0.5 + 0.5, // Mock score for now
+    // Use a deterministic score based on actual data
+    score: Math.min(0.95, 
+      0.3 + // Base score
+      (resume.years_experience ? Math.min(resume.years_experience / 20, 0.3) : 0) + // Experience factor
+      (resume.skills?.length ? Math.min(resume.skills.length / 20, 0.3) : 0) + // Skills factor
+      (index === 0 ? 0.1 : 0) // Boost for most recent
+    ),
     skills: resume.skills || []
   }));
 
@@ -178,6 +185,11 @@ export default function DashboardPage() {
       ) : (
         // Dashboard with Data
         <>
+          {/* Data Disclaimer for low data */}
+          {stats.totalResumes < 10 && (
+            <DataDisclaimer hasData={stats.totalResumes > 0} />
+          )}
+
           {/* Insights and Radar Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
