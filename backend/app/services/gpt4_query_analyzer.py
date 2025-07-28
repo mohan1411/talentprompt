@@ -71,8 +71,10 @@ class GPT4QueryAnalyzer:
             
             # Debug logging
             logger.info(f"Basic parse skills: {basic_parse.get('skills', [])}")
+            logger.info(f"Basic parse corrected_query: {basic_parse.get('corrected_query')}")
             logger.info(f"GPT primary skills: {gpt_analysis.get('primary_skills', [])}")
             logger.info(f"Final primary skills: {enhanced_analysis.get('primary_skills', [])}")
+            logger.info(f"Final corrected_query: {enhanced_analysis.get('corrected_query')}")
             
             logger.info(f"GPT-4.1-mini analysis for '{query}': {enhanced_analysis}")
             return enhanced_analysis
@@ -299,6 +301,9 @@ Be comprehensive but realistic. Don't over-interpret."""
         merged["original_query"] = basic["original_query"]
         if basic.get("corrected_query"):
             merged["corrected_query"] = basic["corrected_query"]
+            logger.info(f"Preserving corrected_query in merge: {basic['corrected_query']}")
+        else:
+            logger.info(f"No corrected_query in basic parse to preserve")
         
         # Deduplicate skills across all categories (case-insensitive)
         def dedupe_skills(skills_list):

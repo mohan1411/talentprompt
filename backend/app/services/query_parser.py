@@ -211,6 +211,10 @@ class QueryParser:
             if not primary_skill:
                 primary_skill = unique_skills[0]
         
+        # Debug logging for corrected query
+        if corrected_query != query_lower:
+            logger.info(f"Query correction applied: '{query}' -> '{corrected_query}'")
+        
         result = {
             "skills": unique_skills,
             "primary_skill": primary_skill,
@@ -219,7 +223,7 @@ class QueryParser:
             "experience_years": experience_years,
             "remaining_terms": remaining,
             "original_query": query,
-            "corrected_query": corrected_query if corrected_query != query.lower() else None
+            "corrected_query": corrected_query if corrected_query != query_lower else None
         }
         
         logger.info(f"Parsed query '{query}': {result}")
