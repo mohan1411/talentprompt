@@ -1,0 +1,33 @@
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+
+  Here's why:
+  - Your frontend is configured to call the backend at http://localhost:8001
+  - Port 8000 is the default FastAPI port, but your project uses 8001
+
+  The correct commands for local development are:
+
+  Backend (in the backend directory):
+  cd backend
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+
+  Frontend (in the frontend directory):
+  cd frontend
+  npm run dev
+
+  Docker services (PostgreSQL, Redis, Qdrant):
+  docker-compose up postgres redis qdrant
+
+  So your full local development setup:
+  1. Start Docker services (databases)
+  2. Start backend on port 8001
+  3. Start frontend on port 3000
+  4. Make sure the Docker backend container is stopped
+  
+  
+   For future development, remember:
+  1. Check running containers: docker ps
+  2. Stop the backend container: docker stop promtitude-backend
+  3. Run backend locally: python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+  4. Keep other services in Docker: PostgreSQL, Redis, and Qdrant can stay in containers
+
+

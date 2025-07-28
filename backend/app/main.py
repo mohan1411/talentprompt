@@ -10,10 +10,6 @@ from app.api.v1.api import api_router
 from app.core.config import settings
 from app.core.redis import get_redis_client, close_redis
 from app.middleware.analytics import AnalyticsMiddleware
-from app.core.logging_config import configure_logging
-
-# Configure logging at startup
-configure_logging()
 
 
 @asynccontextmanager

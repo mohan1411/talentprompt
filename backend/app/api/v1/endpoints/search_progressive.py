@@ -327,7 +327,6 @@ async def search_progressive_websocket(
 
 
 @router.post("/analyze-query")
-@router.get("/analyze-query")  # Also support GET for easier testing
 async def analyze_query(
     query: str = Query(..., description="Search query to analyze"),
     db: AsyncSession = Depends(deps.get_db),
@@ -344,7 +343,6 @@ async def analyze_query(
     - Search intent
     - Suggested query expansions
     """
-    print(f"\n[ENDPOINT] analyze_query called with: '{query}'")
     
     if not settings.OPENAI_API_KEY:
         raise HTTPException(

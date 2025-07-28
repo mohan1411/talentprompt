@@ -38,10 +38,6 @@ class GPT4QueryAnalyzer:
         # Start with basic parsing
         basic_parse = query_parser.parse_query(query)
         
-        # Log if query was corrected
-        if basic_parse.get('corrected_query'):
-            logger.info(f"Query corrected from '{query}' to '{basic_parse['corrected_query']}'")
-        
         # If no OpenAI key, return enhanced basic parse
         if not self.client:
             return self._enhance_basic_parse(basic_parse)
@@ -69,14 +65,6 @@ class GPT4QueryAnalyzer:
             # Merge with basic parse
             enhanced_analysis = self._merge_analyses(basic_parse, gpt_analysis)
             
-            # Debug logging
-            logger.info(f"Basic parse skills: {basic_parse.get('skills', [])}")
-            logger.info(f"Basic parse corrected_query: {basic_parse.get('corrected_query')}")
-            logger.info(f"GPT primary skills: {gpt_analysis.get('primary_skills', [])}")
-            logger.info(f"Final primary skills: {enhanced_analysis.get('primary_skills', [])}")
-            logger.info(f"Final corrected_query: {enhanced_analysis.get('corrected_query')}")
-            
-            logger.info(f"GPT-4.1-mini analysis for '{query}': {enhanced_analysis}")
             return enhanced_analysis
             
         except Exception as e:
@@ -301,9 +289,6 @@ Be comprehensive but realistic. Don't over-interpret."""
         merged["original_query"] = basic["original_query"]
         if basic.get("corrected_query"):
             merged["corrected_query"] = basic["corrected_query"]
-            logger.info(f"Preserving corrected_query in merge: {basic['corrected_query']}")
-        else:
-            logger.info(f"No corrected_query in basic parse to preserve")
         
         # Deduplicate skills across all categories (case-insensitive)
         def dedupe_skills(skills_list):

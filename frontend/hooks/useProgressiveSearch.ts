@@ -95,14 +95,6 @@ export function useProgressiveSearch() {
       const queryAnalysis = analysisResponse.analysis;
       const suggestions = analysisResponse.suggestions || [];
       
-      // Debug logging
-      if (queryAnalysis?.corrected_query) {
-        console.log('Query was corrected:', {
-          original: queryAnalysis.original_query,
-          corrected: queryAnalysis.corrected_query
-        });
-      }
-      
       setState(prev => ({
         ...prev,
         queryAnalysis,

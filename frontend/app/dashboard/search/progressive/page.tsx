@@ -47,10 +47,8 @@ export default function ProgressiveSearchPage() {
   // Load search from URL params on mount
   useEffect(() => {
     const urlQuery = searchParams.get('q');
-    console.log('[Progressive Search Page] URL query:', urlQuery);
     if (urlQuery) {
       setQuery(urlQuery);
-      console.log('[Progressive Search Page] Triggering search for:', urlQuery);
       search(urlQuery);
     }
   }, [searchParams, search]);
