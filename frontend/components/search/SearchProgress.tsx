@@ -68,25 +68,28 @@ export default function SearchProgress({
     <div className="mb-6">
       {/* Progress Bar */}
       <div className="relative" style={{ minHeight: '100px' }}>
-        {/* Background lines (always visible) */}
+        {/* Connection lines - positioned absolutely to match the flex layout */}
         <div className="absolute w-full" style={{ top: '20px', left: 0, right: 0 }}>
-          <div className="absolute h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full opacity-30" 
-            style={{ 
-              left: 'calc(25% + 20px)', 
-              width: 'calc(50% - 40px)',
-              top: '0px'
-            }} 
+          {/* Background line spanning from first to last dot */}
+          <div 
+            className="absolute h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full opacity-30"
+            style={{
+              left: '0%',
+              right: '0%',
+              top: '0px',
+              marginLeft: '20px',
+              marginRight: '20px'
+            }}
           />
-        </div>
-        
-        {/* Connection lines and particles container */}
-        <div className="absolute w-full" style={{ top: '20px', left: 0, right: 0 }}>
-          {/* Line 1: Instant to Enhanced */}
+          
+          {/* Active Line 1: Instant to Enhanced */}
           {currentStageIndex >= 0 && (
-            <div className="absolute h-0.5" style={{ 
-              left: 'calc(25% + 20px)', 
-              width: 'calc(25% - 40px)',
-              top: '0px'
+            <div className="absolute h-0.5 overflow-hidden" style={{ 
+              left: '0%',
+              width: '50%',
+              top: '0px',
+              paddingLeft: '20px',
+              paddingRight: '20px'
             }}>
               <motion.div
                 className="h-full bg-gradient-to-r from-yellow-500 via-yellow-400 to-blue-500 rounded-full"
@@ -120,12 +123,14 @@ export default function SearchProgress({
             </div>
           )}
           
-          {/* Line 2: Enhanced to Intelligent */}
+          {/* Active Line 2: Enhanced to Intelligent */}
           {currentStageIndex >= 1 && (
-            <div className="absolute h-0.5" style={{ 
-              left: 'calc(50% + 20px)', 
-              width: 'calc(25% - 40px)',
-              top: '0px'
+            <div className="absolute h-0.5 overflow-hidden" style={{ 
+              left: '50%',
+              width: '50%',
+              top: '0px',
+              paddingLeft: '20px',
+              paddingRight: '20px'
             }}>
               <motion.div
                 className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-purple-500 rounded-full"
