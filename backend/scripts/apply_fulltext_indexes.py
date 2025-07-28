@@ -88,7 +88,7 @@ def apply_indexes():
             print("   Creating trigram index on skills...")
             cur.execute("""
                 CREATE INDEX IF NOT EXISTS idx_resumes_skills_trgm 
-                ON resumes USING GIN (array_to_string(skills, ' ') gin_trgm_ops)
+                ON resumes USING GIN ((skills::text) gin_trgm_ops)
             """)
             indexes_created += 1
         

@@ -103,14 +103,14 @@ async def fix_fulltext_columns():
                 print("   Creating GIN index on skills array...")
                 await session.execute(text("""
                     CREATE INDEX IF NOT EXISTS idx_resumes_skills_gin 
-                    ON resumes USING GIN (to_tsvector('english', COALESCE(array_to_string(skills, ' '), '')))
+                    ON resumes USING GIN (to_tsvector('english', COALESCE(skills::text, '')))
                 """))
                 print("   ✅ Created skills GIN index")
                 
                 print("   Creating trigram index on skills...")
                 await session.execute(text("""
                     CREATE INDEX IF NOT EXISTS idx_resumes_skills_trgm 
-                    ON resumes USING GIN (array_to_string(skills, ' ') gin_trgm_ops)
+                    ON resumes USING GIN ((skills::text) gin_trgm_ops)
                 """))
                 print("   ✅ Created skills trigram index")
             
@@ -124,7 +124,7 @@ async def fix_fulltext_columns():
             if 'current_title' in column_names:
                 text_fields.append("COALESCE(current_title, '')")
             if has_skills:
-                text_fields.append("COALESCE(array_to_string(skills, ' '), '')")
+                text_fields.append("COALESCE(skills::text, '')")
             
             if text_fields:
                 composite_expr = " || ' ' || ".join(text_fields)

@@ -7,6 +7,7 @@ from collections import Counter
 import re
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text, and_, or_
+import sqlalchemy as sa
 from app.models.resume import Resume
 from app.services.skill_synonyms import skill_synonyms
 from app.services.vector_search import vector_search
@@ -127,9 +128,10 @@ class HybridSearchService:
                 func.lower(func.coalesce(Resume.current_title, '')).contains(term_lower)
             )
             
-            # Add condition for skills array
+            # Add condition for skills JSON array
+            # Convert JSON array to text for searching
             conditions_list.append(
-                func.lower(func.coalesce(func.array_to_string(Resume.skills, ' '), '')).contains(term_lower)
+                func.lower(func.coalesce(func.cast(Resume.skills, sa.Text), '')).contains(term_lower)
             )
             
             exact_conditions = or_(*conditions_list)
@@ -145,7 +147,7 @@ class HybridSearchService:
                 fuzzy_conditions.append(
                     or_(
                         func.lower(func.coalesce(Resume.raw_text, '')).contains(corrected),
-                        func.lower(func.coalesce(func.array_to_string(Resume.skills, ' '), '')).contains(corrected)
+                        func.lower(func.coalesce(func.cast(Resume.skills, sa.Text), '')).contains(corrected)
                     )
                 )
             

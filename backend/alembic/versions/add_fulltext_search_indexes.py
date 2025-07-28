@@ -29,9 +29,9 @@ def upgrade():
         CREATE INDEX IF NOT EXISTS idx_resumes_summary_gin 
         ON resumes USING GIN (to_tsvector('english', COALESCE(summary, '')));
         
-        -- Create GIN index on skills array column
+        -- Create GIN index on skills JSON column
         CREATE INDEX IF NOT EXISTS idx_resumes_skills_gin 
-        ON resumes USING GIN (to_tsvector('english', COALESCE(array_to_string(skills, ' '), '')));
+        ON resumes USING GIN (to_tsvector('english', COALESCE(skills::text, '')));
         
         -- Create composite GIN index for searching across multiple fields
         CREATE INDEX IF NOT EXISTS idx_resumes_composite_search_gin 
@@ -39,7 +39,7 @@ def upgrade():
             to_tsvector('english', 
                 COALESCE(raw_text, '') || ' ' || 
                 COALESCE(summary, '') || ' ' || 
-                COALESCE(array_to_string(skills, ' '), '') || ' ' ||
+                COALESCE(skills::text, '') || ' ' ||
                 COALESCE(current_title, '')
             )
         );
@@ -49,7 +49,7 @@ def upgrade():
         
         -- Trigram indexes for fuzzy skill matching
         CREATE INDEX IF NOT EXISTS idx_resumes_skills_trgm 
-        ON resumes USING GIN (array_to_string(skills, ' ') gin_trgm_ops);
+        ON resumes USING GIN ((skills::text) gin_trgm_ops);
         
         CREATE INDEX IF NOT EXISTS idx_resumes_current_title_trgm 
         ON resumes USING GIN (current_title gin_trgm_ops);
@@ -94,9 +94,9 @@ def upgrade():
             RETURN QUERY
             SELECT 
                 r.id as resume_id,
-                similarity(query_skill, array_to_string(r.skills, ' ')) as similarity
+                similarity(query_skill, r.skills::text) as similarity
             FROM resumes r
-            WHERE similarity(query_skill, array_to_string(r.skills, ' ')) > threshold
+            WHERE similarity(query_skill, r.skills::text) > threshold
             ORDER BY similarity DESC;
         END;
         $$ LANGUAGE plpgsql;
