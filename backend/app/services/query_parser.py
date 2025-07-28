@@ -129,6 +129,9 @@ class QueryParser:
         query_lower = query.lower().strip()
         query_lower = re.sub(r'\s+', ' ', query_lower)
         
+        # Keep original for comparison
+        original_query_lower = query_lower
+        
         # Apply typo correction
         corrected_query = fuzzy_matcher.correct_query(query_lower)
         if corrected_query != query_lower:
@@ -212,7 +215,7 @@ class QueryParser:
                 primary_skill = unique_skills[0]
         
         # Debug logging for corrected query
-        if corrected_query != query_lower:
+        if corrected_query != original_query_lower:
             logger.info(f"Query correction applied: '{query}' -> '{corrected_query}'")
         
         result = {
@@ -223,7 +226,7 @@ class QueryParser:
             "experience_years": experience_years,
             "remaining_terms": remaining,
             "original_query": query,
-            "corrected_query": corrected_query if corrected_query != query_lower else None
+            "corrected_query": corrected_query if corrected_query != original_query_lower else None
         }
         
         logger.info(f"Parsed query '{query}': {result}")
