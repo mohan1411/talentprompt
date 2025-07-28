@@ -270,26 +270,13 @@ export default function EnhancedResultCard({
             )}
             
             {/* Find Similar Career DNA button */}
-            {(() => {
-              // More detailed logging for production debugging
-              const hasCareerDna = !!(result.career_dna && result.career_dna.pattern);
-              console.log('[EnhancedResultCard] Career DNA check:', {
-                name: `${result.first_name} ${result.last_name}`,
-                has_career_dna: hasCareerDna,
-                career_dna: result.career_dna,
-                pattern: result.career_dna?.pattern,
-                has_onFindSimilar: !!onFindSimilar,
-                environment: typeof window !== 'undefined' ? window.location.hostname : 'unknown'
-              });
-              
-              return hasCareerDna && onFindSimilar && (
-                <FindSimilarButton
-                  candidate={result}
-                  onFindSimilar={onFindSimilar}
-                  isCompact={true}
-                />
-              );
-            })()}
+            {result.career_dna && result.career_dna.pattern && onFindSimilar && (
+              <FindSimilarButton
+                candidate={result}
+                onFindSimilar={onFindSimilar}
+                isCompact={true}
+              />
+            )}
           </div>
           
           <button
