@@ -48,6 +48,8 @@ export default function EnhancedResultCard({
     (result.interview_focus?.length && result.interview_focus.length > 0) || 
     result.hiring_recommendation
   );
+  
+  const hasExpandableContent = hasAIInsights || result.career_trajectory;
 
   const getScoreColor = (score: number) => {
     if (score >= 0.8) return 'text-green-600 bg-green-50';
@@ -224,10 +226,19 @@ export default function EnhancedResultCard({
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-700"
+              className="flex items-center space-x-2 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-md transition-colors"
             >
-              <span>View details</span>
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {isExpanded ? (
+                <>
+                  <ChevronUp className="h-4 w-4" />
+                  <span>Hide Details</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-4 w-4" />
+                  <span>Show Details</span>
+                </>
+              )}
             </button>
             
             {/* Get AI Insights button for non-enhanced results */}
@@ -278,7 +289,7 @@ export default function EnhancedResultCard({
 
         {/* Expanded Details */}
         <AnimatePresence>
-          {isExpanded && (result.key_strengths || result.potential_concerns || result.interview_focus || result.hiring_recommendation || result.career_trajectory) && (
+          {isExpanded && hasExpandableContent && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
