@@ -49,6 +49,7 @@ export interface ProgressiveSearchState {
     role_type: string;
     search_intent: string;
   };
+  suggestions?: string[];
 }
 
 export function useProgressiveSearch() {
@@ -92,10 +93,12 @@ export function useProgressiveSearch() {
       const analysisResponse = await apiClient.post(analysisUrl, {});
       
       const queryAnalysis = analysisResponse.analysis;
+      const suggestions = analysisResponse.suggestions || [];
       
       setState(prev => ({
         ...prev,
         queryAnalysis,
+        suggestions,
       }));
 
       // Create EventSource for progressive search

@@ -28,7 +28,6 @@ export default function ProgressiveSearchPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [showOutreachModal, setShowOutreachModal] = useState(false);
   const [outreachCandidate, setOutreachCandidate] = useState<any>(null);
-  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
   const [enhancedResults, setEnhancedResults] = useState<Record<string, SearchResult>>({});
 
   const { 
@@ -40,6 +39,7 @@ export default function ProgressiveSearchPage() {
     error, 
     timing, 
     queryAnalysis,
+    suggestions,
     search,
     cancel 
   } = useProgressiveSearch();
@@ -62,22 +62,8 @@ export default function ProgressiveSearchPage() {
     params.set('q', query);
     router.push(`/dashboard/search/progressive?${params.toString()}`);
 
-    // Clear previous suggestions
-    setSearchSuggestions([]);
-
-    // Perform progressive search
+    // Perform progressive search (suggestions will come from the hook)
     await search(query);
-
-    // Get search suggestions after analysis
-    if (queryAnalysis) {
-      try {
-        const url = `/search/analyze-query?query=${encodeURIComponent(query)}`;
-        const response = await apiClient.post(url, {});
-        setSearchSuggestions(response.suggestions || []);
-      } catch (error) {
-        console.error('Failed to get suggestions:', error);
-      }
-    }
   };
 
   const handleTagClick = (tag: string) => {
@@ -373,7 +359,7 @@ export default function ProgressiveSearchPage() {
       {/* Query Intelligence */}
       <QueryIntelligence
         analysis={queryAnalysis}
-        suggestions={searchSuggestions}
+        suggestions={suggestions}
         isLoading={isLoading && stage === 'instant'}
       />
 
