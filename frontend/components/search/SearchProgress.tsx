@@ -68,23 +68,38 @@ export default function SearchProgress({
     <div className="mb-6">
       {/* Progress Bar */}
       <div className="relative" style={{ minHeight: '100px' }}>
+        {/* Background lines (always visible) */}
+        <div className="absolute w-full" style={{ top: '20px', left: 0, right: 0 }}>
+          <div className="absolute h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full opacity-30" 
+            style={{ 
+              left: 'calc(25% + 20px)', 
+              width: 'calc(50% - 40px)',
+              top: '0px'
+            }} 
+          />
+        </div>
+        
         {/* Connection lines and particles container */}
-        <div className="absolute inset-0 flex items-start justify-between" style={{ top: '20px' }}>
+        <div className="absolute w-full" style={{ top: '20px', left: 0, right: 0 }}>
           {/* Line 1: Instant to Enhanced */}
           {currentStageIndex >= 0 && (
-            <div className="absolute left-1/4 w-1/4 h-0.5" style={{ top: '0px' }}>
+            <div className="absolute h-1" style={{ 
+              left: 'calc(25% + 20px)', 
+              width: 'calc(25% - 40px)',
+              top: '-2px'
+            }}>
               <motion.div
-                className="h-full bg-gradient-to-r from-yellow-500 to-blue-500"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
+                className="h-full bg-gradient-to-r from-yellow-500 via-yellow-400 to-blue-500 rounded-full"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 1 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                style={{ transformOrigin: 'left' }}
+                style={{ transformOrigin: 'left', boxShadow: '0 0 8px rgba(234, 179, 8, 0.5)' }}
               />
               {/* Particles for Line 1 */}
               {currentStageIndex === 0 && !isComplete && particles.map((particle, idx) => (
                 <motion.div
                   key={particle.id}
-                  className="absolute w-2 h-2 bg-gradient-to-r from-yellow-400 to-blue-400 rounded-full"
+                  className="absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-blue-400 rounded-full"
                   initial={{ left: '0%', opacity: 0 }}
                   animate={{
                     left: ['0%', '100%'],
@@ -97,8 +112,8 @@ export default function SearchProgress({
                     ease: "linear",
                   }}
                   style={{
-                    top: '-3px',
-                    boxShadow: '0 0 8px rgba(59, 130, 246, 0.6)',
+                    top: '-4px',
+                    boxShadow: '0 0 10px rgba(59, 130, 246, 0.8)',
                   }}
                 />
               ))}
@@ -107,19 +122,23 @@ export default function SearchProgress({
           
           {/* Line 2: Enhanced to Intelligent */}
           {currentStageIndex >= 1 && (
-            <div className="absolute left-1/2 w-1/4 h-0.5" style={{ top: '0px' }}>
+            <div className="absolute h-1" style={{ 
+              left: 'calc(50% + 20px)', 
+              width: 'calc(25% - 40px)',
+              top: '-2px'
+            }}>
               <motion.div
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: 1 }}
+                className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-purple-500 rounded-full"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
-                style={{ transformOrigin: 'left' }}
+                style={{ transformOrigin: 'left', boxShadow: '0 0 8px rgba(59, 130, 246, 0.5)' }}
               />
               {/* Particles for Line 2 */}
               {currentStageIndex === 1 && !isComplete && particles.map((particle, idx) => (
                 <motion.div
                   key={particle.id}
-                  className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
+                  className="absolute w-3 h-3 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
                   initial={{ left: '0%', opacity: 0 }}
                   animate={{
                     left: ['0%', '100%'],
@@ -132,8 +151,8 @@ export default function SearchProgress({
                     ease: "linear",
                   }}
                   style={{
-                    top: '-3px',
-                    boxShadow: '0 0 8px rgba(168, 85, 247, 0.6)',
+                    top: '-4px',
+                    boxShadow: '0 0 10px rgba(168, 85, 247, 0.8)',
                   }}
                 />
               ))}
