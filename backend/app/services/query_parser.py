@@ -122,9 +122,18 @@ class QueryParser:
             - experience_years: Extracted years of experience (if mentioned)
             - remaining_terms: Terms that weren't categorized
         """
+        # Import fuzzy matcher for typo correction
+        from app.services.fuzzy_matcher import fuzzy_matcher
+        
         # Convert to lowercase and normalize spaces
         query_lower = query.lower().strip()
         query_lower = re.sub(r'\s+', ' ', query_lower)
+        
+        # Apply typo correction
+        corrected_query = fuzzy_matcher.correct_query(query_lower)
+        if corrected_query != query_lower:
+            logger.info(f"Corrected query from '{query_lower}' to '{corrected_query}'")
+            query_lower = corrected_query
         
         # Extract years of experience if mentioned
         experience_years = self._extract_years(query_lower)
@@ -209,7 +218,8 @@ class QueryParser:
             "roles": roles,
             "experience_years": experience_years,
             "remaining_terms": remaining,
-            "original_query": query
+            "original_query": query,
+            "corrected_query": corrected_query if corrected_query != query.lower() else None
         }
         
         logger.info(f"Parsed query '{query}': {result}")

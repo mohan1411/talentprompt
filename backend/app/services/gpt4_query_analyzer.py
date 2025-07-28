@@ -293,6 +293,8 @@ Be comprehensive but realistic. Don't over-interpret."""
         
         # Preserve original query info from basic parse
         merged["original_query"] = basic["original_query"]
+        if basic.get("corrected_query"):
+            merged["corrected_query"] = basic["corrected_query"]
         
         # Deduplicate skills across all categories (case-insensitive)
         def dedupe_skills(skills_list):

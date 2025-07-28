@@ -22,21 +22,21 @@ class FuzzyMatcher:
         
         # Common typos and variations
         self.common_replacements = {
-            "javascript": ["javscript", "javascirpt", "javascrpt"],
-            "python": ["pyton", "pythoon", "pythn"],
-            "kubernetes": ["kubernets", "kuberentes", "k8"],
-            "postgresql": ["postgre", "postgres", "postgress"],
-            "mongodb": ["mongo", "mangodb", "mongoddb"],
-            "react": ["reactjs", "react.js"],
-            "angular": ["angularjs", "angular.js"],
-            "vue": ["vuejs", "vue.js"],
-            "node": ["nodejs", "node.js"],
-            "typescript": ["typscript", "typescirpt", "ts"],
-            "docker": ["dokcer", "dcoker"],
-            "jenkins": ["jenkis", "jenkin"],
-            "terraform": ["teraform", "terrafrom"],
-            "elasticsearch": ["elastic", "elasticsearh"],
-            "redis": ["reddis", "rediss"]
+            "javascript": ["javscript", "javascirpt", "javascrpt", "javasript", "javascipt"],
+            "python": ["pyton", "pythoon", "pythn", "pythonn", "pythno", "phyton", "pyhton"],
+            "kubernetes": ["kubernets", "kuberentes", "k8", "kubenetes", "kubernates"],
+            "postgresql": ["postgre", "postgres", "postgress", "postgressql", "psql"],
+            "mongodb": ["mongo", "mangodb", "mongoddb", "monogdb"],
+            "react": ["reactjs", "react.js", "reatc", "raect"],
+            "angular": ["angularjs", "angular.js", "angluar", "anguler"],
+            "vue": ["vuejs", "vue.js", "veu", "vuee"],
+            "node": ["nodejs", "node.js", "nodjs", "noed"],
+            "typescript": ["typscript", "typescirpt", "ts", "typescipt", "tyepscript"],
+            "docker": ["dokcer", "dcoker", "doker", "dockr"],
+            "jenkins": ["jenkis", "jenkin", "jenkinss", "jenkings"],
+            "terraform": ["teraform", "terrafrom", "terrafom", "terrafrm"],
+            "elasticsearch": ["elastic", "elasticsearh", "elastisearch", "elsaticsearch"],
+            "redis": ["reddis", "rediss", "ridis", "radis"]
         }
         
         # Build reverse mapping
@@ -212,6 +212,15 @@ class FuzzyMatcher:
         """
         suggestions = {}
         
+        # Also check against common programming terms
+        common_tech_terms = [
+            "python", "javascript", "java", "react", "angular", "vue", "node",
+            "docker", "kubernetes", "aws", "azure", "gcp", "typescript",
+            "golang", "rust", "ruby", "php", "swift", "kotlin", "scala",
+            "django", "flask", "spring", "express", "rails", "laravel",
+            "mysql", "postgresql", "mongodb", "redis", "elasticsearch"
+        ]
+        
         for term in terms:
             term_lower = self._normalize(term)
             
@@ -220,14 +229,36 @@ class FuzzyMatcher:
                 suggestions[term] = self.typo_corrections[term_lower]
                 continue
             
-            # Check against all known correct terms
-            all_correct_terms = list(self.common_replacements.keys())
+            # Check against all known correct terms plus common tech terms
+            all_correct_terms = list(set(list(self.common_replacements.keys()) + common_tech_terms))
             matches = self.fuzzy_match(term, all_correct_terms)
             
-            if matches and matches[0][1] >= 0.85:  # High confidence threshold
+            if matches and matches[0][1] >= 0.80:  # Slightly lower threshold for dynamic matching
                 suggestions[term] = matches[0][0]
         
         return suggestions
+    
+    def correct_query(self, query: str) -> str:
+        """
+        Correct typos in a query string.
+        
+        Args:
+            query: The query string to correct
+            
+        Returns:
+            Corrected query string
+        """
+        words = query.split()
+        corrections = self.suggest_corrections(words)
+        
+        corrected_words = []
+        for word in words:
+            if word in corrections:
+                corrected_words.append(corrections[word])
+            else:
+                corrected_words.append(word)
+        
+        return ' '.join(corrected_words)
 
 
 # Singleton instance

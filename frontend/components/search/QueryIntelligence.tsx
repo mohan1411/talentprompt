@@ -11,6 +11,8 @@ interface QueryAnalysis {
   experience_level: string;
   role_type: string;
   search_intent: string;
+  corrected_query?: string;
+  original_query?: string;
 }
 
 interface QueryIntelligenceProps {
@@ -52,6 +54,16 @@ export default function QueryIntelligence({
         <span className="text-sm font-semibold text-gray-700">Search Intelligence</span>
         <Sparkles className="h-4 w-4 text-indigo-600" />
       </div>
+
+      {/* Show typo correction if applied */}
+      {analysis.corrected_query && (
+        <div className="mb-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md">
+          <p className="text-xs text-amber-800">
+            <span className="font-medium">Auto-corrected:</span> Searching for "{analysis.corrected_query}" 
+            {analysis.original_query && ` (from "${analysis.original_query}")`}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Primary Skills */}
