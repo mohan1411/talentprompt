@@ -68,38 +68,65 @@ export default function SearchProgress({
     <div className="mb-6">
       {/* Progress Bar */}
       <div className="relative" style={{ minHeight: '100px' }}>
-        {/* Connection lines - positioned absolutely to match the flex layout */}
-        <div className="absolute w-full" style={{ top: '20px', left: 0, right: 0 }}>
-          {/* Background line spanning from first to last dot */}
-          <div 
-            className="absolute h-0.5 bg-gray-200 dark:bg-gray-700 rounded-full opacity-30"
-            style={{
-              left: '0%',
-              right: '0%',
-              top: '0px',
-              marginLeft: '20px',
-              marginRight: '20px'
-            }}
-          />
+        {/* Connecting lines layer */}
+        <div className="absolute inset-0" style={{ top: '20px' }}>
+          {/* Background guide lines */}
+          <svg className="absolute inset-0 w-full h-full" style={{ height: '2px' }}>
+            <line x1="16.67%" y1="1" x2="50%" y2="1" stroke="currentColor" strokeWidth="2" className="text-gray-200 dark:text-gray-700" opacity="0.3" />
+            <line x1="50%" y1="1" x2="83.33%" y2="1" stroke="currentColor" strokeWidth="2" className="text-gray-200 dark:text-gray-700" opacity="0.3" />
+          </svg>
           
-          {/* Active Line 1: Instant to Enhanced */}
+          {/* Animated lines */}
           {currentStageIndex >= 0 && (
-            <div className="absolute h-0.5 overflow-hidden" style={{ 
-              left: '0%',
-              width: '50%',
-              top: '0px',
-              paddingLeft: '20px',
-              paddingRight: '20px'
-            }}>
-              <motion.div
-                className="h-full bg-gradient-to-r from-yellow-500 via-yellow-400 to-blue-500 rounded-full"
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
+            <svg className="absolute inset-0 w-full h-full" style={{ height: '2px' }}>
+              <motion.line 
+                x1="16.67%" 
+                y1="1" 
+                x2="50%" 
+                y2="1" 
+                stroke="url(#gradient1)" 
+                strokeWidth="2"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
                 transition={{ duration: 0.5, ease: "easeInOut" }}
-                style={{ transformOrigin: 'left', boxShadow: '0 0 6px rgba(234, 179, 8, 0.4)' }}
               />
-              {/* Particles for Line 1 */}
-              {currentStageIndex === 0 && !isComplete && particles.map((particle, idx) => (
+              <defs>
+                <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#eab308" />
+                  <stop offset="50%" stopColor="#facc15" />
+                  <stop offset="100%" stopColor="#3b82f6" />
+                </linearGradient>
+              </defs>
+            </svg>
+          )}
+          
+          {currentStageIndex >= 1 && (
+            <svg className="absolute inset-0 w-full h-full" style={{ height: '2px' }}>
+              <motion.line 
+                x1="50%" 
+                y1="1" 
+                x2="83.33%" 
+                y2="1" 
+                stroke="url(#gradient2)" 
+                strokeWidth="2"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+              />
+              <defs>
+                <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#3b82f6" />
+                  <stop offset="50%" stopColor="#60a5fa" />
+                  <stop offset="100%" stopColor="#a855f7" />
+                </linearGradient>
+              </defs>
+            </svg>
+          )}
+          
+          {/* Flowing particles */}
+          {currentStageIndex === 0 && !isComplete && (
+            <div className="absolute" style={{ left: '16.67%', width: '33.33%', height: '2px' }}>
+              {particles.map((particle) => (
                 <motion.div
                   key={particle.id}
                   className="absolute w-2 h-2 bg-gradient-to-r from-yellow-400 to-blue-400 rounded-full"
@@ -123,24 +150,9 @@ export default function SearchProgress({
             </div>
           )}
           
-          {/* Active Line 2: Enhanced to Intelligent */}
-          {currentStageIndex >= 1 && (
-            <div className="absolute h-0.5 overflow-hidden" style={{ 
-              left: '50%',
-              width: '50%',
-              top: '0px',
-              paddingLeft: '20px',
-              paddingRight: '20px'
-            }}>
-              <motion.div
-                className="h-full bg-gradient-to-r from-blue-500 via-blue-400 to-purple-500 rounded-full"
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
-                style={{ transformOrigin: 'left', boxShadow: '0 0 6px rgba(59, 130, 246, 0.4)' }}
-              />
-              {/* Particles for Line 2 */}
-              {currentStageIndex === 1 && !isComplete && particles.map((particle, idx) => (
+          {currentStageIndex === 1 && !isComplete && (
+            <div className="absolute" style={{ left: '50%', width: '33.33%', height: '2px' }}>
+              {particles.map((particle) => (
                 <motion.div
                   key={particle.id}
                   className="absolute w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"
@@ -165,6 +177,7 @@ export default function SearchProgress({
           )}
         </div>
         
+        {/* Stage indicators */}
         <div className="flex items-center justify-between mb-2 relative z-10">
           {stages.map((stageInfo, idx) => {
             const isActive = idx === currentStageIndex;
