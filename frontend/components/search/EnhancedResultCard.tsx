@@ -13,7 +13,10 @@ import {
   Sparkles,
   Target,
   TrendingUp,
-  Eye
+  Eye,
+  Activity,
+  Zap,
+  GitBranch
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SearchResult } from '@/hooks/useProgressiveSearch';
@@ -96,6 +99,29 @@ export default function EnhancedResultCard({
                 )}
                 {result.years_experience && (
                   <span>{result.years_experience} years exp.</span>
+                )}
+                {/* Analytics Indicators */}
+                {result.availability_score !== undefined && (
+                  <span className="flex items-center" title={`Availability: ${Math.round(result.availability_score * 100)}%`}>
+                    <Activity className={cn(
+                      "h-4 w-4 mr-1",
+                      result.availability_score > 0.7 ? "text-green-600" :
+                      result.availability_score > 0.4 ? "text-orange-600" : "text-red-600"
+                    )} />
+                    <span className={cn(
+                      result.availability_score > 0.7 ? "text-green-600" :
+                      result.availability_score > 0.4 ? "text-orange-600" : "text-red-600"
+                    )}>
+                      {result.availability_score > 0.7 ? "Available" :
+                       result.availability_score > 0.4 ? "Maybe" : "Unlikely"}
+                    </span>
+                  </span>
+                )}
+                {result.learning_velocity !== undefined && result.learning_velocity > 0.7 && (
+                  <span className="flex items-center text-purple-600" title="Fast learner">
+                    <Zap className="h-4 w-4 mr-1" />
+                    Fast learner
+                  </span>
                 )}
               </div>
             </div>
@@ -228,6 +254,17 @@ export default function EnhancedResultCard({
                 <span>{isLoadingInsights ? 'Analyzing...' : 'Get AI insights'}</span>
               </button>
             )}
+            
+            {/* Find Similar Career DNA button */}
+            {result.career_trajectory && (
+              <button
+                onClick={() => console.log('Find similar for:', result.id)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors group relative"
+                title="Find candidates with similar career DNA"
+              >
+                <GitBranch className="h-4 w-4 text-gray-500 group-hover:text-indigo-600" />
+              </button>
+            )}
           </div>
           
           <button
@@ -241,13 +278,51 @@ export default function EnhancedResultCard({
 
         {/* Expanded Details */}
         <AnimatePresence>
-          {isExpanded && (result.key_strengths || result.potential_concerns || result.interview_focus || result.hiring_recommendation) && (
+          {isExpanded && (result.key_strengths || result.potential_concerns || result.interview_focus || result.hiring_recommendation || result.career_trajectory) && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               className="mt-4 pt-4 border-t border-gray-200 space-y-4"
             >
+              {/* Career DNA Profile */}
+              {result.career_trajectory && (
+                <div>
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                    <GitBranch className="h-4 w-4 mr-1 text-indigo-600" />
+                    Career DNA Profile
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Pattern:</span>
+                      <span className="ml-2 font-medium capitalize">
+                        {result.career_trajectory.pattern.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Level:</span>
+                      <span className="ml-2 font-medium capitalize">
+                        {result.career_trajectory.current_level}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Progression:</span>
+                      <span className="ml-2 font-medium">
+                        {result.career_trajectory.years_to_current} years to current level
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Trajectory:</span>
+                      <span className={cn(
+                        "ml-2 font-medium",
+                        result.career_trajectory.is_ascending ? "text-green-600" : "text-gray-600"
+                      )}>
+                        {result.career_trajectory.is_ascending ? "Ascending" : "Stable"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {/* Key Strengths */}
               {result.key_strengths && result.key_strengths.length > 0 && (
                 <div>

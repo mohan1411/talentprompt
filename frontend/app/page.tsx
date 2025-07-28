@@ -8,7 +8,8 @@ import {
   Search, Zap, Brain, Shield, Users, BarChart, 
   Mic, FileText, Sparkles, Target, Upload, Tags, 
   Headphones, FileCheck, TrendingUp, MessageSquare,
-  Calendar, Bot, Check, Mail, Chrome, LineChart
+  Calendar, Bot, Check, Mail, Chrome, LineChart,
+  Radar, GitBranch, Activity
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -439,6 +440,74 @@ export default function HomePage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* New Features Announcement */}
+        <section className="py-16 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-8">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300 mb-4">
+                <Sparkles className="h-4 w-4 mr-1" />
+                Just Launched
+              </span>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                Intelligence Beyond Keywords
+              </h2>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center mb-4">
+                  <Radar className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Smart Talent Radar
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Visualize candidates on an interactive radar showing availability, learning speed, and match strength at a glance.
+                </p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>• Green = Available now</li>
+                  <li>• Size = Match strength</li>
+                  <li>• Animation = Learning velocity</li>
+                </ul>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-4">
+                  <GitBranch className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Career DNA Matching
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  Find candidates with similar career trajectories to your top performers using AI pattern recognition.
+                </p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>• Fast track vs. deep specialist</li>
+                  <li>• Growth pattern analysis</li>
+                  <li>• "Find similar" with one click</li>
+                </ul>
+              </div>
+              
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center mb-4">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  Real-Time Analytics
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  See candidate availability scores and learning velocity calculated from their career data in real-time.
+                </p>
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                  <li>• Availability indicators</li>
+                  <li>• Learning speed metrics</li>
+                  <li>• Career trajectory insights</li>
+                </ul>
               </div>
             </div>
           </div>
