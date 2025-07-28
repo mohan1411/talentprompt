@@ -268,28 +268,42 @@ Be comprehensive but realistic. Don't over-interpret."""
     
     def _merge_analyses(self, basic: Dict[str, Any], gpt: Dict[str, Any]) -> Dict[str, Any]:
         """Merge basic parse with GPT-4.1-mini analysis."""
-        # Start with GPT analysis as base
-        merged = gpt.copy()
+        # Deep copy GPT analysis to avoid modifying original
+        import copy
+        merged = copy.deepcopy(gpt)
         
         # Preserve original query info from basic parse
         merged["original_query"] = basic["original_query"]
         
-        # Merge skills, preferring GPT's categorization but including basic parse skills
-        all_skills = set()
-        all_skills.update(basic.get("skills", []))
-        all_skills.update(gpt.get("primary_skills", []))
-        all_skills.update(gpt.get("secondary_skills", []))
+        # Deduplicate skills across all categories
+        primary_skills = list(dict.fromkeys(merged.get("primary_skills", [])))
+        secondary_skills = list(dict.fromkeys(merged.get("secondary_skills", [])))
+        implied_skills = list(dict.fromkeys(merged.get("implied_skills", [])))
         
-        # Ensure basic parse skills are included
+        # Ensure basic parse skills are included without duplication
         for skill in basic.get("skills", []):
-            if skill not in gpt.get("primary_skills", []) and skill not in gpt.get("secondary_skills", []):
-                if len(gpt.get("primary_skills", [])) < 3:
-                    gpt["primary_skills"].append(skill)
+            skill_lower = skill.lower()
+            # Check if skill already exists (case-insensitive)
+            primary_lower = [s.lower() for s in primary_skills]
+            secondary_lower = [s.lower() for s in secondary_skills]
+            
+            if skill_lower not in primary_lower and skill_lower not in secondary_lower:
+                if len(primary_skills) < 3:
+                    primary_skills.append(skill)
                 else:
-                    gpt["secondary_skills"].append(skill)
+                    secondary_skills.append(skill)
+        
+        # Remove any skills from implied that are in primary or secondary
+        all_explicit_skills_lower = [s.lower() for s in primary_skills + secondary_skills]
+        implied_skills = [s for s in implied_skills if s.lower() not in all_explicit_skills_lower]
+        
+        # Update merged with deduplicated skills
+        merged["primary_skills"] = primary_skills
+        merged["secondary_skills"] = secondary_skills
+        merged["implied_skills"] = implied_skills
         
         # Add basic parse info that might be missing
-        if basic.get("experience_years") and not gpt.get("experience_years_min"):
+        if basic.get("experience_years") and not merged.get("experience_years_min"):
             merged["experience_years_min"] = basic["experience_years"]
         
         return merged
@@ -349,10 +363,18 @@ Be comprehensive but realistic. Don't over-interpret."""
     def get_search_suggestions(self, analysis: Dict[str, Any]) -> List[str]:
         """Generate search suggestions based on query analysis."""
         suggestions = []
+        seen_suggestions = set()
+        
+        # Helper to add unique suggestions
+        def add_suggestion(suggestion: str):
+            suggestion_lower = suggestion.lower()
+            if suggestion_lower not in seen_suggestions:
+                seen_suggestions.add(suggestion_lower)
+                suggestions.append(suggestion)
         
         # Suggest adding missing common skills
-        primary_skills = analysis.get("primary_skills", [])
-        role_type = analysis.get("role_type")
+        primary_skills = [s.lower() for s in analysis.get("primary_skills", [])]
+        all_skills = primary_skills + [s.lower() for s in analysis.get("secondary_skills", [])]
         
         common_combinations = {
             "python": ["django", "flask", "fastapi"],
@@ -361,19 +383,26 @@ Be comprehensive but realistic. Don't over-interpret."""
             "devops": ["kubernetes", "terraform", "aws"]
         }
         
+        # Only process each base skill once
+        processed_base_skills = set()
         for skill in primary_skills:
-            if skill in common_combinations:
-                for related in common_combinations[skill]:
-                    if related not in primary_skills:
-                        suggestions.append(f"Add '{related}' to find {skill} developers with {related} experience")
+            base_skill = skill.lower()
+            if base_skill in common_combinations and base_skill not in processed_base_skills:
+                processed_base_skills.add(base_skill)
+                for related in common_combinations[base_skill]:
+                    if related.lower() not in all_skills:
+                        add_suggestion(f"Find {skill} developers with {related}")
+                        break  # Only suggest one related skill per base skill
         
         # Suggest experience level if not specified
         if analysis.get("experience_level") == "any":
-            suggestions.append("Consider adding 'senior' or 'junior' to narrow results")
+            add_suggestion("Add 'senior' or 'junior' to narrow results")
         
-        # Suggest location if not specified
-        if not analysis.get("location_preferences"):
-            suggestions.append("Add location preference (e.g., 'remote', 'NYC') to filter by location")
+        # Suggest focusing on specific skills if too many
+        if len(primary_skills) > 3:
+            add_suggestion("Try searching for fewer skills for more focused results")
+        elif len(primary_skills) == 0 and analysis.get("role_type") != "any":
+            add_suggestion(f"Add specific skills for {analysis['role_type']} developers")
         
         return suggestions[:3]  # Limit suggestions
 

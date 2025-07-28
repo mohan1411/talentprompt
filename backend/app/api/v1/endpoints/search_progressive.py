@@ -362,13 +362,8 @@ async def analyze_query(
     # Analyze query
     analysis = await gpt4_analyzer.analyze_query(query, context)
     
-    # Get search suggestions based on the analysis
-    suggestions = []
-    if analysis.get("primary_skills"):
-        for skill in analysis["primary_skills"][:3]:
-            suggestions.append(f"Find {skill} developers")
-    if analysis.get("experience_level"):
-        suggestions.append(f"{analysis['experience_level']} {analysis.get('role_type', 'developers')}")
+    # Get search suggestions from the analyzer
+    suggestions = gpt4_analyzer.get_search_suggestions(analysis)
     
     return {
         "query": query,
