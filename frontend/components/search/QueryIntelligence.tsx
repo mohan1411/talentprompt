@@ -26,6 +26,15 @@ export default function QueryIntelligence({
   suggestions,
   isLoading 
 }: QueryIntelligenceProps) {
+  // Debug logging
+  React.useEffect(() => {
+    if (analysis) {
+      console.log('QueryIntelligence received analysis:', analysis);
+      if (analysis.corrected_query) {
+        console.log('Should show correction notice');
+      }
+    }
+  }, [analysis]);
   if (isLoading) {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 mb-6">
