@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "Promtitude - LinkedIn Profile Importer",
+  "version": "1.0.0",
+  "description": "Import LinkedIn profiles to Promtitude with one click. Build your talent database effortlessly while browsing LinkedIn.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "alarms",
+    "notifications",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*.linkedin.com/*",
+    "https://promtitude.com/*",
+    "https://talentprompt-production.up.railway.app/*"
+  ],
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.linkedin.com/*"],
+      "js": [
+        "content/contact-extractor.js",
+        "content/inline-contact-extractor.js",
+        "content/email-extractor-enhanced.js",
+        "content/calculate-experience.js",
+        "content/calculate-experience-advanced.js",
+        "content/manual-experience-override.js",
+        "content/ultra-clean-extractor.js",
+        "content/data-validator.js",
+        "content/linkedin-profile.js",
+        "content/bulk-import-sidebar.js"
+      ],
+      "css": ["content/styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "assets/icons/icon-16.png",
+      "32": "assets/icons/icon-32.png",
+      "48": "assets/icons/icon-48.png",
+      "128": "assets/icons/icon-128.png"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  }
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Token Helper</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .token-box {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            color: red;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OAuth User Token Helper</h1>
+        
+        <div class="step">
+            <h3>Step 1: Generate Token</h3>
+            <p>This will generate a valid JWT token for promtitude@gmail.com</p>
+            <button onclick="generateToken()">Generate Token</button>
+            <div id="tokenResult"></div>
+        </div>
+        
+        <div class="step">
+            <h3>Step 2: Simulate OAuth Callback</h3>
+            <p>This will set the token and redirect like a real OAuth flow</p>
+            <button onclick="simulateOAuth()" id="oauthBtn" disabled>Simulate OAuth Login</button>
+            <div id="oauthResult"></div>
+        </div>
+    </div>
+
+    <script>
+        let generatedToken = null;
+
+        async function generateToken() {
+            const tokenResult = document.getElementById('tokenResult');
+            tokenResult.innerHTML = '<p>Generating token...</p>';
+            
+            try {
+                // Call the backend to generate token
+                const response = await fetch('http://localhost:8001/api/v1/auth/dev/generate-oauth-token?email=promtitude@gmail.com', {
+                    method: 'POST'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`Failed to generate token: ${error}`);
+                }
+                
+                const data = await response.json();
+                generatedToken = data.access_token;
+                
+                tokenResult.innerHTML = `
+                    <p class="success">✓ Token generated successfully!</p>
+                    <div class="token-box">${generatedToken}</div>
+                    <p><strong>User:</strong> ${data.user.email}</p>
+                    <p><strong>User ID:</strong> ${data.user.id}</p>
+                    <p><strong>Expires in:</strong> ${data.expires_in / 60} minutes</p>
+                `;
+                
+                document.getElementById('oauthBtn').disabled = false;
+                
+            } catch (error) {
+                tokenResult.innerHTML = `
+                    <p class="error">❌ Error: ${error.message}</p>
+                    <p>Make sure:</p>
+                    <ul>
+                        <li>Backend is running on port 8001</li>
+                        <li>The dev endpoint is added to your API router</li>
+                        <li>User promtitude@gmail.com exists in database</li>
+                    </ul>
+                `;
+            }
+        }
+
+        function simulateOAuth() {
+            if (!generatedToken) {
+                alert('Please generate a token first');
+                return;
+            }
+            
+            const oauthResult = document.getElementById('oauthResult');
+            oauthResult.innerHTML = '<p>Simulating OAuth callback...</p>';
+            
+            // Store the token in localStorage
+            localStorage.setItem('access_token', generatedToken);
+            
+            // Store OAuth redirect like the real flow does
+            sessionStorage.setItem('oauth_redirect', '/dashboard');
+            
+            oauthResult.innerHTML = `
+                <p class="success">✓ Token stored in localStorage</p>
+                <p>Redirecting to your app in 2 seconds...</p>
+            `;
+            
+            // Redirect to the OAuth callback page to trigger the proper flow
+            setTimeout(() => {
+                // Create a fake OAuth callback URL with the token
+                const callbackUrl = `http://localhost:3000/auth/callback?token=${generatedToken}`;
+                window.location.href = callbackUrl;
+            }, 2000);
+        }
+        
+        // Alternative: Direct dashboard redirect
+        function directLogin() {
+            if (!generatedToken) {
+                alert('Please generate a token first');
+                return;
+            }
+            
+            localStorage.setItem('access_token', generatedToken);
+            window.location.href = 'http://localhost:3000/dashboard';
+        }
+    </script>
+</body>
+</html>

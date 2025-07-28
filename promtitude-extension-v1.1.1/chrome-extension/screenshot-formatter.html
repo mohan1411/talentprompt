@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chrome Extension Screenshot Formatter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a1a;
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            background: #2a2a2a;
+            border: 2px dashed #4a4a4a;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #4F46E5;
+            background: #333;
+        }
+        .upload-area.drag-over {
+            border-color: #4F46E5;
+            background: #3a3a3a;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .preview-section {
+            display: none;
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .preview-container {
+            position: relative;
+            margin: 20px auto;
+            display: inline-block;
+        }
+        #canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border: 1px solid #4a4a4a;
+            border-radius: 8px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .control-group {
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .control-group h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        select, input[type="color"], input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            background: #1a1a1a;
+            border: 1px solid #4a4a4a;
+            border-radius: 4px;
+            color: white;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        .background-presets {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .preset {
+            height: 40px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .preset:hover {
+            border-color: #4F46E5;
+            transform: scale(1.05);
+        }
+        .preset.active {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3);
+        }
+        button {
+            background: #4F46E5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        button:hover {
+            background: #4338CA;
+        }
+        .download-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .size-info {
+            text-align: center;
+            color: #888;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .position-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .position-btn {
+            padding: 8px;
+            background: #1a1a1a;
+            border: 1px solid #4a4a4a;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .position-btn:hover {
+            background: #4F46E5;
+            border-color: #4F46E5;
+        }
+        .position-btn.active {
+            background: #4F46E5;
+            border-color: #4F46E5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chrome Extension Screenshot Formatter</h1>
+        
+        <div class="upload-area" id="uploadArea">
+            <svg width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin: 0 auto 20px;">
+                <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p style="font-size: 18px; margin-bottom: 10px;">Drop your screenshot here or click to upload</p>
+            <p style="color: #888; font-size: 14px;">Supports PNG, JPG, JPEG</p>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+        
+        <div class="preview-section" id="previewSection">
+            <div class="controls">
+                <div class="control-group">
+                    <h3>Canvas Size</h3>
+                    <label>Size Preset</label>
+                    <select id="sizePreset">
+                        <option value="1280x800">1280x800 (Recommended)</option>
+                        <option value="640x400">640x400 (Minimum)</option>
+                        <option value="1920x1080">1920x1080 (HD)</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Background</h3>
+                    <label>Style</label>
+                    <div class="background-presets">
+                        <div class="preset active" data-bg="white" style="background: white;"></div>
+                        <div class="preset" data-bg="light-gray" style="background: #f5f5f5;"></div>
+                        <div class="preset" data-bg="gradient-blue" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        <div class="preset" data-bg="gradient-purple" style="background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);"></div>
+                        <div class="preset" data-bg="dark" style="background: #1a1a1a;"></div>
+                        <div class="preset" data-bg="gradient-subtle" style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);"></div>
+                        <div class="preset" data-bg="custom" style="background: linear-gradient(45deg, #ff6b6b, #4ecdc4);"></div>
+                        <div class="preset" data-bg="solid" style="background: #e0e0e0;"></div>
+                    </div>
+                    <label style="margin-top: 15px;">Custom Color</label>
+                    <input type="color" id="customColor" value="#f5f5f5">
+                </div>
+                
+                <div class="control-group">
+                    <h3>Image Position</h3>
+                    <label>Quick Position</label>
+                    <div class="position-controls">
+                        <button class="position-btn" data-pos="tl">↖</button>
+                        <button class="position-btn" data-pos="tc">↑</button>
+                        <button class="position-btn" data-pos="tr">↗</button>
+                        <button class="position-btn" data-pos="ml">←</button>
+                        <button class="position-btn active" data-pos="mc">●</button>
+                        <button class="position-btn" data-pos="mr">→</button>
+                        <button class="position-btn" data-pos="bl">↙</button>
+                        <button class="position-btn" data-pos="bc">↓</button>
+                        <button class="position-btn" data-pos="br">↘</button>
+                    </div>
+                    <label style="margin-top: 15px;">Scale (%)</label>
+                    <input type="range" id="scale" min="50" max="150" value="100">
+                    <div class="size-info">Scale: <span id="scaleValue">100%</span></div>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Effects</h3>
+                    <label>
+                        <input type="checkbox" id="addShadow" checked> Add drop shadow
+                    </label>
+                    <label style="margin-top: 10px;">
+                        <input type="checkbox" id="addBorder"> Add border
+                    </label>
+                    <label style="margin-top: 10px;">Border Radius (px)</label>
+                    <input type="range" id="borderRadius" min="0" max="20" value="8">
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <div class="preview-container">
+                    <canvas id="canvas"></canvas>
+                    <div class="size-info" id="canvasSize"></div>
+                </div>
+            </div>
+            
+            <div class="download-buttons">
+                <button onclick="downloadImage('png')">Download as PNG</button>
+                <button onclick="downloadImage('jpg')">Download as JPG</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let uploadedImage = null;
+        let currentPosition = 'mc';
+        let currentBackground = 'white';
+        
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        
+        // Upload handling
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+            
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        });
+        
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    document.getElementById('previewSection').style.display = 'block';
+                    updateCanvas();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        // Controls
+        document.getElementById('sizePreset').addEventListener('change', updateCanvas);
+        document.getElementById('customColor').addEventListener('input', updateCanvas);
+        document.getElementById('scale').addEventListener('input', (e) => {
+            document.getElementById('scaleValue').textContent = e.target.value + '%';
+            updateCanvas();
+        });
+        document.getElementById('addShadow').addEventListener('change', updateCanvas);
+        document.getElementById('addBorder').addEventListener('change', updateCanvas);
+        document.getElementById('borderRadius').addEventListener('change', updateCanvas);
+        
+        // Background presets
+        document.querySelectorAll('.preset').forEach(preset => {
+            preset.addEventListener('click', () => {
+                document.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+                preset.classList.add('active');
+                currentBackground = preset.dataset.bg;
+                updateCanvas();
+            });
+        });
+        
+        // Position controls
+        document.querySelectorAll('.position-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.position-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPosition = btn.dataset.pos;
+                updateCanvas();
+            });
+        });
+        
+        function updateCanvas() {
+            if (!uploadedImage) return;
+            
+            // Get canvas size
+            const sizePreset = document.getElementById('sizePreset').value;
+            const [width, height] = sizePreset.split('x').map(Number);
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Update size display
+            document.getElementById('canvasSize').textContent = `${width} × ${height} pixels`;
+            
+            // Draw background
+            drawBackground();
+            
+            // Calculate image size and position
+            const scale = document.getElementById('scale').value / 100;
+            const imgWidth = uploadedImage.width * scale;
+            const imgHeight = uploadedImage.height * scale;
+            
+            let x, y;
+            
+            // Calculate position based on selection
+            const padding = 50;
+            switch(currentPosition) {
+                case 'tl': x = padding; y = padding; break;
+                case 'tc': x = (width - imgWidth) / 2; y = padding; break;
+                case 'tr': x = width - imgWidth - padding; y = padding; break;
+                case 'ml': x = padding; y = (height - imgHeight) / 2; break;
+                case 'mc': x = (width - imgWidth) / 2; y = (height - imgHeight) / 2; break;
+                case 'mr': x = width - imgWidth - padding; y = (height - imgHeight) / 2; break;
+                case 'bl': x = padding; y = height - imgHeight - padding; break;
+                case 'bc': x = (width - imgWidth) / 2; y = height - imgHeight - padding; break;
+                case 'br': x = width - imgWidth - padding; y = height - imgHeight - padding; break;
+            }
+            
+            // Add shadow if enabled
+            if (document.getElementById('addShadow').checked) {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+                ctx.shadowBlur = 20;
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 10;
+            }
+            
+            // Draw image with border radius
+            const borderRadius = parseInt(document.getElementById('borderRadius').value);
+            if (borderRadius > 0) {
+                ctx.save();
+                roundedRect(ctx, x, y, imgWidth, imgHeight, borderRadius);
+                ctx.clip();
+            }
+            
+            // Draw image
+            ctx.drawImage(uploadedImage, x, y, imgWidth, imgHeight);
+            
+            if (borderRadius > 0) {
+                ctx.restore();
+            }
+            
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            
+            // Add border if enabled
+            if (document.getElementById('addBorder').checked) {
+                ctx.strokeStyle = '#ddd';
+                ctx.lineWidth = 2;
+                if (borderRadius > 0) {
+                    roundedRect(ctx, x, y, imgWidth, imgHeight, borderRadius);
+                    ctx.stroke();
+                } else {
+                    ctx.strokeRect(x, y, imgWidth, imgHeight);
+                }
+            }
+        }
+        
+        function drawBackground() {
+            switch(currentBackground) {
+                case 'white':
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'light-gray':
+                    ctx.fillStyle = '#f5f5f5';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'gradient-blue':
+                    drawGradient(['#667eea', '#764ba2']);
+                    break;
+                case 'gradient-purple':
+                    drawGradient(['#4F46E5', '#7C3AED']);
+                    break;
+                case 'gradient-subtle':
+                    drawGradient(['#f5f7fa', '#c3cfe2']);
+                    break;
+                case 'dark':
+                    ctx.fillStyle = '#1a1a1a';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+                case 'custom':
+                    drawGradient(['#ff6b6b', '#4ecdc4']);
+                    break;
+                case 'solid':
+                    ctx.fillStyle = document.getElementById('customColor').value;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    break;
+            }
+        }
+        
+        function drawGradient(colors) {
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(1, colors[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        
+        function roundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+        
+        function downloadImage(format) {
+            const link = document.createElement('a');
+            const timestamp = new Date().getTime();
+            link.download = `screenshot_${canvas.width}x${canvas.height}_${timestamp}.${format}`;
+            
+            if (format === 'jpg') {
+                // For JPG, we need to fill transparent areas with white
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.fillStyle = '#ffffff';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                tempCtx.drawImage(canvas, 0, 0);
+                link.href = tempCanvas.toDataURL('image/jpeg', 0.95);
+            } else {
+                link.href = canvas.toDataURL('image/png');
+            }
+            
+            link.click();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Debug Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        .success { color: green; background: #e8f5e9; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .error { color: red; background: #ffebee; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .info { color: blue; background: #e3f2fd; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        button:hover { background: #1976d2; }
+        pre { background: white; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        input { width: 100%; padding: 8px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>Frontend Debug Tool</h1>
+    
+    <div class="test">
+        <h2>1. Current Setup</h2>
+        <div id="setupInfo"></div>
+    </div>
+    
+    <div class="test">
+        <h2>2. Test Simple Fetch</h2>
+        <button onclick="testSimpleFetch()">Test Basic Fetch</button>
+        <div id="simpleFetchResult"></div>
+    </div>
+    
+    <div class="test">
+        <h2>3. Test with Credentials</h2>
+        <button onclick="testWithCredentials()">Test with Credentials</button>
+        <div id="credentialsResult"></div>
+    </div>
+    
+    <div class="test">
+        <h2>4. Test Resume API</h2>
+        <button onclick="testResumeAPI()">Test Resume Fetch</button>
+        <div id="resumeResult"></div>
+    </div>
+    
+    <div class="test">
+        <h2>5. Set Token and Go to App</h2>
+        <input type="text" id="tokenInput" placeholder="Paste token here">
+        <button onclick="setTokenAndGo()">Set Token & Open App</button>
+        <div id="tokenResult"></div>
+    </div>
+
+    <script>
+        // Show current setup
+        function showSetup() {
+            const info = document.getElementById('setupInfo');
+            const token = localStorage.getItem('access_token');
+            
+            info.innerHTML = `
+                <div class="info">
+                    <strong>Current Page Origin:</strong> ${window.location.origin}<br>
+                    <strong>API URL:</strong> http://localhost:8001<br>
+                    <strong>Token in localStorage:</strong> ${token ? 'Yes (first 20 chars: ' + token.substring(0, 20) + '...)' : 'No'}<br>
+                    <strong>Browser:</strong> ${navigator.userAgent}
+                </div>
+            `;
+        }
+        
+        // Test simple fetch
+        async function testSimpleFetch() {
+            const result = document.getElementById('simpleFetchResult');
+            result.innerHTML = '<div class="info">Testing...</div>';
+            
+            try {
+                console.log('Making simple fetch request...');
+                const response = await fetch('http://localhost:8001/api/v1/health/');
+                console.log('Response received:', response);
+                
+                const data = await response.json();
+                console.log('Data:', data);
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ Success!<br>
+                        Status: ${response.status}<br>
+                        Data: ${JSON.stringify(data)}
+                    </div>
+                `;
+            } catch (e) {
+                console.error('Fetch error:', e);
+                result.innerHTML = `
+                    <div class="error">
+                        ❌ Error: ${e.message}<br>
+                        Check browser console for details
+                    </div>
+                `;
+            }
+        }
+        
+        // Test with credentials
+        async function testWithCredentials() {
+            const result = document.getElementById('credentialsResult');
+            result.innerHTML = '<div class="info">Testing with credentials...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/health/', {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ Success with credentials!<br>
+                        Status: ${response.status}<br>
+                        Data: ${JSON.stringify(data)}
+                    </div>
+                `;
+            } catch (e) {
+                result.innerHTML = `
+                    <div class="error">
+                        ❌ Error: ${e.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Test Resume API
+        async function testResumeAPI() {
+            const result = document.getElementById('resumeResult');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">No token found. Please set a token first.</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="info">Testing resume API...</div>';
+            
+            try {
+                console.log('Fetching resumes with token...');
+                const response = await fetch('http://localhost:8001/api/v1/resumes/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                console.log('Resume response:', response);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✅ Resume API working!<br>
+                            Found ${data.length} resumes<br>
+                            ${data.length > 0 ? 'First resume: ' + data[0].first_name + ' ' + data[0].last_name : ''}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            ❌ API Error ${response.status}<br>
+                            ${JSON.stringify(data)}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error('Resume fetch error:', e);
+                result.innerHTML = `
+                    <div class="error">
+                        ❌ Fetch Error: ${e.message}
+                    </div>
+                `;
+            }
+        }
+        
+        // Set token and go to app
+        function setTokenAndGo() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const result = document.getElementById('tokenResult');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">Please enter a token</div>';
+                return;
+            }
+            
+            localStorage.setItem('access_token', token);
+            result.innerHTML = '<div class="success">✅ Token set! Opening app in 2 seconds...</div>';
+            
+            setTimeout(() => {
+                window.location.href = 'http://localhost:3000/dashboard';
+            }, 2000);
+        }
+        
+        // Initialize
+        window.onload = () => {
+            showSetup();
+            // Try a simple fetch immediately
+            testSimpleFetch();
+        };
+    </script>
+</body>
+</html>

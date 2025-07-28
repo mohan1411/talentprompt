@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Error Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+        pre { background: white; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .result-item { margin: 5px 0; padding: 5px; background: white; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Resume API Error Test</h1>
+    
+    <div class="test">
+        <h2>Find Error Boundary</h2>
+        <button onclick="testErrorBoundary()">Run Test</button>
+        <div id="result"></div>
+    </div>
+
+    <div class="test">
+        <h2>Backend Error Details</h2>
+        <button onclick="checkBackendError()">Check Error at Position 95</button>
+        <div id="errorDetails"></div>
+    </div>
+
+    <script>
+        async function testErrorBoundary() {
+            const result = document.getElementById('result');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">No token found! Please login first.</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div>Testing API endpoints...</div>';
+            let html = '';
+            
+            // Test different skip values
+            const testSkips = [0, 50, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 110];
+            
+            for (const skip of testSkips) {
+                try {
+                    const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=${skip}&limit=1`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.length > 0) {
+                            html += `<div class="result-item success">skip=${skip}: ✅ OK - ${data[0].first_name} ${data[0].last_name}</div>`;
+                        } else {
+                            html += `<div class="result-item warning">skip=${skip}: ⚠️ Empty result</div>`;
+                        }
+                    } else {
+                        html += `<div class="result-item error">skip=${skip}: ❌ Error ${response.status}</div>`;
+                        if (skip === 95) {
+                            html += '<div class="error"><strong>ERROR STARTS AT POSITION 95!</strong></div>';
+                        }
+                    }
+                } catch (error) {
+                    html += `<div class="result-item error">skip=${skip}: ❌ ${error.message}</div>`;
+                }
+            }
+            
+            result.innerHTML = html;
+            
+            // Also test with different limits
+            html += '<h3>Testing different limits at skip=95:</h3>';
+            for (const limit of [1, 2, 5, 10]) {
+                try {
+                    const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=95&limit=${limit}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        html += `<div class="result-item success">limit=${limit}: ✅ OK - returned ${data.length} resumes</div>`;
+                    } else {
+                        html += `<div class="result-item error">limit=${limit}: ❌ Error ${response.status}</div>`;
+                    }
+                } catch (error) {
+                    html += `<div class="result-item error">limit=${limit}: ❌ ${error.message}</div>`;
+                }
+            }
+            
+            result.innerHTML = html;
+        }
+        
+        async function checkBackendError() {
+            const errorDetails = document.getElementById('errorDetails');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                errorDetails.innerHTML = '<div class="error">No token found!</div>';
+                return;
+            }
+            
+            errorDetails.innerHTML = '<div>Checking error at position 95...</div>';
+            
+            try {
+                // First get the working resumes to find the ID at position 95
+                const allResumes = [];
+                for (let skip = 0; skip < 100; skip += 10) {
+                    const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=${skip}&limit=10`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        allResumes.push(...data);
+                    } else {
+                        break;
+                    }
+                }
+                
+                errorDetails.innerHTML = `<div>Found ${allResumes.length} working resumes</div>`;
+                
+                if (allResumes.length >= 95) {
+                    // Show resumes around position 95
+                    let html = '<h3>Resumes around position 95:</h3>';
+                    for (let i = 90; i < Math.min(100, allResumes.length); i++) {
+                        const resume = allResumes[i];
+                        const marker = i === 95 ? ' <-- LAST WORKING RESUME' : '';
+                        html += `<div class="result-item">Position ${i}: ${resume.first_name} ${resume.last_name} (ID: ${resume.id})${marker}</div>`;
+                    }
+                    
+                    errorDetails.innerHTML += html;
+                    
+                    // Try to fetch the problematic resume
+                    errorDetails.innerHTML += '<h3>Attempting to fetch position 95 directly:</h3>';
+                    
+                    try {
+                        const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=95&limit=1`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            errorDetails.innerHTML += `<div class="error">Error ${response.status}: Check your backend terminal for the Python traceback!</div>`;
+                            errorDetails.innerHTML += `<pre>${errorText.substring(0, 500)}...</pre>`;
+                            
+                            errorDetails.innerHTML += `
+                                <div class="error">
+                                    <h3>⚠️ ACTION REQUIRED:</h3>
+                                    <p>1. Check your backend terminal window</p>
+                                    <p>2. Look for the Python error traceback</p>
+                                    <p>3. The error will show exactly what's failing</p>
+                                    <p>4. Common issues: JSON serialization, null values, data type mismatch</p>
+                                </div>
+                            `;
+                        }
+                    } catch (error) {
+                        errorDetails.innerHTML += `<div class="error">Fetch error: ${error.message}</div>`;
+                    }
+                }
+            } catch (error) {
+                errorDetails.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-run on load
+        window.onload = () => {
+            if (localStorage.getItem('access_token')) {
+                testErrorBoundary();
+            }
+        };
+    </script>
+</body>
+</html>

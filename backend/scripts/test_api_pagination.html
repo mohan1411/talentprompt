@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Pagination Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 20px 0; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: white; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>API Pagination Test</h1>
+    
+    <div class="test">
+        <h2>Test Resume API Pagination</h2>
+        <button onclick="testPagination()">Test All Pages</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function testPagination() {
+            const result = document.getElementById('result');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">No token found!</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div>Testing pagination...</div>';
+            
+            try {
+                const allResumes = [];
+                let page = 0;
+                let hasMore = true;
+                
+                while (hasMore && page < 5) {
+                    console.log(`Fetching page ${page + 1}...`);
+                    const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=${page * 100}&limit=100`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log(`Page ${page + 1} returned ${data.length} resumes`);
+                    
+                    allResumes.push(...data);
+                    
+                    result.innerHTML += `<div class="success">Page ${page + 1}: ${data.length} resumes</div>`;
+                    
+                    if (data.length < 100) {
+                        hasMore = false;
+                    }
+                    page++;
+                }
+                
+                result.innerHTML += `<div class="success"><strong>Total: ${allResumes.length} resumes</strong></div>`;
+                
+                // Show some sample data
+                if (allResumes.length > 0) {
+                    result.innerHTML += '<h3>Sample resumes:</h3><pre>';
+                    result.innerHTML += 'First 3:\n';
+                    allResumes.slice(0, 3).forEach(r => {
+                        result.innerHTML += `- ${r.first_name} ${r.last_name}\n`;
+                    });
+                    
+                    if (allResumes.length > 100) {
+                        result.innerHTML += '\nResumes 101-103:\n';
+                        allResumes.slice(100, 103).forEach(r => {
+                            result.innerHTML += `- ${r.first_name} ${r.last_name}\n`;
+                        });
+                    }
+                    
+                    result.innerHTML += '</pre>';
+                }
+                
+                // Store in window for debugging
+                window.testResumes = allResumes;
+                console.log('All resumes stored in window.testResumes');
+                
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('Full error:', error);
+            }
+        }
+        
+        // Auto-run on load
+        window.onload = () => {
+            if (localStorage.getItem('access_token')) {
+                testPagination();
+            }
+        };
+    </script>
+</body>
+</html>

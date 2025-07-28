@@ -1,0 +1,101 @@
+/* Promtitude LinkedIn Integration Styles */
+
+.talentprompt-import-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  margin-left: 8px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.talentprompt-import-btn:hover {
+  background: #1d4ed8;
+}
+
+.talentprompt-import-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Sidebar styles for better visibility */
+#bulk-import-sidebar {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+#bulk-import-sidebar * {
+  box-sizing: border-box;
+}
+
+#bulk-import-sidebar button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#bulk-import-sidebar input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+}
+
+/* Ensure sidebar stays on top */
+#bulk-import-sidebar {
+  z-index: 99999 !important;
+}
+
+/* Status notifications */
+.talentprompt-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.talentprompt-status.success {
+  border-left: 4px solid #10b981;
+  color: #065f46;
+}
+
+.talentprompt-status.error {
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+.talentprompt-status.exists {
+  border-left: 4px solid #f59e0b;
+  color: #92400e;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Ensure search results are relatively positioned */
+li.reusable-search__result-container,
+li[class*="result-container"],
+div[data-chameleon-result-urn] {
+  position: relative !important;
+}

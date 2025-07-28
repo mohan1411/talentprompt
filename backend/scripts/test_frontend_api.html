@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error {
+            color: red;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .info {
+            color: #1976d2;
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frontend API Test Tool</h1>
+        
+        <div class="test-section">
+            <h3>1. Check Current Token</h3>
+            <button onclick="checkToken()">Check Token</button>
+            <div id="tokenResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. Test Backend Connection</h3>
+            <button onclick="testBackend()">Test Backend</button>
+            <div id="backendResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. Test Resume API</h3>
+            <button onclick="testResumeAPI()">Test Resume Fetch</button>
+            <div id="resumeResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. Test with Different API URL</h3>
+            <input type="text" id="apiUrl" placeholder="API URL (e.g., http://localhost:8001)" value="http://localhost:8001">
+            <button onclick="testCustomAPI()">Test Custom URL</button>
+            <div id="customResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. Fix Token</h3>
+            <p>Paste a new token here to update localStorage:</p>
+            <input type="text" id="newToken" placeholder="Paste JWT token here">
+            <button onclick="updateToken()">Update Token</button>
+            <div id="updateResult"></div>
+        </div>
+    </div>
+
+    <script>
+        function checkToken() {
+            const result = document.getElementById('tokenResult');
+            const token = localStorage.getItem('access_token');
+            
+            if (token) {
+                result.innerHTML = `
+                    <div class="success">✓ Token found in localStorage</div>
+                    <pre>Token (first 50 chars): ${token.substring(0, 50)}...</pre>
+                `;
+                
+                // Decode token to check expiry
+                try {
+                    const parts = token.split('.');
+                    const payload = JSON.parse(atob(parts[1]));
+                    const exp = new Date(payload.exp * 1000);
+                    const now = new Date();
+                    
+                    if (exp < now) {
+                        result.innerHTML += '<div class="error">⚠️ Token is expired!</div>';
+                    } else {
+                        result.innerHTML += `<div class="info">Token expires: ${exp.toLocaleString()}</div>`;
+                    }
+                    
+                    result.innerHTML += `<div class="info">User: ${payload.sub} (ID: ${payload.user_id})</div>`;
+                } catch (e) {
+                    result.innerHTML += '<div class="error">Could not decode token</div>';
+                }
+            } else {
+                result.innerHTML = '<div class="error">❌ No token found in localStorage</div>';
+            }
+        }
+        
+        async function testBackend() {
+            const result = document.getElementById('backendResult');
+            result.innerHTML = '<div class="info">Testing backend...</div>';
+            
+            const urls = [
+                'http://localhost:8001/api/v1/health/',
+                'http://localhost:8000/api/v1/health/',
+                'https://talentprompt-production.up.railway.app/api/v1/health/'
+            ];
+            
+            for (const url of urls) {
+                try {
+                    const response = await fetch(url);
+                    if (response.ok) {
+                        const data = await response.json();
+                        result.innerHTML = `
+                            <div class="success">✓ Backend found at: ${url}</div>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        `;
+                        return;
+                    }
+                } catch (e) {
+                    console.log(`Failed to connect to ${url}`);
+                }
+            }
+            
+            result.innerHTML = '<div class="error">❌ Could not connect to any backend URL</div>';
+        }
+        
+        async function testResumeAPI() {
+            const result = document.getElementById('resumeResult');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">❌ No token found. Please check token first.</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="info">Testing resume API...</div>';
+            
+            // Determine API URL based on hostname
+            let apiUrl = 'http://localhost:8001';
+            if (window.location.hostname === 'promtitude.com') {
+                apiUrl = 'https://talentprompt-production.up.railway.app';
+            }
+            
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/resumes/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">✓ Resume API working!</div>
+                        <div class="info">Found ${data.length} resumes</div>
+                    `;
+                    
+                    if (data.length > 0) {
+                        result.innerHTML += '<div class="info">First 3 resumes:</div><ul>';
+                        data.slice(0, 3).forEach(resume => {
+                            result.innerHTML += `<li>${resume.first_name} ${resume.last_name} - ${resume.current_title}</li>`;
+                        });
+                        result.innerHTML += '</ul>';
+                    }
+                } else {
+                    result.innerHTML = `
+                        <div class="error">❌ API Error: ${response.status}</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (e) {
+                result.innerHTML = `
+                    <div class="error">❌ Fetch failed: ${e.message}</div>
+                    <div class="info">This might be a CORS issue if running on different ports</div>
+                `;
+            }
+        }
+        
+        async function testCustomAPI() {
+            const result = document.getElementById('customResult');
+            const apiUrl = document.getElementById('apiUrl').value;
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">❌ No token found</div>';
+                return;
+            }
+            
+            result.innerHTML = '<div class="info">Testing custom API URL...</div>';
+            
+            try {
+                const response = await fetch(`${apiUrl}/api/v1/resumes/`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    result.innerHTML = `
+                        <div class="success">✓ Success with ${apiUrl}</div>
+                        <div class="info">Found ${data.length} resumes</div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="error">❌ Error: ${response.status}</div>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="error">❌ Failed: ${e.message}</div>`;
+            }
+        }
+        
+        function updateToken() {
+            const newToken = document.getElementById('newToken').value.trim();
+            const result = document.getElementById('updateResult');
+            
+            if (!newToken) {
+                result.innerHTML = '<div class="error">Please enter a token</div>';
+                return;
+            }
+            
+            localStorage.setItem('access_token', newToken);
+            result.innerHTML = '<div class="success">✓ Token updated! Reload the page to test.</div>';
+        }
+        
+        // Run initial check
+        window.onload = function() {
+            checkToken();
+        };
+    </script>
+</body>
+</html>

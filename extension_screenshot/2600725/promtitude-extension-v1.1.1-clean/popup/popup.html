@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <img src="../assets/icons/icon-32.png" alt="Promtitude" class="logo">
+      <h1>Promtitude</h1>
+    </div>
+    
+    <div id="auth-section" class="section">
+      <!-- Welcome screen for new users -->
+      <div id="welcome-screen" class="hidden">
+        <h2>Welcome to Promtitude! 🚀</h2>
+        <p class="welcome-text">Import LinkedIn profiles with one click and build your talent database effortlessly.</p>
+        
+        <div class="feature-list">
+          <div class="feature">✓ One-click profile import</div>
+          <div class="feature">✓ Bulk import from search results</div>
+          <div class="feature">✓ Smart duplicate detection</div>
+          <div class="feature">✓ Secure cloud storage</div>
+        </div>
+        
+        <button id="create-account-btn" class="primary-btn">Create Free Account</button>
+        <p class="signin-link">Already have an account? <a href="#" id="show-login">Sign in</a></p>
+      </div>
+      
+      <div id="login-form" class="hidden">
+        <h2>Sign in to Promtitude</h2>
+        <input type="email" id="email" placeholder="Email" />
+        
+        <!-- Dynamic auth fields based on user type -->
+        <div id="password-container">
+          <input type="password" id="password" placeholder="Password" />
+        </div>
+        
+        <div id="oauth-container" class="hidden">
+          <div class="oauth-info">
+            <p class="oauth-label">
+              <img id="oauth-icon" src="" alt="" class="oauth-icon" />
+              <span id="oauth-text">OAuth Account Detected</span>
+            </p>
+            <p class="oauth-desc">You signed up with <span id="oauth-provider"></span></p>
+          </div>
+          <div class="access-code-group">
+            <input type="text" id="access-code" placeholder="Enter 6-character code" maxlength="6" pattern="[A-Za-z0-9]{6}" />
+            <button id="get-code-btn" class="secondary-btn" type="button">Get Code</button>
+          </div>
+          <p class="oauth-help">Click "Get Code" to generate an access code</p>
+        </div>
+        
+        <button id="login-btn" class="primary-btn">Sign In</button>
+        <div id="error-message" class="error hidden"></div>
+        <p class="signup-link">Don't have an account? <a href="#" id="create-account-link">Create one free</a></p>
+      </div>
+      
+      <div id="logged-in" class="hidden">
+        <p class="user-info">Logged in as: <span id="user-email"></span></p>
+        <button id="logout-btn" class="secondary-btn">Logout</button>
+      </div>
+    </div>
+    
+    <div id="stats-section" class="section hidden">
+      <h2>Today's Activity</h2>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat-value" id="imported-today">0</span>
+          <span class="stat-label">Profiles Imported</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="duplicates-found">0</span>
+          <span class="stat-label">Duplicates Found</span>
+        </div>
+      </div>
+    </div>
+    
+    <div id="actions-section" class="section hidden">
+      <h2>Quick Actions</h2>
+      <div id="action-message" class="message hidden"></div>
+      <button id="import-action" class="primary-btn" disabled>
+        Import Current Profile
+      </button>
+      <p id="import-action-info" class="import-info hidden">
+        <!-- Dynamic info will be shown here -->
+      </p>
+      <button id="view-queue" class="primary-btn" style="margin-top: 8px;">
+        View Import Queue <span id="queue-badge" style="background: #dc2626; color: white; padding: 2px 6px; border-radius: 10px; font-size: 11px; margin-left: 6px; display: none;">0</span>
+      </button>
+    </div>
+    
+    <div class="footer">
+      <a href="#" id="settings-link">Settings</a>
+      <a href="#" id="help-link">Help</a>
+    </div>
+    
+    <div class="disclaimer">
+      <p>⚠️ <strong>Important:</strong> This tool should be used responsibly for professional recruiting purposes only. Users are responsible for complying with LinkedIn's Terms of Service. We recommend reasonable delays between imports.</p>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

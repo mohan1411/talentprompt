@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Backend Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        pre { background: white; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Direct Backend Test</h1>
+    
+    <div class="test">
+        <h3>1. Test Backend Health</h3>
+        <button onclick="testHealth()">Test Health Endpoint</button>
+        <div id="healthResult"></div>
+    </div>
+    
+    <div class="test">
+        <h3>2. Test with Token from localStorage</h3>
+        <button onclick="testWithToken()">Test Resume API</button>
+        <div id="tokenResult"></div>
+    </div>
+    
+    <div class="test">
+        <h3>3. Direct Resume Test</h3>
+        <p>Token: <input type="text" id="directToken" style="width: 100%;" placeholder="Paste token here"></p>
+        <button onclick="directTest()">Test Direct</button>
+        <div id="directResult"></div>
+    </div>
+    
+    <div class="test">
+        <h3>4. Test CORS</h3>
+        <button onclick="testCORS()">Test CORS Headers</button>
+        <div id="corsResult"></div>
+    </div>
+
+    <script>
+        async function testHealth() {
+            const result = document.getElementById('healthResult');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/health/');
+                const data = await response.text();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✓ Backend is running!<br>
+                        Status: ${response.status}<br>
+                        Response: ${data}
+                    </div>
+                `;
+            } catch (e) {
+                result.innerHTML = `<div class="error">❌ Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function testWithToken() {
+            const result = document.getElementById('tokenResult');
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">No token in localStorage</div>';
+                return;
+            }
+            
+            result.innerHTML = 'Testing with token...';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/resumes/', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = text;
+                }
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✓ API call successful!<br>
+                            Status: ${response.status}<br>
+                            Resumes found: ${Array.isArray(data) ? data.length : 'N/A'}
+                        </div>
+                        <pre>${JSON.stringify(data, null, 2).substring(0, 500)}...</pre>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            ❌ API Error<br>
+                            Status: ${response.status}<br>
+                            Response: ${text}
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="error">❌ Fetch Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function directTest() {
+            const result = document.getElementById('directResult');
+            const token = document.getElementById('directToken').value.trim();
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">Please enter a token</div>';
+                return;
+            }
+            
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="success">
+                            ✓ Token is valid!<br>
+                            User: ${data.email}<br>
+                            ID: ${data.id}
+                        </div>
+                    `;
+                    
+                    // Now test resumes
+                    const resumeResponse = await fetch('http://localhost:8001/api/v1/resumes/', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    const resumes = await resumeResponse.json();
+                    result.innerHTML += `
+                        <div class="success">
+                            Resume count: ${resumes.length}
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `<div class="error">Invalid token: ${response.status}</div>`;
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function testCORS() {
+            const result = document.getElementById('corsResult');
+            result.innerHTML = 'Testing CORS...';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/health/', {
+                    method: 'OPTIONS'
+                });
+                
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                
+                result.innerHTML = `
+                    <div class="success">
+                        CORS Headers:<br>
+                        <pre>${JSON.stringify(headers, null, 2)}</pre>
+                    </div>
+                `;
+                
+                if (!headers['access-control-allow-origin']) {
+                    result.innerHTML += '<div class="error">⚠️ No Access-Control-Allow-Origin header!</div>';
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        // Auto-run health check
+        window.onload = () => {
+            testHealth();
+        };
+    </script>
+</body>
+</html>

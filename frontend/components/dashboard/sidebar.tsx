@@ -12,15 +12,23 @@ import {
   Menu,
   X,
   Zap,
-  BrainIcon
+  BrainIcon,
+  Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
 
-const navigation = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: any;
+  badge?: string;
+}
+
+const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Search', href: '/dashboard/search', icon: Search },
-  // { name: 'Search (New)', href: '/dashboard/search-v2', icon: Search },
+  { name: 'Mind Reader Search', href: '/dashboard/search/progressive', icon: Sparkles, badge: 'NEW' },
   { name: 'My Resumes', href: '/dashboard/resumes', icon: FileText },
   { name: 'Upload Resume', href: '/dashboard/upload', icon: Upload },
   { name: 'Bulk Upload', href: '/dashboard/bulk-upload', icon: Zap },
@@ -87,7 +95,12 @@ export function DashboardSidebar() {
                         : 'text-gray-400 group-hover:text-gray-500'
                     }`}
                   />
-                  {item.name}
+                  <span className="flex-1">{item.name}</span>
+                  {item.badge && (
+                    <span className="ml-2 px-2 py-0.5 text-xs font-semibold bg-blue-600 text-white rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

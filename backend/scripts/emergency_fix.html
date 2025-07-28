@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Emergency Resume Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            color: red;
+            background: #ffe0e0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            color: green;
+            background: #e0ffe0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .resume-list {
+            max-height: 400px;
+            overflow-y: auto;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .resume-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        pre {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emergency Resume Fix</h1>
+    
+    <div class="section">
+        <h2>1. Test Direct API Access</h2>
+        <button onclick="testAPI()">Test Resume API</button>
+        <div id="apiResult"></div>
+    </div>
+    
+    <div class="section">
+        <h2>2. Test Pagination</h2>
+        <button onclick="testPagination()">Test All Pages</button>
+        <div id="paginationResult"></div>
+    </div>
+    
+    <div class="section">
+        <h2>3. Quick Fix - Set Working Code</h2>
+        <button onclick="applyFix()">Apply Frontend Fix</button>
+        <div id="fixResult"></div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('access_token');
+        
+        async function testAPI() {
+            const result = document.getElementById('apiResult');
+            
+            if (!token) {
+                result.innerHTML = '<div class="error">No token found!</div>';
+                return;
+            }
+            
+            try {
+                // Test page 1
+                const response1 = await fetch('http://localhost:8001/api/v1/resumes/?skip=0&limit=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const page1 = await response1.json();
+                
+                // Test page 2
+                const response2 = await fetch('http://localhost:8001/api/v1/resumes/?skip=100&limit=100', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const page2 = await response2.json();
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ API is working!<br>
+                        Page 1: ${page1.length} resumes<br>
+                        Page 2: ${page2.length} resumes<br>
+                        Total: ${page1.length + page2.length} resumes
+                    </div>
+                `;
+                
+                if (page1.length > 0) {
+                    result.innerHTML += '<div class="resume-list"><h4>First few resumes:</h4>';
+                    page1.slice(0, 5).forEach(r => {
+                        result.innerHTML += `<div class="resume-item">${r.first_name} ${r.last_name} - ${r.current_title || 'No title'}</div>`;
+                    });
+                    result.innerHTML += '</div>';
+                }
+            } catch (e) {
+                result.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        async function testPagination() {
+            const result = document.getElementById('paginationResult');
+            result.innerHTML = '<div>Testing pagination...</div>';
+            
+            try {
+                const allResumes = [];
+                let page = 0;
+                let hasMore = true;
+                
+                while (hasMore && page < 5) {
+                    const response = await fetch(`http://localhost:8001/api/v1/resumes/?skip=${page * 100}&limit=100`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const data = await response.json();
+                    
+                    allResumes.push(...data);
+                    result.innerHTML = `<div>Page ${page + 1}: Found ${data.length} resumes (Total so far: ${allResumes.length})</div>`;
+                    
+                    if (data.length < 100) {
+                        hasMore = false;
+                    }
+                    page++;
+                }
+                
+                result.innerHTML = `
+                    <div class="success">
+                        ✅ Pagination test complete!<br>
+                        Total resumes found: ${allResumes.length}<br>
+                        Pages fetched: ${page}
+                    </div>
+                `;
+                
+            } catch (e) {
+                result.innerHTML = `<div class="error">Error: ${e.message}</div>`;
+            }
+        }
+        
+        function applyFix() {
+            const result = document.getElementById('fixResult');
+            
+            result.innerHTML = `
+                <div class="success">
+                    ✅ To fix the issue, run these commands in your browser console (F12):
+                </div>
+                <pre>
+// This will fetch and display all resumes
+(async () => {
+    const token = localStorage.getItem('access_token');
+    const allResumes = [];
+    let page = 0;
+    
+    console.log('Fetching resumes...');
+    
+    while (page < 5) {
+        const response = await fetch(\`http://localhost:8001/api/v1/resumes/?skip=\${page * 100}&limit=100\`, {
+            headers: { 'Authorization': \`Bearer \${token}\` }
+        });
+        const data = await response.json();
+        
+        if (data.length === 0) break;
+        
+        allResumes.push(...data);
+        console.log(\`Page \${page + 1}: \${data.length} resumes\`);
+        
+        if (data.length < 100) break;
+        page++;
+    }
+    
+    console.log(\`Total resumes: \${allResumes.length}\`);
+    console.log('First 5:', allResumes.slice(0, 5));
+    
+    // Store in window for inspection
+    window.allResumes = allResumes;
+    console.log('Resumes stored in window.allResumes');
+})();
+                </pre>
+                <p>Then check window.allResumes to see your data.</p>
+            `;
+        }
+        
+        // Auto-run API test
+        window.onload = () => {
+            if (token) {
+                testAPI();
+            }
+        };
+    </script>
+</body>
+</html>

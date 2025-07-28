@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login as promtitude@gmail.com</title>
+    <style>
+        body { font-family: Arial; padding: 50px; background: #f0f0f0; }
+        .container { background: white; padding: 40px; border-radius: 10px; max-width: 800px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        button { background: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; width: 100%; margin: 10px 0; }
+        button:hover { background: #218838; }
+        .info { background: #d1ecf1; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffeeba; }
+        code { background: #f8f9fa; padding: 2px 5px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✅ Login Ready for promtitude@gmail.com</h1>
+        
+        <div class="info">
+            <strong>User ID:</strong> e0e8a20f-fd89-4c03-90f8-d4a51fc5566b<br>
+            <strong>Email:</strong> promtitude@gmail.com<br>
+            <strong>Name:</strong> Mohan Gangahanumaiah<br>
+            <strong>Resumes:</strong> 100
+        </div>
+        
+        
+        
+        <button onclick="login()">Login to Promtitude Dashboard</button>
+        
+        <p>If the button doesn't work, open console (F12) and run:</p>
+        <code>localStorage.setItem('access_token', 'TOKEN_FROM_token.txt'); location.href='/dashboard';</code>
+    </div>
+    
+    <script>
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwcm9tdGl0dWRlQGdtYWlsLmNvbSIsInVzZXJfaWQiOiJlMGU4YTIwZi1mZDg5LTRjMDMtOTBmOC1kNGE1MWZjNTU2NmIiLCJleHAiOjE3NTQzMTQwMDgsImlhdCI6MTc1MzYyMjgwOCwianRpIjoiNzZhMjU2ZmEtZGI0Yy00YmQwLTlmMmItODc2N2IwNjljYzlkIn0.3YaKWiHks0XmO895R2c7itNzHtjf67tYi4D1MQ4JvFY';
+        
+        function login() {
+            localStorage.setItem('access_token', token);
+            alert('Token set! Redirecting to dashboard...');
+            window.location.href = 'http://localhost:3000/dashboard';
+        }
+    </script>
+</body>
+</html>

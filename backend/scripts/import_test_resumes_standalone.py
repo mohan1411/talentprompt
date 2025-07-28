@@ -10,7 +10,9 @@ import asyncpg
 from typing import Optional
 
 # Configuration - Update these values as needed
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/promtitude")
+# Update with your actual database credentials
+# Default uses port 5433 as per .env.example
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promtitude:your-secure-password@localhost:5433/promtitude")
 TEST_USER_EMAIL = "promtitude@gmail.com"
 JSON_FILE = "test_resumes_100.json"
 
