@@ -25,10 +25,10 @@ const actions = [
   },
   {
     id: 'talent-pipeline',
-    title: 'Talent Pipeline',
-    description: 'Track your candidates',
+    title: 'View Resumes',
+    description: 'Manage your talent pool',
     icon: Users,
-    href: '/dashboard/pipeline',
+    href: '/dashboard/resumes',
     gradient: 'from-purple-500 to-pink-500',
   },
   {
