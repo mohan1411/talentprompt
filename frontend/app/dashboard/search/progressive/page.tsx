@@ -124,6 +124,31 @@ export default function ProgressiveSearchPage() {
     setShowOutreachModal(true);
   };
 
+  const handleFindSimilar = async (candidateId: string) => {
+    // Find the candidate in results
+    const candidate = results.find(r => r.id === candidateId);
+    if (!candidate || !candidate.career_dna) {
+      console.error('Cannot find similar candidates: No career DNA data');
+      return;
+    }
+
+    // Build a search query based on career DNA pattern
+    const { pattern, skill_evolution, strengths } = candidate.career_dna;
+    let similarQuery = `Find ${pattern} professionals`;
+    
+    if (skill_evolution) {
+      similarQuery += ` with ${skill_evolution} skill progression`;
+    }
+    
+    if (strengths && strengths.length > 0) {
+      similarQuery += ` strong in ${strengths.slice(0, 2).join(' and ')}`;
+    }
+
+    // Set the new query and trigger search
+    setQuery(similarQuery);
+    await search(similarQuery);
+  };
+
   const handleEnhanceResult = async (result: SearchResult) => {
     try {
       const url = `/search/enhance-result?resume_id=${result.id}&query=${encodeURIComponent(query)}&score=${result.score}`;
@@ -434,6 +459,7 @@ export default function ProgressiveSearchPage() {
                     query={query}
                     onView={(id) => router.push(`/dashboard/resumes/${id}`)}
                     onEnhance={handleEnhanceResult}
+                    onFindSimilar={handleFindSimilar}
                   />
                 );
               })

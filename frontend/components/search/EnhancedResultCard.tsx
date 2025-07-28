@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { SearchResult } from '@/hooks/useProgressiveSearch';
 import { cn } from '@/lib/utils';
+import FindSimilarButton from './FindSimilarButton';
 
 interface EnhancedResultCardProps {
   result: SearchResult;
@@ -29,6 +30,7 @@ interface EnhancedResultCardProps {
   query?: string;
   onView?: (id: string) => void;
   onEnhance?: (result: SearchResult) => Promise<void>;
+  onFindSimilar?: (candidateId: string) => void;
 }
 
 export default function EnhancedResultCard({ 
@@ -37,7 +39,8 @@ export default function EnhancedResultCard({
   stage,
   query,
   onView,
-  onEnhance
+  onEnhance,
+  onFindSimilar
 }: EnhancedResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
@@ -267,14 +270,12 @@ export default function EnhancedResultCard({
             )}
             
             {/* Find Similar Career DNA button */}
-            {result.career_trajectory && (
-              <button
-                onClick={() => console.log('Find similar for:', result.id)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors group relative"
-                title="Find candidates with similar career DNA"
-              >
-                <GitBranch className="h-4 w-4 text-gray-500 group-hover:text-indigo-600" />
-              </button>
+            {result.career_dna && onFindSimilar && (
+              <FindSimilarButton
+                candidate={result}
+                onFindSimilar={onFindSimilar}
+                isCompact={true}
+              />
             )}
           </div>
           
