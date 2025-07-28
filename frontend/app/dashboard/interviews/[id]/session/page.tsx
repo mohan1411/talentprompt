@@ -1121,6 +1121,17 @@ Example:
         {showLiveAssist && isLive && (
           <div className="space-y-4">
             <div className="sticky top-4">
+              {/* Virtual Interview Warning */}
+              {session?.interview_type === 'VIRTUAL' && (
+                <Alert className="mb-4">
+                  <AlertCircleIcon className="h-4 w-4 text-amber-600" />
+                  <AlertDescription>
+                    <strong>Virtual Interview Limitation:</strong> AI Copilot may not capture audio from Teams/Zoom calls properly. 
+                    For best results: Use speakerphone, or record the meeting and upload afterwards for analysis.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               {/* Transcription Panel */}
               <div className="mb-4">
                 <TranscriptionPanel

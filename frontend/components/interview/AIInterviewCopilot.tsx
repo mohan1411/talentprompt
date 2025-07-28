@@ -313,6 +313,15 @@ export default function AIInterviewCopilot({
               <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
             )}
           </CardTitle>
+          {!isRecording && (
+            <Alert className="mt-2">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Start recording to enable real-time AI assistance. For virtual interviews (Teams/Zoom), 
+                audio capture may be limited.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
