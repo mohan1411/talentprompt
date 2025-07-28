@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Search, Brain, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -43,11 +43,45 @@ const stages = [
   },
 ];
 
+// Particle component for animated flow
+const FlowParticle = ({ delay, duration }: { delay: number; duration: number }) => (
+  <motion.div
+    className="absolute w-2 h-2 bg-blue-400 rounded-full"
+    initial={{ x: 0, opacity: 0 }}
+    animate={{
+      x: [0, 100, 200, 300],
+      opacity: [0, 1, 1, 0],
+    }}
+    transition={{
+      duration: duration,
+      delay: delay,
+      repeat: Infinity,
+      ease: "linear",
+    }}
+    style={{
+      boxShadow: '0 0 6px rgba(59, 130, 246, 0.6)',
+      left: '-4px',
+      top: '-4px',
+    }}
+  />
+);
+
 export default function SearchProgress({ 
   stage, 
   stageNumber, 
   timing 
 }: SearchProgressProps) {
+  const [particles, setParticles] = useState<Array<{ id: number; delay: number }>>([]);
+  
+  useEffect(() => {
+    // Generate particles for the flow animation
+    const newParticles = Array.from({ length: 3 }, (_, i) => ({
+      id: Math.random(),
+      delay: i * 0.8,
+    }));
+    setParticles(newParticles);
+  }, [stage]);
+
   if (stage === 'idle' || stage === 'error') return null;
 
   const currentStageIndex = stages.findIndex(s => s.id === stage);
@@ -56,8 +90,120 @@ export default function SearchProgress({
   return (
     <div className="mb-6">
       {/* Progress Bar */}
-      <div className="relative">
-        <div className="flex items-center justify-between mb-2">
+      <div className="relative" style={{ minHeight: '120px' }}>
+        {/* SVG for animated connecting lines */}
+        <svg className="absolute inset-0 w-full pointer-events-none" style={{ height: '120px', top: '0' }}>
+          <defs>
+            <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#eab308" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
+            </linearGradient>
+            <linearGradient id="lineGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#a855f7" stopOpacity="0.8" />
+            </linearGradient>
+          </defs>
+          
+          {/* Connection lines between stages */}
+          {currentStageIndex >= 0 && (
+            <>
+              {/* Line 1: Instant to Enhanced */}
+              <motion.line
+                x1="25%"
+                y1="20"
+                x2="50%"
+                y2="20"
+                stroke="url(#lineGradient1)"
+                strokeWidth="2"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ 
+                  pathLength: currentStageIndex >= 0 ? 1 : 0,
+                  opacity: currentStageIndex >= 0 ? 1 : 0.3
+                }}
+                transition={{ duration: 0.5, ease: "easeInOut" }}
+              />
+              
+              {/* Line 2: Enhanced to Intelligent */}
+              <motion.line
+                x1="50%"
+                y1="20"
+                x2="75%"
+                y2="20"
+                stroke="url(#lineGradient2)"
+                strokeWidth="2"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ 
+                  pathLength: currentStageIndex >= 1 ? 1 : 0,
+                  opacity: currentStageIndex >= 1 ? 1 : 0.3
+                }}
+                transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+              />
+            </>
+          )}
+          
+          {/* Animated particles on active connection */}
+          {currentStageIndex === 0 && !isComplete && (
+            <g transform="translate(25%, 20)">
+              {particles.map((particle) => (
+                <motion.circle
+                  key={particle.id}
+                  r="3"
+                  fill="#3b82f6"
+                  initial={{ cx: 0, opacity: 0 }}
+                  animate={{
+                    cx: ["0%", "12.5%", "25%"],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: particle.delay,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <animate
+                    attributeName="fill"
+                    values="#eab308;#3b82f6;#3b82f6"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </motion.circle>
+              ))}
+            </g>
+          )}
+          
+          {currentStageIndex === 1 && !isComplete && (
+            <g transform="translate(50%, 20)">
+              {particles.map((particle) => (
+                <motion.circle
+                  key={particle.id}
+                  r="3"
+                  fill="#a855f7"
+                  initial={{ cx: 0, opacity: 0 }}
+                  animate={{
+                    cx: ["0%", "12.5%", "25%"],
+                    opacity: [0, 1, 0],
+                  }}
+                  transition={{
+                    duration: 2,
+                    delay: particle.delay,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <animate
+                    attributeName="fill"
+                    values="#3b82f6;#a855f7;#a855f7"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </motion.circle>
+              ))}
+            </g>
+          )}
+        </svg>
+        
+        <div className="flex items-center justify-between mb-2 relative z-10">
           {stages.map((stageInfo, idx) => {
             const isActive = idx === currentStageIndex;
             const isPast = isComplete || idx < currentStageIndex;
@@ -72,13 +218,43 @@ export default function SearchProgress({
                 className="flex-1 flex flex-col items-center"
               >
                 <div className="relative">
-                  <div
+                  <AnimatePresence>
+                    {isActive && !isComplete && (
+                      <motion.div
+                        className="absolute inset-0 rounded-full"
+                        initial={{ scale: 0.8, opacity: 0 }}
+                        animate={{ scale: 1.5, opacity: 0 }}
+                        transition={{
+                          duration: 1.5,
+                          repeat: Infinity,
+                          ease: "easeOut",
+                        }}
+                        style={{
+                          background: `radial-gradient(circle, ${
+                            idx === 0 ? 'rgba(234, 179, 8, 0.4)' :
+                            idx === 1 ? 'rgba(59, 130, 246, 0.4)' :
+                            'rgba(168, 85, 247, 0.4)'
+                          } 0%, transparent 70%)`,
+                        }}
+                      />
+                    )}
+                  </AnimatePresence>
+                  
+                  <motion.div
                     className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300",
+                      "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 relative z-10",
                       isPast ? "bg-green-600 text-white" :
                       isActive ? `${stageInfo.bgColor} ${stageInfo.color}` :
                       "bg-gray-200 text-gray-400"
                     )}
+                    animate={isActive ? {
+                      boxShadow: [
+                        '0 0 0 0 rgba(59, 130, 246, 0)',
+                        '0 0 0 8px rgba(59, 130, 246, 0.2)',
+                        '0 0 0 0 rgba(59, 130, 246, 0)',
+                      ],
+                    } : {}}
+                    transition={{ duration: 2, repeat: Infinity }}
                   >
                     {isPast && !isActive ? (
                       <CheckCircle className="h-5 w-5" />
@@ -88,7 +264,7 @@ export default function SearchProgress({
                         isActive && "animate-pulse"
                       )} />
                     )}
-                  </div>
+                  </motion.div>
                   
                   {/* Timing Badge */}
                   {timing[stageInfo.id as keyof typeof timing] && (
@@ -123,17 +299,6 @@ export default function SearchProgress({
           })}
         </div>
 
-        {/* Progress Line */}
-        <div className="absolute top-5 left-0 right-0 h-0.5 bg-gray-200 -z-10">
-          <motion.div
-            className="h-full bg-gradient-to-r from-green-600 to-blue-600"
-            initial={{ width: '0%' }}
-            animate={{ 
-              width: isComplete ? '100%' : `${(currentStageIndex + 1) / stages.length * 100}%` 
-            }}
-            transition={{ duration: 0.5 }}
-          />
-        </div>
       </div>
 
       {/* Stage Message */}

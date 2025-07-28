@@ -423,17 +423,28 @@ export default function HomePage() {
                         <Zap className="h-4 w-4 text-green-500" />
                         <span className="text-xs font-medium text-green-600 dark:text-green-400">Progressive Results</span>
                       </div>
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
+                            <div className="absolute inset-0 w-3 h-3 bg-yellow-500 rounded-full animate-ping opacity-75"></div>
+                          </div>
                           <span className="text-xs text-green-700 dark:text-green-300">Stage 1: 15 instant matches (48ms)</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <div className="w-full h-px bg-gradient-to-r from-yellow-400 to-blue-400 opacity-50"></div>
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                            <div className="absolute inset-0 w-3 h-3 bg-blue-500 rounded-full animate-ping opacity-75"></div>
+                          </div>
                           <span className="text-xs text-blue-700 dark:text-blue-300">Stage 2: 25 enhanced matches (186ms)</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                        <div className="w-full h-px bg-gradient-to-r from-blue-400 to-purple-400 opacity-50"></div>
+                        <div className="flex items-center gap-3">
+                          <div className="relative">
+                            <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
+                            <div className="absolute inset-0 w-3 h-3 bg-purple-500 rounded-full animate-ping opacity-75"></div>
+                          </div>
                           <span className="text-xs text-purple-700 dark:text-purple-300">Stage 3: AI insights generated (423ms)</span>
                         </div>
                       </div>

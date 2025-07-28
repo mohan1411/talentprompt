@@ -132,6 +132,47 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Search Progress Animations */
+.search-progress-glow {
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+@keyframes flow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
+  }
+}
+
+@keyframes data-flow {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-flow-pulse {
+  animation: flow-pulse 2s ease-in-out infinite;
+}
+
+.animate-data-flow {
+  animation: data-flow 3s linear infinite;
+}
+
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
