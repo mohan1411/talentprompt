@@ -157,7 +157,7 @@ export default function HomePage() {
           </Link>
           <nav className="flex gap-4 items-center">
             <a 
-              href="https://chrome.google.com/webstore" 
+              href="https://chromewebstore.google.com/detail/promtitude-linkedin-profi/hioainkifmclnejpkdhplemgfdpeddio" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary flex items-center gap-1"
@@ -846,7 +846,7 @@ export default function HomePage() {
                     Try AI Outreach Free
                   </Link>
                   <a 
-                    href="https://chrome.google.com/webstore" 
+                    href="https://chromewebstore.google.com/detail/promtitude-linkedin-profi/hioainkifmclnejpkdhplemgfdpeddio" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="btn-secondary inline-flex items-center gap-2 px-6 py-3"
