@@ -3,7 +3,9 @@
 import * as React from "react"
 
 interface TabsProps {
-  defaultValue: string
+  defaultValue?: string
+  value?: string
+  onValueChange?: (value: string) => void
   children: React.ReactNode
   className?: string
 }
@@ -33,8 +35,12 @@ interface TabsInternalProps {
 }
 
 // Temporary simplified tabs component without Radix UI
-export function Tabs({ defaultValue, children, className = "" }: TabsProps) {
-  const [value, setValue] = React.useState(defaultValue)
+export function Tabs({ defaultValue, value: controlledValue, onValueChange, children, className = "" }: TabsProps) {
+  const [internalValue, setInternalValue] = React.useState(defaultValue || 'insights')
+  
+  // Use controlled value if provided, otherwise use internal state
+  const value = controlledValue !== undefined ? controlledValue : internalValue
+  const setValue = onValueChange || setInternalValue
   
   return (
     <div className={className} data-value={value}>
