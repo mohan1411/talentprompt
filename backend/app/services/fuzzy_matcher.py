@@ -241,7 +241,8 @@ class FuzzyMatcher:
     
     def correct_query(self, query: str) -> str:
         """
-        Correct typos in a query string.
+        Correct typos in a query string using manual dictionary.
+        For AI-powered correction, use ai_typo_corrector.
         
         Args:
             query: The query string to correct

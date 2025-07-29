@@ -122,9 +122,6 @@ class QueryParser:
             - experience_years: Extracted years of experience (if mentioned)
             - remaining_terms: Terms that weren't categorized
         """
-        # Import fuzzy matcher for typo correction
-        from app.services.fuzzy_matcher import fuzzy_matcher
-        
         # Convert to lowercase and normalize spaces
         query_lower = query.lower().strip()
         query_lower = re.sub(r'\s+', ' ', query_lower)
@@ -132,7 +129,9 @@ class QueryParser:
         # Keep original for comparison
         original_query_lower = query_lower
         
-        # Apply typo correction
+        # For now, keep using fuzzy matcher until AI corrector is async-ready
+        # TODO: Make parse_query async to use AI typo corrector
+        from app.services.fuzzy_matcher import fuzzy_matcher
         corrected_query = fuzzy_matcher.correct_query(query_lower)
         if corrected_query != query_lower:
             query_lower = corrected_query

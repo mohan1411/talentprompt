@@ -15,6 +15,7 @@ from sqlalchemy.types import String as SQLString
 from app.models.resume import Resume
 from app.services.vector_search import vector_search
 from app.services.query_parser import query_parser
+from app.services.async_query_parser import async_query_parser
 from app.services.hybrid_search import hybrid_search
 from app.services.gpt4_query_analyzer import gpt4_analyzer
 from app.services.candidate_analytics import candidate_analytics_service
@@ -60,8 +61,14 @@ class ProgressiveSearchEngine:
         start_time = time.time()
         search_id = f"search_{user_id}_{int(time.time() * 1000)}"
         
-        # Parse query once for all stages
-        parsed_query = query_parser.parse_query(query)
+        # Parse query once for all stages (use async parser with AI typo correction)
+        try:
+            parsed_query = await async_query_parser.parse_query_async(query)
+            logger.info(f"Using AI-powered query parser with corrections")
+        except Exception as e:
+            logger.warning(f"AI parser failed, falling back to basic parser: {e}")
+            parsed_query = query_parser.parse_query(query)
+        
         required_skills = parsed_query["skills"]
         primary_skill = parsed_query.get("primary_skill")
         
