@@ -36,7 +36,8 @@ class FuzzyMatcher:
             "jenkins": ["jenkis", "jenkin", "jenkinss", "jenkings"],
             "terraform": ["teraform", "terrafrom", "terrafom", "terrafrm"],
             "elasticsearch": ["elastic", "elasticsearh", "elastisearch", "elsaticsearch"],
-            "redis": ["reddis", "rediss", "ridis", "radis"]
+            "redis": ["reddis", "rediss", "ridis", "radis"],
+            "aws": ["ams", "awz", "aws", "amason web services"]
         }
         
         # Build reverse mapping

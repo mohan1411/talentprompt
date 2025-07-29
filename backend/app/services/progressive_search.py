@@ -65,6 +65,18 @@ class ProgressiveSearchEngine:
         required_skills = parsed_query["skills"]
         primary_skill = parsed_query.get("primary_skill")
         
+        # Transform parsed_query to match frontend expectations
+        frontend_query_analysis = {
+            "primary_skills": parsed_query.get("skills", []),
+            "secondary_skills": [],  # TODO: Implement secondary skills detection
+            "implied_skills": [],    # TODO: Implement implied skills
+            "experience_level": self._determine_experience_level(parsed_query),
+            "role_type": parsed_query.get("roles", ["any"])[0] if parsed_query.get("roles") else "any",
+            "search_intent": "technical" if parsed_query.get("skills") else "general",
+            "corrected_query": parsed_query.get("corrected_query"),
+            "original_query": parsed_query.get("original_query", query)
+        }
+        
         logger.info(f"Progressive search started: '{query}' for user {user_id}")
         print(f"\n[PROGRESSIVE SEARCH] Started for query: '{query}'")
         
@@ -79,7 +91,7 @@ class ProgressiveSearchEngine:
             "total_stages": 3,
             "search_id": search_id,
             "query": query,
-            "parsed_query": parsed_query,
+            "parsed_query": frontend_query_analysis,
             "results": stage1_results,
             "count": len(stage1_results),
             "timing_ms": int((time.time() - start_time) * 1000),
@@ -107,7 +119,7 @@ class ProgressiveSearchEngine:
             "total_stages": 3,
             "search_id": search_id,
             "query": query,
-            "parsed_query": parsed_query,
+            "parsed_query": frontend_query_analysis,
             "results": merged_results,
             "count": len(merged_results),
             "timing_ms": int((time.time() - start_time) * 1000),
@@ -128,7 +140,7 @@ class ProgressiveSearchEngine:
             "total_stages": 3,
             "search_id": search_id,
             "query": query,
-            "parsed_query": parsed_query,
+            "parsed_query": frontend_query_analysis,
             "results": final_results[:limit],
             "count": len(final_results[:limit]),
             "timing_ms": int((time.time() - start_time) * 1000),
@@ -708,6 +720,27 @@ class ProgressiveSearchEngine:
         except Exception as e:
             logger.error(f"Error getting cached results: {e}")
             return None
+    
+    def _determine_experience_level(self, parsed_query: Dict[str, Any]) -> str:
+        """Determine experience level from parsed query."""
+        seniority = parsed_query.get("seniority", "").lower() if parsed_query.get("seniority") else ""
+        years = parsed_query.get("experience_years")
+        
+        if seniority in ["senior", "sr", "lead", "principal", "staff", "architect"]:
+            return "senior"
+        elif seniority in ["junior", "jr", "entry", "graduate", "intern"]:
+            return "junior"
+        elif seniority in ["mid", "intermediate"]:
+            return "mid"
+        elif years:
+            if years >= 7:
+                return "senior"
+            elif years >= 3:
+                return "mid"
+            else:
+                return "junior"
+        else:
+            return "any"
 
 
 # Singleton instance
