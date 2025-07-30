@@ -194,9 +194,16 @@ class SubmissionService:
         
         # Process resume if provided
         if data.resume_file or data.resume_text:
-            parsed_data = await self._parse_resume(data.resume_file, data.resume_text)
+            parsed_data = await self._parse_resume(
+                data.resume_file, 
+                data.resume_text,
+                data.resume_filename
+            )
             submission.parsed_data = parsed_data
             submission.resume_text = data.resume_text or parsed_data.get("text", "")
+            # Store the filename if provided
+            if data.resume_filename:
+                submission.resume_file_url = data.resume_filename  # Store filename for reference
         else:
             # No resume provided - set empty values
             submission.parsed_data = {}
@@ -431,17 +438,55 @@ class SubmissionService:
     async def _parse_resume(
         self,
         resume_file: Optional[str],
-        resume_text: Optional[str]
+        resume_text: Optional[str],
+        resume_filename: Optional[str] = None
     ) -> Dict[str, Any]:
         """Parse resume data."""
         parser = ResumeParser()
+        extracted_text = ""
         
         if resume_file:
-            # TODO: Decode base64 and parse file
-            pass
+            try:
+                # Decode base64 file content
+                import base64
+                from app.services.file_parser import FileParser
+                
+                # Remove data URL prefix if present
+                if ',' in resume_file:
+                    resume_file = resume_file.split(',')[1]
+                
+                # Decode base64 to bytes
+                file_content = base64.b64decode(resume_file)
+                
+                # Use FileParser to extract text based on file type
+                if resume_filename:
+                    # FileParser.extract_text uses filename to determine format
+                    try:
+                        extracted_text = FileParser.extract_text(file_content, resume_filename)
+                        logger.info(f"Successfully extracted {len(extracted_text)} characters from {resume_filename}")
+                    except Exception as e:
+                        logger.error(f"Error extracting text from {resume_filename}: {e}")
+                else:
+                    # Fallback to PDF if no filename provided
+                    try:
+                        extracted_text = FileParser.extract_text_from_pdf(file_content)
+                        logger.info(f"Successfully extracted {len(extracted_text)} characters from uploaded file (assumed PDF)")
+                    except Exception as pdf_error:
+                        logger.warning(f"PDF parsing failed: {pdf_error}")
+                
+            except Exception as e:
+                logger.error(f"Error parsing uploaded file: {e}")
+                # Continue with text parsing if file parsing fails
         
-        if resume_text:
-            return await parser.parse_text(resume_text)
+        # Parse either the extracted text from file or the provided text
+        text_to_parse = extracted_text or resume_text
+        
+        if text_to_parse:
+            parsed_data = await parser.parse_text(text_to_parse)
+            # Include the extracted text in the parsed data
+            if extracted_text and not resume_text:
+                parsed_data['text'] = extracted_text
+            return parsed_data
         
         return {}
     

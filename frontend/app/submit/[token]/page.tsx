@@ -174,6 +174,7 @@ export default function SubmitPage() {
         reader.onload = async (e) => {
           const base64 = e.target?.result as string
           submitData.resume_file = base64.split(",")[1] // Remove data:... prefix
+          submitData.resume_filename = formData.resume_file.name // Add filename
           
           await submitToAPI(submitData)
         }

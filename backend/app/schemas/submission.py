@@ -65,6 +65,7 @@ class SubmissionSubmit(BaseModel):
     salary_expectations: Optional[Dict[str, Any]] = None
     location_preferences: Optional[Dict[str, Any]] = None
     resume_file: Optional[str] = None  # Base64 encoded file
+    resume_filename: Optional[str] = None  # Original filename for file type detection
     resume_text: Optional[str] = None
     
     @field_validator('linkedin_url')
