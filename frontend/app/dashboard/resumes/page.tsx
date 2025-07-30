@@ -425,13 +425,14 @@ export default function ResumesPage() {
     style: React.CSSProperties;
     data: { resumes: Resume[]; columns: number; selectedResumes: Set<string>; toggleResumeSelection: (id: string) => void; router: any; setUpdateCandidate: any; setShowUpdateModal: any; setOutreachCandidate: any; setShowOutreachModal: any; handleDelete: any; };
   }) => {
+    const [showActions, setShowActions] = useState(false);
+    
     const { resumes, columns, selectedResumes, toggleResumeSelection, router, setUpdateCandidate, setShowUpdateModal, setOutreachCandidate, setShowOutreachModal, handleDelete } = data;
     const index = rowIndex * columns + columnIndex;
     const resume = resumes[index];
 
     if (!resume) return null;
 
-    const [showActions, setShowActions] = useState(false);
     const isNew = new Date(resume.created_at) > subDays(new Date(), 7);
     const hasUpdate = resume.updated_at && new Date(resume.updated_at).getTime() !== new Date(resume.created_at).getTime();
 
