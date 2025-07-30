@@ -24,11 +24,20 @@ def check_migrations():
             
         # Extract revision info
         revision_match = re.search(r"revision = '([^']+)'", content)
-        down_revision_match = re.search(r"down_revision = ('([^']+)'|None)", content)
+        down_revision_match = re.search(r"down_revision = (?:'([^']+)'|None|\(([^)]+)\))", content)
         
         if revision_match:
             revision = revision_match.group(1)
-            down_revision = down_revision_match.group(2) if down_revision_match.group(2) else None
+            if down_revision_match:
+                if down_revision_match.group(1):
+                    down_revision = down_revision_match.group(1)
+                elif down_revision_match.group(2):
+                    # Handle tuple of down_revisions (merge)
+                    down_revision = down_revision_match.group(2).replace("'", "").replace(" ", "").split(",")
+                else:
+                    down_revision = None
+            else:
+                down_revision = None
             
             migrations[revision] = {
                 'file': file.name,

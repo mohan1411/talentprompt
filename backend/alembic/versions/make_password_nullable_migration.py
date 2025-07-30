@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'make_password_nullable'
-down_revision = 'oauth_fields_001'
+down_revision = 'add_candidate_submissions'
 branch_labels = None
 depends_on = None
 

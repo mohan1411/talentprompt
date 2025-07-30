@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_fulltext_search'
-down_revision = None  # Update this with your latest revision
+down_revision = 'add_email_verification_fields'
 branch_labels = None
 depends_on = None
 
