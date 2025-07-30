@@ -170,15 +170,16 @@ export default function SubmitPage() {
       
       // If file uploaded, convert to base64
       if (formData.resume_file) {
+        const file = formData.resume_file // Store reference to avoid TypeScript error
         const reader = new FileReader()
         reader.onload = async (e) => {
           const base64 = e.target?.result as string
           submitData.resume_file = base64.split(",")[1] // Remove data:... prefix
-          submitData.resume_filename = formData.resume_file.name // Add filename
+          submitData.resume_filename = file.name // Use stored reference
           
           await submitToAPI(submitData)
         }
-        reader.readAsDataURL(formData.resume_file)
+        reader.readAsDataURL(file)
       } else {
         await submitToAPI(submitData)
       }
