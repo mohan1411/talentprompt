@@ -82,10 +82,11 @@ class SearchService:
                 resume_ids = [r["resume_id"] for r in vector_results]
                 logger.info(f"Vector search returned IDs: {resume_ids[:5]}...")  # Log first 5
                 
-                # Fetch full resume data from PostgreSQL - CRITICAL: Filter by user_id
+                # Fetch full resume data from PostgreSQL - CRITICAL: Filter by user_id AND status
                 stmt = select(Resume).where(
                     Resume.id.in_(resume_ids),
-                    Resume.user_id == user_id  # SECURITY: Only show user's own resumes
+                    Resume.user_id == user_id,  # SECURITY: Only show user's own resumes
+                    Resume.status == "active"   # FILTER: Only show active resumes, not deleted ones
                 )
                 result = await db.execute(stmt)
                 resumes = {str(r.id): r for r in result.scalars().all()}

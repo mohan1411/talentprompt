@@ -101,7 +101,10 @@ class HybridSearchService:
             all_terms.update(terms)
         
         # Build search conditions
-        conditions = [Resume.user_id == user_id]
+        conditions = [
+            Resume.user_id == user_id,
+            Resume.status == "active"  # Only show active resumes, not deleted ones
+        ]
         
         # Add text search conditions with fuzzy matching support
         text_conditions = []
@@ -282,7 +285,10 @@ class HybridSearchService:
     async def _get_document_count(self, db: AsyncSession, user_id: str) -> int:
         """Get total document count for user."""
         result = await db.execute(
-            select(func.count(Resume.id)).where(Resume.user_id == user_id)
+            select(func.count(Resume.id)).where(
+                Resume.user_id == user_id,
+                Resume.status == "active"
+            )
         )
         return result.scalar() or 1
     
