@@ -147,6 +147,7 @@ export const authApi = {
     full_name: string;
     company: string;
     job_title: string;
+    phone: string;
   }>) {
     return makeRequest('/users/me', {
       method: 'PUT',

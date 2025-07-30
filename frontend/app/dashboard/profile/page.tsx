@@ -76,19 +76,16 @@ export default function ProfilePage() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
+    console.log('Saving profile with data:', formData);
+    
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/me`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update profile');
-      }
+      // Check if we have a token
+      const token = localStorage.getItem('access_token');
+      console.log('Token exists:', !!token);
+      
+      // Use authApi to update user profile
+      const response = await authApi.updateMe(formData);
+      console.log('Update response:', response);
 
       await refreshUser();
       setIsEditing(false);
@@ -96,11 +93,27 @@ export default function ProfilePage() {
         title: 'Success',
         description: 'Your profile has been updated successfully'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating profile:', error);
+      console.error('Error details:', {
+        status: error.status,
+        detail: error.detail,
+        message: error.message
+      });
+      
+      let errorMessage = 'Failed to update profile';
+      
+      if (error.status === 401) {
+        errorMessage = 'Authentication error. Please log in again.';
+      } else if (error.detail) {
+        errorMessage = error.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: 'Error',
-        description: 'Failed to update profile',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

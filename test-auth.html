@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Auth</title>
+</head>
+<body>
+    <h1>Test Authentication</h1>
+    <button onclick="testAuth()">Test Auth</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAuth() {
+            const token = localStorage.getItem('access_token');
+            const resultDiv = document.getElementById('result');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<p style="color: red;">No token found in localStorage</p>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Token found: ' + token.substring(0, 20) + '...</p>';
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/users/me', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                resultDiv.innerHTML += '<p>Response status: ' + response.status + '</p>';
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += '<p style="color: green;">User data: ' + JSON.stringify(data) + '</p>';
+                } else {
+                    const error = await response.json();
+                    resultDiv.innerHTML += '<p style="color: red;">Error: ' + JSON.stringify(error) + '</p>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML += '<p style="color: red;">Network error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

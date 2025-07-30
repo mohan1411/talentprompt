@@ -16,6 +16,7 @@ class UserBase(BaseModel):
     is_superuser: bool = False
     company: Optional[str] = None
     job_title: Optional[str] = None
+    phone: Optional[str] = None
     oauth_provider: Optional[str] = None
     oauth_provider_id: Optional[str] = None
 
@@ -33,7 +34,15 @@ class UserCreate(UserBase):
 
 
 # Properties to receive via API on update
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    username: Optional[str] = None
+    full_name: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+    company: Optional[str] = None
+    job_title: Optional[str] = None
+    phone: Optional[str] = None
     password: Optional[str] = Field(None, min_length=8)
 
 
