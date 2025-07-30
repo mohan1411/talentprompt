@@ -329,6 +329,7 @@ export interface User {
   is_superuser: boolean;
   company?: string;
   job_title?: string;
+  phone?: string;
   created_at: string;
   updated_at?: string;
 }

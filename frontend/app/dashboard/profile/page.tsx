@@ -2,23 +2,41 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/context';
-import { User, Mail, Calendar, Shield, Key, Chrome, Copy, Check, RefreshCw, ExternalLink, Loader2 } from 'lucide-react';
+import { User, Mail, Calendar, Shield, Key, Chrome, Copy, Check, RefreshCw, ExternalLink, Loader2, Building2, Briefcase, Phone, Save } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { authApi } from '@/lib/api/client';
 import Link from 'next/link';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const { toast } = useToast();
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [extensionToken, setExtensionToken] = useState<string | null>(null);
   const [isGeneratingToken, setIsGeneratingToken] = useState(false);
   const [tokenStatus, setTokenStatus] = useState<any>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    company: '',
+    job_title: '',
+    phone: ''
+  });
   
   useEffect(() => {
     checkTokenStatus();
-  }, []);
+    if (user) {
+      setFormData({
+        full_name: user.full_name || '',
+        company: user.company || '',
+        job_title: user.job_title || '',
+        phone: user.phone || ''
+      });
+    }
+  }, [user]);
   
   const checkTokenStatus = async () => {
     try {
@@ -56,44 +74,193 @@ export default function ProfilePage() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/users/me`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      await refreshUser();
+      setIsEditing(false);
+      toast({
+        title: 'Success',
+        description: 'Your profile has been updated successfully'
+      });
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to update profile',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
 
       {/* Profile Information Card */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center">
-          <User className="mr-2 h-5 w-5" />
-          Profile Information
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold flex items-center">
+            <User className="mr-2 h-5 w-5" />
+            Profile Information
+          </h2>
+          {!isEditing ? (
+            <button
+              onClick={() => setIsEditing(true)}
+              className="text-sm text-primary hover:underline"
+            >
+              Edit Profile
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setFormData({
+                    full_name: user?.full_name || '',
+                    company: user?.company || '',
+                    job_title: user?.job_title || '',
+                    phone: user?.phone || ''
+                  });
+                }}
+                className="text-sm text-gray-600 hover:underline"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                disabled={isSaving}
+                className="text-sm bg-primary text-white px-3 py-1 rounded hover:bg-primary/90 flex items-center"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    Saving
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-1 h-3 w-3" />
+                    Save
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </div>
         
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Full Name</label>
-            <p className="mt-1 text-gray-900 dark:text-white">{user?.full_name || 'Not provided'}</p>
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Username</label>
-            <p className="mt-1 text-gray-900 dark:text-white">{user?.username}</p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={formData.full_name}
+                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                placeholder="John Doe"
+              />
+            ) : (
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.full_name || 'Not provided'}</p>
+            )}
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-              <Mail className="mr-1 h-4 w-4" />
-              Email Address
+              <Building2 className="mr-1 h-4 w-4" />
+              Company
             </label>
-            <p className="mt-1 text-gray-900 dark:text-white">{user?.email}</p>
+            {isEditing ? (
+              <>
+                <input
+                  type="text"
+                  value={formData.company}
+                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                  placeholder="Acme Inc."
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  This will show as "from [Company Name]" in invitation emails
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.company || 'Not provided'}</p>
+            )}
           </div>
 
           <div>
             <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
-              <Calendar className="mr-1 h-4 w-4" />
-              Member Since
+              <Briefcase className="mr-1 h-4 w-4" />
+              Job Title
             </label>
-            <p className="mt-1 text-gray-900 dark:text-white">
-              {user?.created_at ? formatDistanceToNow(new Date(user.created_at), { addSuffix: true }) : 'Recently'}
-            </p>
+            {isEditing ? (
+              <input
+                type="text"
+                value={formData.job_title}
+                onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                placeholder="Senior Recruiter"
+              />
+            ) : (
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.job_title || 'Not provided'}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+              <Phone className="mr-1 h-4 w-4" />
+              Phone Number
+            </label>
+            {isEditing ? (
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="mt-1 w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                placeholder="+1 (555) 123-4567"
+              />
+            ) : (
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.phone || 'Not provided'}</p>
+            )}
+          </div>
+
+          <div className="pt-4 border-t space-y-4">
+            <div>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400">Username</label>
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.username}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                <Mail className="mr-1 h-4 w-4" />
+                Email Address
+              </label>
+              <p className="mt-1 text-gray-900 dark:text-white">{user?.email}</p>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400 flex items-center">
+                <Calendar className="mr-1 h-4 w-4" />
+                Member Since
+              </label>
+              <p className="mt-1 text-gray-900 dark:text-white">
+                {user?.created_at ? formatDistanceToNow(new Date(user.created_at), { addSuffix: true }) : 'Recently'}
+              </p>
+            </div>
           </div>
         </div>
       </div>
