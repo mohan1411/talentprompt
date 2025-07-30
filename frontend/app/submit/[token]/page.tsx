@@ -147,7 +147,7 @@ export default function SubmitPage() {
     
     try {
       // Prepare submission data
-      const submitData = {
+      const submitData: any = {
         email: formData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
