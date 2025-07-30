@@ -108,13 +108,78 @@ async def startup_event():
         from sqlalchemy import text
         
         async for db in get_db():
-            # Check if outreach_messages and analytics_events tables exist
+            # Check if all required tables exist
             result = await db.execute(text("""
                 SELECT table_name 
                 FROM information_schema.tables 
-                WHERE table_name IN ('outreach_messages', 'analytics_events')
+                WHERE table_name IN ('outreach_messages', 'analytics_events', 'candidate_submissions', 'invitation_campaigns')
             """))
             existing_tables = [row[0] for row in result]
+            
+            # Create submission tables if missing
+            if 'candidate_submissions' not in existing_tables or 'invitation_campaigns' not in existing_tables:
+                print("Creating missing submission tables...")
+                try:
+                    # Create invitation_campaigns first
+                    await db.execute(text("""
+                        CREATE TABLE IF NOT EXISTS invitation_campaigns (
+                            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                            recruiter_id UUID NOT NULL,
+                            name VARCHAR(255) NOT NULL,
+                            description TEXT,
+                            source_type VARCHAR(50),
+                            source_data JSONB,
+                            is_public BOOLEAN DEFAULT FALSE,
+                            public_slug VARCHAR(100),
+                            email_template TEXT,
+                            expires_in_days INTEGER DEFAULT 7,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+                    
+                    # Then create candidate_submissions
+                    await db.execute(text("""
+                        CREATE TABLE IF NOT EXISTS candidate_submissions (
+                            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                            token VARCHAR(255) UNIQUE NOT NULL,
+                            submission_type VARCHAR(10) NOT NULL,
+                            status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+                            recruiter_id UUID NOT NULL,
+                            campaign_id UUID,
+                            resume_id UUID,
+                            email VARCHAR(255) NOT NULL,
+                            first_name VARCHAR(100),
+                            last_name VARCHAR(100),
+                            phone VARCHAR(50),
+                            linkedin_url VARCHAR(255),
+                            availability VARCHAR(50),
+                            salary_expectations JSONB,
+                            location_preferences JSONB,
+                            resume_text TEXT,
+                            parsed_data JSONB,
+                            email_sent_at TIMESTAMP,
+                            email_opened_at TIMESTAMP,
+                            link_clicked_at TIMESTAMP,
+                            submitted_at TIMESTAMP,
+                            processed_at TIMESTAMP,
+                            expires_at TIMESTAMP NOT NULL,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    """))
+                    
+                    # Create indexes
+                    await db.execute(text("CREATE INDEX IF NOT EXISTS ix_candidate_submissions_token ON candidate_submissions(token)"))
+                    await db.execute(text("CREATE INDEX IF NOT EXISTS ix_candidate_submissions_recruiter_id ON candidate_submissions(recruiter_id)"))
+                    await db.execute(text("CREATE INDEX IF NOT EXISTS ix_candidate_submissions_email ON candidate_submissions(email)"))
+                    
+                    await db.commit()
+                    print("✅ Submission tables created successfully!")
+                    
+                except Exception as e:
+                    print(f"Error creating submission tables: {e}")
+                    await db.rollback()
             
             if 'analytics_events' not in existing_tables:
                 print("analytics_events table not found - creating analytics table...")
