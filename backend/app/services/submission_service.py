@@ -529,6 +529,8 @@ class SubmissionService:
                         if submission.last_name:
                             resume.last_name = submission.last_name
                         
+                        # Update parse status to completed since we've processed the submission
+                        resume.parse_status = "completed"
                         resume.updated_at = datetime.utcnow()
             else:
                 # Check if a resume with this email already exists for this recruiter
@@ -578,6 +580,8 @@ class SubmissionService:
                         if locations:
                             existing_resume.location = ", ".join(locations)
                     
+                    # Update parse status to completed since we've processed the submission
+                    existing_resume.parse_status = "completed"
                     existing_resume.updated_at = datetime.utcnow()
                     resume = existing_resume
                 else:
@@ -603,8 +607,8 @@ class SubmissionService:
                         current_title=submission.parsed_data.get("current_title", "") if submission.parsed_data else "",
                         summary=submission.parsed_data.get("summary", "") if submission.parsed_data else "",
                         years_experience=submission.parsed_data.get("years_experience", 0) if submission.parsed_data else 0,
-                        # Set parse status to completed since there's nothing to parse if no resume
-                        parse_status="completed" if not submission.resume_text else "pending",
+                        # Set parse status to completed since we've already parsed the resume
+                        parse_status="completed",
                         # Explicitly set status to active
                         status="active"
                     )
