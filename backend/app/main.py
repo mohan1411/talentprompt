@@ -156,6 +156,7 @@ async def startup_event():
                             availability VARCHAR(50),
                             salary_expectations JSONB,
                             location_preferences JSONB,
+                            resume_file_url VARCHAR(500),
                             resume_text TEXT,
                             parsed_data JSONB,
                             email_sent_at TIMESTAMP,
