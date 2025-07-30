@@ -1,7 +1,7 @@
 """add candidate submissions tables
 
 Revision ID: add_candidate_submissions
-Revises: 
+Revises: add_interview_mode_fields
 Create Date: 2024-12-29
 
 """
@@ -11,15 +11,28 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'add_candidate_submissions'
-down_revision = None
+down_revision = 'add_interview_mode_fields'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    # Create enums
-    op.execute("CREATE TYPE submissiontype AS ENUM ('update', 'new')")
-    op.execute("CREATE TYPE submissionstatus AS ENUM ('pending', 'submitted', 'processed', 'expired', 'cancelled')")
+    # Create enums if they don't exist
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE submissiontype AS ENUM ('update', 'new');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
+    
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE submissionstatus AS ENUM ('pending', 'submitted', 'processed', 'expired', 'cancelled');
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END $$;
+    """)
     
     # Create invitation_campaigns table
     op.create_table('invitation_campaigns',
