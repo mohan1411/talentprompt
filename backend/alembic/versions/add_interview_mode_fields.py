@@ -1,7 +1,7 @@
 """Add interview mode fields
 
 Revision ID: add_interview_mode_fields
-Revises: oauth_fields_migration
+Revises: oauth_fields_001
 Create Date: 2025-07-22 10:00:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'add_interview_mode_fields'
-down_revision = 'oauth_fields_migration'
+down_revision = 'oauth_fields_001'
 branch_labels = None
 depends_on = None
 

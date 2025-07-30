@@ -1,7 +1,7 @@
 """Fix LinkedIn URL unique constraint to be user-specific
 
 Revision ID: fix_linkedin_url_constraint
-Revises: oauth_fields_migration
+Revises: oauth_fields_001
 Create Date: 2025-01-24 13:45:00.000000
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'fix_linkedin_url_constraint'
-down_revision = 'oauth_fields_migration'
+down_revision = 'add_interview_mode_fields'
 branch_labels = None
 depends_on = None
 

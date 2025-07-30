@@ -1,7 +1,7 @@
 """add candidate submissions tables
 
 Revision ID: add_candidate_submissions
-Revises: add_interview_mode_fields
+Revises: fix_linkedin_url_constraint
 Create Date: 2024-12-29
 
 """
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = 'add_candidate_submissions'
-down_revision = 'add_interview_mode_fields'
+down_revision = 'fix_linkedin_url_constraint'
 branch_labels = None
 depends_on = None
 
