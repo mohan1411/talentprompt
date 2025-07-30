@@ -393,8 +393,12 @@ class SubmissionService:
                 email_username = submission.email.split('@')[0]
                 candidate_name = email_username.replace('.', ' ').replace('_', ' ').title()
             
+            print(f"\n[SUBMISSION SERVICE] Sending invitation email to: {submission.email}")
+            print(f"[SUBMISSION SERVICE] Submission link: {submission.submission_url}")
+            print(f"[SUBMISSION SERVICE] Email service type: {type(email_service).__name__}")
+            
             # Send email with correct parameters
-            await email_service.send_submission_invitation(
+            result = await email_service.send_submission_invitation(
                 to_email=submission.email,
                 candidate_name=candidate_name,
                 recruiter_name=recruiter.full_name if recruiter else "Our team",
@@ -406,11 +410,14 @@ class SubmissionService:
                 expires_at=submission.expires_at
             )
             
+            print(f"[SUBMISSION SERVICE] Email send result: {result}")
+            
             # Update email sent timestamp
             submission.email_sent_at = datetime.utcnow()
             await db.commit()
             
         except Exception as e:
+            print(f"[SUBMISSION SERVICE] Error sending email: {e}")
             logger.error(f"Error sending invitation email: {e}")
     
     async def _parse_resume(

@@ -96,6 +96,8 @@ class EmailService:
         expires_at: Optional[datetime] = None
     ) -> bool:
         """Send submission invitation email."""
+        print(f"\n[MOCK EMAIL] send_submission_invitation called for {to_email}")
+        print(f"[MOCK EMAIL] Submission link: {submission_link}")
         try:
             # Calculate expiration if not provided
             if expires_at is None:
