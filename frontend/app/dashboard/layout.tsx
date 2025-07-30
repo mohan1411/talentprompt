@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { DashboardSidebar } from '@/components/dashboard/sidebar';
+import { CommandPalette } from '@/components/ui/command-palette';
 
 export default function DashboardLayout({
   children,
@@ -34,6 +35,7 @@ export default function DashboardLayout({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <DashboardSidebar />
+      <CommandPalette />
       
       {/* Main content */}
       <div className="lg:pl-64">
