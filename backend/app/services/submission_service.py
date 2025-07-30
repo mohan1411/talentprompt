@@ -482,7 +482,7 @@ class SubmissionService:
         text_to_parse = extracted_text or resume_text
         
         if text_to_parse:
-            parsed_data = await parser.parse_text(text_to_parse)
+            parsed_data = await parser.parse_resume(text_to_parse)
             # Include the extracted text in the parsed data
             if extracted_text and not resume_text:
                 parsed_data['text'] = extracted_text
