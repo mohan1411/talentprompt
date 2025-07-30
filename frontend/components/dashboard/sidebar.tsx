@@ -13,7 +13,8 @@ import {
   X,
   Zap,
   BrainIcon,
-  Sparkles
+  Sparkles,
+  Mail
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
@@ -32,6 +33,7 @@ const navigation: NavigationItem[] = [
   { name: 'My Resumes', href: '/dashboard/resumes', icon: FileText },
   { name: 'Upload Resume', href: '/dashboard/upload', icon: Upload },
   { name: 'Bulk Upload', href: '/dashboard/bulk-upload', icon: Zap },
+  { name: 'Campaigns', href: '/dashboard/campaigns', icon: Mail, badge: 'NEW' },
   { name: 'AI Interview Copilot', href: '/dashboard/interviews', icon: BrainIcon },
   { name: 'Profile', href: '/dashboard/profile', icon: User },
 ];

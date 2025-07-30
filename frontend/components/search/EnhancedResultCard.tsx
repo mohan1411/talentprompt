@@ -16,7 +16,8 @@ import {
   Eye,
   Activity,
   Zap,
-  GitBranch
+  GitBranch,
+  RefreshCw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SearchResult } from '@/hooks/useProgressiveSearch';
@@ -31,6 +32,7 @@ interface EnhancedResultCardProps {
   onView?: (id: string) => void;
   onEnhance?: (result: SearchResult) => Promise<void>;
   onFindSimilar?: (candidateId: string) => void;
+  onRequestUpdate?: (candidate: { id: string; name: string; email?: string; title?: string }) => void;
 }
 
 export default function EnhancedResultCard({ 
@@ -40,7 +42,8 @@ export default function EnhancedResultCard({
   query,
   onView,
   onEnhance,
-  onFindSimilar
+  onFindSimilar,
+  onRequestUpdate
 }: EnhancedResultCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLoadingInsights, setIsLoadingInsights] = useState(false);
@@ -279,13 +282,30 @@ export default function EnhancedResultCard({
             )}
           </div>
           
-          <button
-            onClick={() => onView?.(result.id)}
-            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            <Eye className="h-4 w-4" />
-            <span>View Profile</span>
-          </button>
+          <div className="flex items-center space-x-2">
+            {onRequestUpdate && (
+              <button
+                onClick={() => onRequestUpdate({
+                  id: result.id,
+                  name: `${result.first_name} ${result.last_name}`,
+                  email: result.email,
+                  title: result.current_title
+                })}
+                className="flex items-center space-x-2 px-3 py-2 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-md transition-colors"
+                title="Request profile update"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </button>
+            )}
+            
+            <button
+              onClick={() => onView?.(result.id)}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              <Eye className="h-4 w-4" />
+              <span>View Profile</span>
+            </button>
+          </div>
         </div>
 
         {/* Expanded Details */}

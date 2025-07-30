@@ -389,3 +389,57 @@ export interface PopularTag {
   count: number;
   category: string;
 }
+
+// Submission API
+export const submissionApi = {
+  async createSubmission(data: {
+    submission_type: 'update' | 'new';
+    candidate_id?: string;
+    candidate_email: string;
+    candidate_name: string;
+    message?: string;
+    deadline_days?: number;
+  }) {
+    // Map frontend field names to backend field names
+    const requestData = {
+      submission_type: data.submission_type,
+      candidate_id: data.candidate_id,
+      email: data.candidate_email,  // backend expects 'email' not 'candidate_email'
+      candidate_name: data.candidate_name,
+      message: data.message,
+      expires_in_days: data.deadline_days || 7,  // backend expects 'expires_in_days' not 'deadline_days'
+      resume_id: data.candidate_id  // for update submissions, backend expects resume_id
+    };
+    
+    return makeRequest('/submissions/', {
+      method: 'POST',
+      body: requestData,
+    });
+  },
+
+  async getSubmission(token: string) {
+    return makeRequest(`/submissions/${token}`, {
+      headers: { 'Authorization': '' } // Public endpoint, no auth needed
+    });
+  },
+
+  async submitCandidateData(token: string, data: FormData) {
+    return makeRequest(`/submissions/submit/${token}`, {
+      method: 'POST',
+      formData: data,
+      headers: { 'Authorization': '' } // Public endpoint, no auth needed
+    });
+  },
+
+  async getMySubmissions(skip = 0, limit = 100) {
+    return makeRequest(`/submissions/?skip=${skip}&limit=${limit}`);
+  },
+
+  async getCampaigns(skip = 0, limit = 20) {
+    return makeRequest(`/submissions/campaigns?skip=${skip}&limit=${limit}`);
+  },
+
+  async getCampaignDetails(campaignId: string) {
+    return makeRequest(`/submissions/campaigns/${campaignId}`);
+  },
+};

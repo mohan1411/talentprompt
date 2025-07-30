@@ -6,6 +6,7 @@ from .interview import InterviewSession, InterviewQuestion, InterviewFeedback, I
 from .interview_pipeline import InterviewPipeline, CandidateJourney
 from .outreach import OutreachMessage, OutreachTemplate, MessageStyle, MessageStatus
 from .analytics import AnalyticsEvent, EventType
+from .submission import CandidateSubmission, InvitationCampaign, SubmissionType, SubmissionStatus
 
 __all__ = [
     "User", 
@@ -21,5 +22,9 @@ __all__ = [
     "MessageStyle",
     "MessageStatus",
     "AnalyticsEvent",
-    "EventType"
+    "EventType",
+    "CandidateSubmission",
+    "InvitationCampaign",
+    "SubmissionType",
+    "SubmissionStatus"
 ]

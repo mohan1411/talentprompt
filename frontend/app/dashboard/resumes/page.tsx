@@ -17,11 +17,13 @@ import {
   XCircle,
   Users,
   Linkedin,
-  Mail
+  Mail,
+  RefreshCw
 } from 'lucide-react';
 import { resumeApi } from '@/lib/api/client';
 import type { Resume } from '@/lib/api/client';
 import { OutreachModal } from '@/components/outreach/OutreachModal';
+import { RequestUpdateModal } from '@/components/submission/RequestUpdateModal';
 
 export default function ResumesPage() {
   const router = useRouter();
@@ -33,6 +35,8 @@ export default function ResumesPage() {
   const [bulkJobPosition, setBulkJobPosition] = useState('');
   const [showOutreachModal, setShowOutreachModal] = useState(false);
   const [outreachCandidate, setOutreachCandidate] = useState<Resume | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [updateCandidate, setUpdateCandidate] = useState<Resume | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalResumes, setTotalResumes] = useState(0);
   const [allResumes, setAllResumes] = useState<Resume[]>([]);
@@ -168,6 +172,11 @@ export default function ResumesPage() {
   const handleGenerateOutreach = (resume: Resume) => {
     setOutreachCandidate(resume);
     setShowOutreachModal(true);
+  };
+
+  const handleRequestUpdate = (resume: Resume) => {
+    setUpdateCandidate(resume);
+    setShowUpdateModal(true);
   };
 
   const getStatusBadge = (parseStatus: string) => {
@@ -383,6 +392,13 @@ export default function ResumesPage() {
                   Uploaded {new Date(resume.created_at).toLocaleDateString()}
                 </div>
                 
+                {resume.updated_at && new Date(resume.updated_at).getTime() !== new Date(resume.created_at).getTime() && (
+                  <div className="flex items-center text-blue-600 dark:text-blue-400">
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Updated {new Date(resume.updated_at).toLocaleDateString()}
+                  </div>
+                )}
+                
                 {resume.view_count > 0 && (
                   <div className="flex items-center">
                     <Eye className="h-4 w-4 mr-2" />
@@ -437,6 +453,13 @@ export default function ResumesPage() {
                       title="Find similar candidates"
                     >
                       <Users className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => handleRequestUpdate(resume)}
+                      className="text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+                      title="Request profile update"
+                    >
+                      <RefreshCw className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => handleGenerateOutreach(resume)}
@@ -552,6 +575,26 @@ export default function ResumesPage() {
             title: outreachCandidate.current_title || '',
             skills: outreachCandidate.skills,
             experience: outreachCandidate.years_experience || undefined
+          }}
+        />
+      )}
+
+      {/* Request Update Modal */}
+      {showUpdateModal && updateCandidate && (
+        <RequestUpdateModal
+          isOpen={showUpdateModal}
+          onClose={() => {
+            setShowUpdateModal(false);
+            setUpdateCandidate(null);
+          }}
+          candidate={{
+            id: updateCandidate.id,
+            name: `${updateCandidate.first_name} ${updateCandidate.last_name}`,
+            email: updateCandidate.email,
+            title: updateCandidate.current_title
+          }}
+          onSuccess={() => {
+            // Optionally refresh or show success message
           }}
         />
       )}

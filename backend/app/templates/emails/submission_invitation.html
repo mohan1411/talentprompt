@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if is_update %}Update Your Profile{% else %}Submit Your Profile{% endif %}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #6366f1;
+        }
+        h1 {
+            color: #1f2937;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #6366f1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+        }
+        .button:hover {
+            background-color: #4f46e5;
+        }
+        .info-box {
+            background-color: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .expires {
+            color: #ef4444;
+            font-weight: 500;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+        .link-text {
+            word-break: break-all;
+            color: #6366f1;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Promtitude</div>
+        </div>
+        
+        <h1>Hello {{ candidate_name }},</h1>
+        
+        <p>
+            <strong>{{ recruiter_name }}</strong> from <strong>{{ company_name }}</strong> 
+            {% if is_update %}
+                has requested that you update your profile.
+            {% else %}
+                would like to invite you to submit your profile.
+            {% endif %}
+        </p>
+        
+        {% if message %}
+        <p>{{ message }}</p>
+        {% endif %}
+        
+        <div style="text-align: center;">
+            <a href="{{ submission_url }}" class="button">
+                {% if is_update %}Update My Profile{% else %}Submit My Profile{% endif %}
+            </a>
+        </div>
+        
+        <div class="info-box">
+            <p><strong>What information can I provide?</strong></p>
+            <ul style="margin: 10px 0;">
+                <li>Updated resume/CV</li>
+                <li>Current availability</li>
+                <li>Salary expectations</li>
+                <li>Location preferences</li>
+                <li>Contact information</li>
+            </ul>
+        </div>
+        
+        <p>
+            <strong>Privacy Notice:</strong> Your information will only be accessible to {{ recruiter_name }} 
+            and their team at {{ company_name }}. It will not be shared with other recruiters or companies.
+        </p>
+        
+        <p class="expires">
+            ⏰ This link expires on {{ expires_at.strftime('%B %d, %Y at %I:%M %p') }}
+        </p>
+        
+        <p style="font-size: 14px; color: #6b7280;">
+            If the button doesn't work, copy and paste this link into your browser:
+            <br>
+            <span class="link-text">{{ submission_url }}</span>
+        </p>
+        
+        <div class="footer">
+            <p>
+                This invitation was sent by {{ recruiter_name }} using Promtitude.
+                <br>
+                If you believe this email was sent in error, please ignore it.
+            </p>
+            <p style="margin-top: 20px;">
+                © 2024 Promtitude. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

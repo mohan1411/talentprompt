@@ -1,5 +1,13 @@
 # Email Setup Guide for Promtitude
 
+## Current Status
+
+✅ **Email System Fully Implemented!**
+- Automatic SMTP detection
+- Mock email for development
+- Real email for production
+- All templates ready
+
 ## Quick Start with Gmail (Free)
 
 ### Step 1: Enable 2-Factor Authentication
@@ -29,20 +37,50 @@ EMAILS_FROM_EMAIL=your-email@gmail.com
 EMAILS_FROM_NAME=Promtitude
 ```
 
-### Step 4: Deploy to Production
+### Step 4: Test Your Configuration
 
-Add the same environment variables to Railway:
-1. Go to your Railway project
-2. Click on the backend service
-3. Go to "Variables" tab
-4. Add each email configuration variable
+Without SMTP configured (current state):
+```bash
+cd backend
+uvicorn app.main:app --reload
+# Emails will print to console
+```
 
-## Testing Email Verification
+With SMTP configured:
+```bash
+cd backend
+python scripts/test_email.py your-email@example.com
+```
 
-1. Register a new account on your site
-2. Check your email for the verification message
-3. Check spam folder if not in inbox
-4. The email will show as sent from your Gmail address
+### Step 5: Deploy to Production
+
+Add the same environment variables to Railway/Vercel:
+1. Go to your hosting platform
+2. Add each SMTP variable
+3. Restart your application
+
+## Email Features Implemented
+
+### For Candidate Submissions:
+1. **Invitation Email** - Sent when recruiter requests profile
+   - Custom message from recruiter
+   - Secure one-time link
+   - Expiration date warning
+
+2. **Confirmation Email** - Sent after submission
+   - Thanks candidate
+   - Confirms receipt
+
+3. **Notification Email** - Sent to recruiter
+   - Alert of new submission
+   - Link to dashboard
+
+## Testing the Submission Flow
+
+1. Go to Dashboard > Resumes
+2. Click "Request Update" or "Invite New Candidate"
+3. Without SMTP: Check backend console
+4. With SMTP: Check your email inbox
 
 ## Gmail Limits
 - **Daily limit**: 500 emails/day

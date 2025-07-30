@@ -128,8 +128,8 @@ class Settings(BaseSettings):
     SMTP_HOST: Optional[str] = None
     SMTP_USER: Optional[str] = None
     SMTP_PASSWORD: Optional[str] = None
-    EMAILS_FROM_EMAIL: Optional[str] = None
-    EMAILS_FROM_NAME: Optional[str] = None
+    EMAILS_FROM_EMAIL: Optional[str] = Field(default="noreply@promtitude.com")
+    EMAILS_FROM_NAME: Optional[str] = Field(default="Promtitude Team")
     
     # First User
     FIRST_SUPERUSER: str

@@ -13,6 +13,7 @@ export interface SearchResult {
   id: string;
   first_name: string;
   last_name: string;
+  email?: string;
   current_title?: string;
   location?: string;
   years_experience?: number;
