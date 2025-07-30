@@ -324,6 +324,43 @@ Implement Captcha and email verification when user register through email and pa
 ### Current Focus
 Focus on user acquisition and Chrome extension publishing to start building user base. Monitor costs carefully with $20 OpenAI limit.
 
+### Updates - July 30, 2025
+
+#### 🔧 Company Profile Management ✅ COMPLETED
+**User Profile Enhancement for Email Branding**
+- ✅ **Added Company Profile Editing UI**
+  - Built edit mode for profile page with inline editing
+  - Users can now update: Full Name, Company, Job Title, Phone
+  - Added visual indicators with icons for each field
+  - Save/Cancel functionality with loading states
+  - Shows helpful text: "This will show as 'from [Company Name]' in invitation emails"
+  
+- ✅ **Backend Schema Updates**
+  - Added phone field to UserBase schema
+  - Updated UserUpdate schema to properly handle partial updates
+  - Made all UserUpdate fields optional for correct PATCH behavior
+  
+- ✅ **Fixed Authentication Issues**
+  - Resolved 401 Unauthorized error when saving profile
+  - Changed from raw fetch to authApi.updateMe() for proper JWT handling
+  - Added comprehensive error handling with user-friendly messages
+  - Added debug logging for troubleshooting
+  
+- ✅ **Fixed Resume Status Display Bug**
+  - Problem: Resume cards showing "Pending" even after being processed through submission system
+  - Root Cause: parse_status field not being updated when resumes were processed
+  - Solution: Added parse_status = "completed" in three places:
+    1. When updating existing resume through submission
+    2. When updating existing resume found by email
+    3. When creating new resume (already had correct logic)
+  - Result: Resume cards now correctly show "Processed" status
+
+**Impact:** 
+- Users can now properly brand their emails with company name
+- No more "None" showing in candidate invitation emails
+- Resume status accurately reflects processing state
+- Better user experience with clear profile management
+
 ### Today's Achievements - July 21, 2025
 - ✅ Implemented Google reCAPTCHA v3 (invisible bot protection)
 - ✅ Built complete email verification system with secure tokens
