@@ -133,6 +133,10 @@ async def startup_event():
                             public_slug VARCHAR(100),
                             email_template TEXT,
                             expires_in_days INTEGER DEFAULT 7,
+                            branding JSONB,
+                            auto_close_date TIMESTAMP,
+                            max_submissions INTEGER,
+                            stats JSONB DEFAULT '{}',
                             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                         )
