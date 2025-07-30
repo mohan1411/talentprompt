@@ -6,7 +6,7 @@ import { User, Mail, Calendar, Shield, Key, Chrome, Copy, Check, RefreshCw, Exte
 import { formatDistanceToNow } from 'date-fns';
 import { authApi } from '@/lib/api/client';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
