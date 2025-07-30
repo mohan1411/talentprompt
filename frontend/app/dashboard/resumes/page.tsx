@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, memo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FixedSizeGrid as Grid, areEqual } from 'react-window';
 import { 
   FileText, 
   Search, 
@@ -38,6 +39,7 @@ import type { Resume } from '@/lib/api/client';
 import { OutreachModal } from '@/components/outreach/OutreachModal';
 import { RequestUpdateModal } from '@/components/submission/RequestUpdateModal';
 import { format, formatDistanceToNow, isAfter, subDays } from 'date-fns';
+import styles from './ResumesPage.module.css';
 
 type ViewMode = 'grid' | 'list' | 'compact';
 type SortOption = 'recent' | 'name' | 'experience' | 'views';
@@ -182,15 +184,17 @@ export default function ResumesPage() {
     }
   };
 
-  const toggleResumeSelection = (resumeId: string) => {
-    const newSelection = new Set(selectedResumes);
-    if (newSelection.has(resumeId)) {
-      newSelection.delete(resumeId);
-    } else {
-      newSelection.add(resumeId);
-    }
-    setSelectedResumes(newSelection);
-  };
+  const toggleResumeSelection = useCallback((resumeId: string) => {
+    setSelectedResumes(prev => {
+      const newSelection = new Set(prev);
+      if (newSelection.has(resumeId)) {
+        newSelection.delete(resumeId);
+      } else {
+        newSelection.add(resumeId);
+      }
+      return newSelection;
+    });
+  }, []);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -206,19 +210,50 @@ export default function ResumesPage() {
     }
   };
 
-  const ResumeCard = ({ resume }: { resume: Resume }) => {
+  // Calculate grid dimensions based on viewport
+  const gridContainerRef = useRef<HTMLDivElement>(null);
+  const [gridDimensions, setGridDimensions] = useState({ width: 0, height: 600, columns: 3 });
+  const [isGridReady, setIsGridReady] = useState(false);
+
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (gridContainerRef.current) {
+        const width = gridContainerRef.current.offsetWidth;
+        const containerRect = gridContainerRef.current.getBoundingClientRect();
+        const height = Math.max(600, window.innerHeight - containerRect.top - 100);
+        const columns = width < 640 ? 1 : width < 1024 ? 2 : 3;
+        setGridDimensions({ width, height, columns });
+        setIsGridReady(true);
+      }
+    };
+
+    // Initial calculation with a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateDimensions, 100);
+    
+    // Set up resize observer for more reliable dimension updates
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (gridContainerRef.current) {
+      resizeObserver.observe(gridContainerRef.current);
+    }
+
+    // Also listen to window resize as fallback
+    window.addEventListener('resize', updateDimensions);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
+
+  const ResumeCard = memo(({ resume }: { resume: Resume }) => {
     const [showActions, setShowActions] = useState(false);
     const isNew = new Date(resume.created_at) > subDays(new Date(), 7);
     const hasUpdate = resume.updated_at && new Date(resume.updated_at).getTime() !== new Date(resume.created_at).getTime();
 
     return (
-      <motion.div
-        layout
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        whileHover={{ y: -2 }}
-        className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 overflow-hidden"
+      <div
+        className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden p-6 h-full"
         onMouseEnter={() => setHoveredResumeId(resume.id)}
         onMouseLeave={() => setHoveredResumeId(null)}
       >
@@ -377,9 +412,211 @@ export default function ResumesPage() {
             </button>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
-  };
+  });
+  
+  ResumeCard.displayName = 'ResumeCard';
+
+  // Virtual grid cell renderer
+  const VirtualResumeCard = memo(({ columnIndex, rowIndex, style, data }: {
+    columnIndex: number;
+    rowIndex: number;
+    style: React.CSSProperties;
+    data: { resumes: Resume[]; columns: number; selectedResumes: Set<string>; toggleResumeSelection: (id: string) => void; router: any; setUpdateCandidate: any; setShowUpdateModal: any; setOutreachCandidate: any; setShowOutreachModal: any; handleDelete: any; };
+  }) => {
+    const { resumes, columns, selectedResumes, toggleResumeSelection, router, setUpdateCandidate, setShowUpdateModal, setOutreachCandidate, setShowOutreachModal, handleDelete } = data;
+    const index = rowIndex * columns + columnIndex;
+    const resume = resumes[index];
+
+    if (!resume) return null;
+
+    const [showActions, setShowActions] = useState(false);
+    const isNew = new Date(resume.created_at) > subDays(new Date(), 7);
+    const hasUpdate = resume.updated_at && new Date(resume.updated_at).getTime() !== new Date(resume.created_at).getTime();
+
+    // Helper functions inside component
+    const getInitials = (firstName: string, lastName: string) => {
+      return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+    };
+
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'completed': return 'bg-green-500';
+        case 'processing': return 'bg-blue-500';
+        case 'pending': return 'bg-yellow-500';
+        case 'failed': return 'bg-red-500';
+        default: return 'bg-gray-500';
+      }
+    };
+
+    return (
+      <div style={{ ...style, padding: '8px' }}>
+        <div
+          className={`group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg overflow-hidden h-full ${styles.resumeCard}`}
+          data-index={index % 9}
+        >
+          {/* Selection Checkbox */}
+          <div className="absolute top-4 left-4 z-10">
+            <input
+              type="checkbox"
+              checked={selectedResumes.has(resume.id)}
+              onChange={() => toggleResumeSelection(resume.id)}
+              className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
+            />
+          </div>
+
+          {/* Status Indicator */}
+          <div className={`absolute top-0 right-0 w-2 h-full ${getStatusColor(resume.parse_status)}`} />
+
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center space-x-3">
+                {/* Avatar */}
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-white font-semibold">
+                  {getInitials(resume.first_name, resume.last_name)}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    {resume.first_name} {resume.last_name}
+                    {isNew && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        NEW
+                      </span>
+                    )}
+                  </h3>
+                  {resume.current_title && (
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {resume.current_title}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowActions(!showActions)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="h-4 w-4 text-gray-500" />
+                </button>
+                
+                {showActions && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-20 py-1">
+                    <button
+                      onClick={() => router.push(`/dashboard/resumes/${resume.id}`)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" /> View Details
+                    </button>
+                    <button
+                      onClick={() => router.push(`/dashboard/search/similar/${resume.id}?name=${encodeURIComponent(`${resume.first_name} ${resume.last_name}`)}`)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <Users className="h-4 w-4" /> Find Similar
+                    </button>
+                    <button
+                      onClick={() => {
+                        setUpdateCandidate(resume);
+                        setShowUpdateModal(true);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" /> Request Update
+                    </button>
+                    <button
+                      onClick={() => {
+                        setOutreachCandidate(resume);
+                        setShowOutreachModal(true);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <Mail className="h-4 w-4" /> Generate Outreach
+                    </button>
+                    <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                    <button
+                      onClick={() => handleDelete(resume.id)}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2"
+                    >
+                      <Trash2 className="h-4 w-4" /> Delete
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Key Info */}
+            <div className="space-y-2 mb-4">
+              {resume.location && (
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {resume.location}
+                </div>
+              )}
+              {resume.years_experience !== null && (
+                <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+                  <Briefcase className="h-4 w-4 mr-2" />
+                  {resume.years_experience} years experience
+                </div>
+              )}
+              {hasUpdate && (
+                <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Updated {formatDistanceToNow(new Date(resume.updated_at!), { addSuffix: true })}
+                </div>
+              )}
+            </div>
+
+            {/* Skills */}
+            {resume.skills && resume.skills.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-4">
+                {resume.skills.slice(0, 4).map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary dark:bg-primary/20"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {resume.skills.length > 4 && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    +{resume.skills.length - 4} more
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Footer Stats */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  {resume.view_count || 0} views
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {format(new Date(resume.created_at), 'MMM d')}
+                </span>
+              </div>
+              
+              {/* Primary Action */}
+              <button
+                onClick={() => router.push(`/dashboard/resumes/${resume.id}`)}
+                className={`px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-primary/90 ${styles.actionButton}`}
+              >
+                View Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }, areEqual);
+
+  VirtualResumeCard.displayName = 'VirtualResumeCard';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -567,23 +804,53 @@ export default function ResumesPage() {
           </div>
         </motion.div>
       ) : viewMode === 'grid' ? (
-        // Grid View with Time Groups
-        <div className="space-y-8">
-          {Object.entries(groupedResumes).map(([period, periodResumes]) => (
-            <div key={period}>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                {period}
-                <span className="text-sm font-normal text-gray-500">({periodResumes.length})</span>
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <AnimatePresence>
-                  {periodResumes.map((resume) => (
-                    <ResumeCard key={resume.id} resume={resume} />
-                  ))}
-                </AnimatePresence>
-              </div>
+        // Virtual Grid View
+        <div ref={gridContainerRef} className="min-h-[600px]" style={{ height: 'calc(100vh - 300px)' }}>
+          {!isGridReady ? (
+            // Loading skeleton while grid initializes
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`h-12 w-12 rounded-full bg-gray-200 dark:bg-gray-700 ${styles.skeleton}`} />
+                      <div>
+                        <div className={`h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-2 ${styles.skeleton}`} />
+                        <div className={`h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded ${styles.skeleton}`} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className={`h-3 w-full bg-gray-200 dark:bg-gray-700 rounded ${styles.skeleton}`} />
+                    <div className={`h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded ${styles.skeleton}`} />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <Grid
+              columnCount={gridDimensions.columns}
+              columnWidth={(gridDimensions.width - 32) / gridDimensions.columns}
+              height={gridDimensions.height}
+              rowCount={Math.ceil(filteredAndSortedResumes.length / gridDimensions.columns)}
+              rowHeight={320}
+              width={gridDimensions.width}
+              itemData={{
+                resumes: filteredAndSortedResumes,
+                columns: gridDimensions.columns,
+                selectedResumes,
+                toggleResumeSelection,
+                router,
+                setUpdateCandidate,
+                setShowUpdateModal,
+                setOutreachCandidate,
+                setShowOutreachModal,
+                handleDelete
+              }}
+            >
+              {VirtualResumeCard}
+            </Grid>
+          )}
         </div>
       ) : (
         // List View
