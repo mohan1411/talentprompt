@@ -227,11 +227,92 @@ async def startup_event():
 @app.get("/")
 async def root():
     """Root endpoint."""
+    import sys
+    print("\n[ROOT ENDPOINT] Request received", flush=True)
+    sys.stdout.flush()
     return {
         "message": "Welcome to Promtitude API",
         "version": settings.VERSION,
         "docs": "/docs",
     }
+
+
+@app.get("/test-email-debug")
+async def test_email_debug():
+    """Test endpoint to debug email output."""
+    import sys
+    print("\n" + "="*80, flush=True)
+    print("[TEST EMAIL DEBUG] Endpoint called", flush=True)
+    print("="*80, flush=True)
+    sys.stdout.flush()
+    
+    # Test the email service directly
+    from app.services.email_service_production import email_service
+    
+    print(f"Email service type: {type(email_service).__name__}", flush=True)
+    print(f"Email service module: {email_service.__module__}", flush=True)
+    
+    # Send a test email
+    result = await email_service.send_email(
+        to_email="test@example.com",
+        subject="Test Debug Email",
+        html_content="<p>This is a test</p>",
+        text_content="This is a test"
+    )
+    
+    print(f"Email send result: {result}", flush=True)
+    print("="*80 + "\n", flush=True)
+    sys.stdout.flush()
+    
+    return {
+        "status": "Test complete",
+        "email_service_type": type(email_service).__name__,
+        "email_service_module": email_service.__module__,
+        "result": result
+    }
+
+
+@app.post("/api/v1/test-smtp-email")
+async def test_smtp_email(email: str):
+    """Test SMTP email configuration with a real email address."""
+    from app.services.email_service_production import email_service
+    from app.core.config import settings
+    
+    result = {
+        "email_service_type": type(email_service).__name__,
+        "smtp_configured": bool(settings.SMTP_HOST and settings.SMTP_USER and settings.SMTP_PASSWORD),
+        "smtp_host": settings.SMTP_HOST or "Not configured",
+        "test_sent": False,
+        "invitation_sent": False,
+        "errors": []
+    }
+    
+    # Only test if SMTP is configured
+    if result["smtp_configured"] and hasattr(email_service, 'send_test_email'):
+        try:
+            # Send test email
+            test_result = await email_service.send_test_email(email)
+            result["test_sent"] = test_result
+            
+            # Send sample invitation
+            invitation_result = await email_service.send_submission_invitation(
+                to_email=email,
+                candidate_name="Test Candidate",
+                recruiter_name="Your Name",
+                submission_link=f"{settings.FRONTEND_URL}/submit/test_token_demo",
+                message="This is a test invitation email to verify the formatting looks correct.",
+                deadline_days=7,
+                company_name="Promtitude Demo",
+                is_update=False
+            )
+            result["invitation_sent"] = invitation_result
+            
+        except Exception as e:
+            result["errors"].append(str(e))
+    else:
+        result["errors"].append("SMTP not configured or email service doesn't support test emails")
+    
+    return result
 
 
 @app.get("/api/v1/health")

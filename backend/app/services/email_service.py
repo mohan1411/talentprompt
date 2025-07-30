@@ -28,11 +28,13 @@ class EmailService:
         text_content: Optional[str] = None
     ) -> bool:
         """Mock send an email - just log it."""
-        # Use print to ensure it shows in console
-        print("\n" + "="*50 + " MOCK EMAIL " + "="*50)
-        print(f"TO: {to_email}")
-        print(f"SUBJECT: {subject}")
-        print(f"FROM: {settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>")
+        # Force flush stdout to ensure prints appear
+        import sys
+        print("\n" + "="*50 + " MOCK EMAIL " + "="*50, flush=True)
+        print(f"TO: {to_email}", flush=True)
+        print(f"SUBJECT: {subject}", flush=True)
+        print(f"FROM: {settings.EMAILS_FROM_NAME} <{settings.EMAILS_FROM_EMAIL}>", flush=True)
+        sys.stdout.flush()
         
         # Extract submission link from HTML first
         import re
@@ -96,8 +98,11 @@ class EmailService:
         expires_at: Optional[datetime] = None
     ) -> bool:
         """Send submission invitation email."""
-        print(f"\n[MOCK EMAIL] send_submission_invitation called for {to_email}")
-        print(f"[MOCK EMAIL] Submission link: {submission_link}")
+        # Force flush stdout to ensure prints appear
+        import sys
+        print(f"\n[MOCK EMAIL] send_submission_invitation called for {to_email}", flush=True)
+        print(f"[MOCK EMAIL] Submission link: {submission_link}", flush=True)
+        sys.stdout.flush()
         try:
             # Calculate expiration if not provided
             if expires_at is None:

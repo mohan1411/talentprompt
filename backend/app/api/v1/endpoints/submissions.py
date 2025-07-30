@@ -36,15 +36,24 @@ async def create_submission(
     current_user: User = Depends(get_current_user)
 ):
     """Create a new submission invitation."""
+    import sys
+    print(f"\n[API ENDPOINT] Creating submission for email: {data.email}", flush=True)
+    print(f"[API ENDPOINT] Submission type: {data.submission_type}", flush=True)
+    sys.stdout.flush()
+    
     try:
         submission = await submission_service.create_submission(
             db=db,
             recruiter_id=current_user.id,
             data=data
         )
+        print(f"[API ENDPOINT] Submission created successfully with ID: {submission.id}", flush=True)
+        sys.stdout.flush()
         return submission
     except Exception as e:
         logger.error(f"Error creating submission: {e}")
+        print(f"[API ENDPOINT] Error creating submission: {e}", flush=True)
+        sys.stdout.flush()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to create submission"

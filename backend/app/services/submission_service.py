@@ -393,11 +393,19 @@ class SubmissionService:
                 email_username = submission.email.split('@')[0]
                 candidate_name = email_username.replace('.', ' ').replace('_', ' ').title()
             
-            print(f"\n[SUBMISSION SERVICE] Sending invitation email to: {submission.email}")
-            print(f"[SUBMISSION SERVICE] Submission link: {submission.submission_url}")
-            print(f"[SUBMISSION SERVICE] Email service type: {type(email_service).__name__}")
+            import sys
+            print(f"\n[SUBMISSION SERVICE] Sending invitation email to: {submission.email}", flush=True)
+            print(f"[SUBMISSION SERVICE] Submission link: {submission.submission_url}", flush=True)
+            print(f"[SUBMISSION SERVICE] Email service type: {type(email_service).__name__}", flush=True)
+            print(f"[SUBMISSION SERVICE] Email service module: {email_service.__module__}", flush=True)
+            sys.stdout.flush()
             
             # Send email with correct parameters
+            # Ensure company name is never None
+            company_name = "Promtitude"
+            if recruiter and recruiter.company:
+                company_name = recruiter.company
+            
             result = await email_service.send_submission_invitation(
                 to_email=submission.email,
                 candidate_name=candidate_name,
@@ -405,7 +413,7 @@ class SubmissionService:
                 submission_link=submission.submission_url,
                 message=message,
                 deadline_days=deadline_days,
-                company_name=recruiter.company if recruiter else "Promtitude",
+                company_name=company_name,
                 is_update=(submission.submission_type == SubmissionType.UPDATE.value),
                 expires_at=submission.expires_at
             )
