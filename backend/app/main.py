@@ -174,12 +174,20 @@ async def startup_event():
                     await db.execute(text("CREATE INDEX IF NOT EXISTS ix_candidate_submissions_recruiter_id ON candidate_submissions(recruiter_id)"))
                     await db.execute(text("CREATE INDEX IF NOT EXISTS ix_candidate_submissions_email ON candidate_submissions(email)"))
                     
-                    await db.commit()
+                    # Only commit if we're in a transaction
+                    try:
+                        await db.commit()
+                    except Exception:
+                        pass  # No transaction to commit
+                    
                     print("✅ Submission tables created successfully!")
                     
                 except Exception as e:
                     print(f"Error creating submission tables: {e}")
-                    await db.rollback()
+                    try:
+                        await db.rollback()
+                    except Exception:
+                        pass  # No transaction to rollback
             
             if 'analytics_events' not in existing_tables:
                 print("analytics_events table not found - creating analytics table...")
