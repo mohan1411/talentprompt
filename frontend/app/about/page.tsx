@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { 
-  Users, Target, Sparkles, Award, 
-  Globe, Shield, Heart, ArrowRight 
+  Target, Sparkles, Shield, Heart, ArrowRight 
 } from 'lucide-react';
 import { pageMetadata } from '@/lib/seo/config';
 
@@ -36,40 +35,6 @@ export default function AboutPage() {
     }
   ];
 
-  const milestones = [
-    { year: '2023', event: 'Founded with a vision to revolutionize recruiting' },
-    { year: '2024', event: 'Launched MVP with natural language search' },
-    { year: '2024', event: 'Added AI Interview Assistant and Chrome extension' },
-    { year: '2025', event: 'Reached 1,000+ active recruiters' },
-    { year: 'Today', event: 'Processing millions of candidate searches monthly' }
-  ];
-
-  const team = [
-    {
-      name: 'Sarah Chen',
-      role: 'CEO & Co-founder',
-      bio: 'Former VP of Talent at multiple unicorns. 15+ years in recruiting.',
-      image: '/team/sarah.jpg'
-    },
-    {
-      name: 'Alex Rodriguez',
-      role: 'CTO & Co-founder',
-      bio: 'AI researcher from Stanford. Previously built ML systems at Google.',
-      image: '/team/alex.jpg'
-    },
-    {
-      name: 'Maya Patel',
-      role: 'Head of Product',
-      bio: 'Product leader with deep HR tech experience from Workday and Lever.',
-      image: '/team/maya.jpg'
-    },
-    {
-      name: 'James Liu',
-      role: 'Head of Engineering',
-      bio: 'Scaled engineering teams at Stripe and Airbnb. Full-stack expert.',
-      image: '/team/james.jpg'
-    }
-  ];
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900">
@@ -203,114 +168,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-              Our Journey
-            </h2>
-            <div className="relative">
-              {/* Timeline line */}
-              <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600"></div>
-              
-              {/* Timeline items */}
-              <div className="space-y-8">
-                {milestones.map((milestone, index) => (
-                  <div key={index} className="relative flex items-center">
-                    <div className="absolute left-8 w-4 h-4 bg-blue-600 rounded-full transform -translate-x-1/2"></div>
-                    <div className="ml-20">
-                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                        {milestone.year}
-                      </span>
-                      <p className="text-gray-700 dark:text-gray-300 mt-1">
-                        {milestone.event}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Meet the Team
-            </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400">
-              We're a diverse team of recruiters, engineers, and AI experts united by a 
-              shared vision of better hiring.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {team.map((member, index) => (
-              <div key={index} className="text-center">
-                <div className="w-32 h-32 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
-                  <Users className="h-16 w-16 text-gray-400 dark:text-gray-500" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {member.name}
-                </h3>
-                <p className="text-sm text-blue-600 dark:text-blue-400 mb-2">
-                  {member.role}
-                </p>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {member.bio}
-                </p>
-              </div>
-            ))}
-          </div>
-          
-          <div className="text-center mt-12">
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Want to join our mission?
-            </p>
-            <Link href="/careers" className="text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center gap-2">
-              View Open Positions
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Awards Section */}
-      <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-              Recognition & Awards
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col items-center">
-                <Award className="h-8 w-8 text-yellow-500 mb-2" />
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">Best New SaaS</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">ProductHunt 2024</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col items-center">
-                <Globe className="h-8 w-8 text-blue-500 mb-2" />
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">Top 50 HR Tech</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">HR Tech Outlook</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col items-center">
-                <Shield className="h-8 w-8 text-green-500 mb-2" />
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">SOC 2 Certified</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Type II Compliant</p>
-              </div>
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 flex flex-col items-center">
-                <Sparkles className="h-8 w-8 text-purple-500 mb-2" />
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">AI Innovation</p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">TechCrunch 2025</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-indigo-700">

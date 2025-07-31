@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     canonical: seoConfig.siteUrl,
   },
   verification: {
-    google: 'your-google-verification-code',
+    google: 'YOUR_ACTUAL_GOOGLE_VERIFICATION_CODE', // Replace with your actual code
     yandex: 'your-yandex-verification-code',
   },
 };
