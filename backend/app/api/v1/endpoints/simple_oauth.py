@@ -89,29 +89,57 @@ async def google_oauth_callback(
     state_data = oauth_states.pop(state)
     redirect_uri = state_data["redirect_uri"]
     
-    # In a real implementation, you would exchange the code for tokens
-    # For now, we'll simulate this with a mock implementation
+    # Exchange the code for user info using the OAuth service
+    from app.services.oauth import oauth_service
     
-    # Mock user data (in production, get this from Google)
-    mock_user_data = {
-        "email": "promtitude@gmail.com",  # Default test user
-        "name": "Test User",
-        "google_id": "mock_google_id_123"
-    }
+    try:
+        # Get the actual API URL for redirect_uri
+        base_url = str(db.bind.url).rstrip('/')  # Get from request context if available
+        api_base_url = "https://promtitude-backend-production.up.railway.app" if settings.ENVIRONMENT == "production" else settings.API_URL
+        
+        # Use the same redirect_uri that was used in the auth request
+        oauth_redirect_uri = f"{api_base_url}/api/v1/oauth/google/callback"
+        
+        # Get user info from Google
+        user_data = await oauth_service.get_google_user_info(code, oauth_redirect_uri)
+        email = user_data["email"]
+        name = user_data.get("name", "")
+        google_id = user_data["provider_id"]
+    except Exception as e:
+        logger.error(f"Failed to get Google user info: {e}")
+        error_params = urlencode({"error": "oauth_failed", "message": str(e)})
+        return RedirectResponse(url=f"{redirect_uri}?{error_params}")
     
     # Check if user exists
-    user = await get_user_by_email(db, email=mock_user_data["email"])
+    user = await get_user_by_email(db, email=email)
     
     if not user:
-        # For this simple implementation, we won't create new users
-        # Just return an error
-        error_params = urlencode({"error": "user_not_found", "message": "User not found. Please register first."})
-        return RedirectResponse(url=f"{redirect_uri}?{error_params}")
-    
-    # Verify user is an OAuth user
-    if not user.oauth_provider:
-        error_params = urlencode({"error": "not_oauth_user", "message": "This account uses password authentication."})
-        return RedirectResponse(url=f"{redirect_uri}?{error_params}")
+        # Create a new OAuth user
+        from app.crud import user as user_crud
+        
+        user = await user_crud.user.create_oauth_user(
+            db,
+            email=email,
+            full_name=name,
+            provider="google",
+            provider_id=google_id,
+            oauth_data=user_data
+        )
+        logger.info(f"Created new OAuth user: {email}")
+    else:
+        # Update existing user with OAuth info if needed
+        if not user.oauth_provider:
+            # Link OAuth to existing user
+            from app.crud import user as user_crud
+            
+            user = await user_crud.user.link_oauth_account(
+                db,
+                db_obj=user,
+                provider="google",
+                provider_id=google_id,
+                oauth_data=user_data
+            )
+            logger.info(f"Linked Google OAuth to existing user: {email}")
     
     # Generate access token
     access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)

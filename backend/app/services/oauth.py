@@ -65,7 +65,9 @@ class OAuthService:
         if not hasattr(self.oauth, 'google'):
             raise ValueError("Google OAuth not configured")
         
-        redirect_uri = redirect_uri or settings.GOOGLE_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/google/callback"
+        # Use the provided redirect_uri, don't override with GOOGLE_REDIRECT_URI
+        if not redirect_uri:
+            redirect_uri = settings.GOOGLE_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/google/callback"
         
         params = {
             'response_type': 'code',
@@ -102,7 +104,10 @@ class OAuthService:
     
     async def get_google_user_info(self, code: str, redirect_uri: Optional[str] = None) -> Dict[str, Any]:
         """Exchange Google authorization code for user info."""
-        redirect_uri = redirect_uri or settings.GOOGLE_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/google/callback"
+        # Use the provided redirect_uri, don't override with GOOGLE_REDIRECT_URI
+        # The redirect_uri must match exactly what was used in the authorization request
+        if not redirect_uri:
+            redirect_uri = settings.GOOGLE_REDIRECT_URI or f"{settings.FRONTEND_URL}/auth/google/callback"
         
         logger.info(f"Google OAuth: Using redirect_uri: {redirect_uri}")
         logger.info(f"Google OAuth: Code (first 10 chars): {code[:10]}...")
