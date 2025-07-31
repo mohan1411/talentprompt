@@ -64,9 +64,12 @@ class ProgressiveSearchEngine:
         # Parse query once for all stages (use async parser with AI typo correction)
         try:
             parsed_query = await async_query_parser.parse_query_async(query)
-            logger.info(f"Using AI-powered query parser with corrections")
+            logger.info(f"[PROGRESSIVE] Using AI-powered query parser with corrections")
+            logger.info(f"[PROGRESSIVE] Original query: '{query}'")
+            logger.info(f"[PROGRESSIVE] Parsed skills: {parsed_query.get('skills', [])}")
+            logger.info(f"[PROGRESSIVE] Corrected query: {parsed_query.get('corrected_query')}")
         except Exception as e:
-            logger.warning(f"AI parser failed, falling back to basic parser: {e}")
+            logger.warning(f"[PROGRESSIVE] AI parser failed, falling back to basic parser: {e}")
             parsed_query = query_parser.parse_query(query)
         
         required_skills = parsed_query["skills"]

@@ -35,12 +35,30 @@ class GPT4QueryAnalyzer:
         Returns:
             Comprehensive query analysis
         """
+        logger.info(f"[GPT4] analyze_query called with: '{query}'")
+        
         # Start with basic parsing
         basic_parse = query_parser.parse_query(query)
+        logger.info(f"[GPT4] basic_parse skills: {basic_parse.get('skills', [])}")
+        
+        # CRITICAL: If the query has been corrected, ensure we have the corrected version in basic_parse
+        if " " in query and not basic_parse.get("skills"):
+            # Try parsing individual words to catch corrected skills
+            words = query.lower().split()
+            for word in words:
+                if word in query_parser.known_skills:
+                    if "skills" not in basic_parse:
+                        basic_parse["skills"] = []
+                    if word not in [s.lower() for s in basic_parse["skills"]]:
+                        basic_parse["skills"].append(word)
+            logger.info(f"[GPT4] Re-extracted skills from query words: {basic_parse.get('skills', [])}")
         
         # If no OpenAI key, return enhanced basic parse
         if not self.client:
-            return self._enhance_basic_parse(basic_parse)
+            logger.info("[GPT4] No OpenAI client, using enhanced basic parse")
+            enhanced = self._enhance_basic_parse(basic_parse)
+            logger.info(f"[GPT4] Enhanced parse - secondary_skills: {enhanced.get('secondary_skills', [])}")
+            return enhanced
         
         try:
             # Prepare the prompt for GPT-4.1-mini
