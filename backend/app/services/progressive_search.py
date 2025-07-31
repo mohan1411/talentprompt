@@ -80,6 +80,19 @@ class ProgressiveSearchEngine:
         try:
             # Use corrected query if available, otherwise use original query
             query_for_analysis = parsed_query.get("corrected_query", query)
+            
+            # IMPORTANT: When we have a corrected query, we need to ensure the parsed_query
+            # contains the corrected skills for the fallback enhanced parse
+            if parsed_query.get("corrected_query") and parsed_query.get("corrected_query") != query:
+                # Re-parse the corrected query to ensure we have the right skills
+                from app.services.query_parser import query_parser as basic_parser
+                corrected_parse = basic_parser.parse_query(parsed_query["corrected_query"])
+                # Update the skills in parsed_query with the corrected ones
+                if corrected_parse.get("skills"):
+                    parsed_query["skills"] = corrected_parse["skills"]
+                    parsed_query["primary_skill"] = corrected_parse.get("primary_skill")
+                logger.info(f"[PROGRESSIVE] Updated parsed_query skills after correction: {parsed_query.get('skills')}")
+            
             gpt4_analysis = await gpt4_analyzer.analyze_query(query_for_analysis)
             
             # Transform to frontend format, preferring GPT4 analysis when available
