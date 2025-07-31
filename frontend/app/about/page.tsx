@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { 
-  Target, Sparkles, Shield, Heart, ArrowRight 
+  Target, Sparkles, Shield, Heart, ArrowRight, Users 
 } from 'lucide-react';
 import { pageMetadata } from '@/lib/seo/config';
 
