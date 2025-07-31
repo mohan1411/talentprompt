@@ -38,8 +38,8 @@ async def google_oauth_login(request: Request, redirect_uri: Optional[str] = Non
     
     # For production environments, use the actual backend URL
     if settings.ENVIRONMENT == "production" or "promtitude" in settings.FRONTEND_URL:
-        # Use the production backend URL
-        api_base_url = "https://promtitude-backend-production.up.railway.app"
+        # Use the correct production backend URL
+        api_base_url = "https://talentprompt-production.up.railway.app"
     
     # Store state with expiration (5 minutes)
     oauth_states[state] = {
@@ -94,8 +94,10 @@ async def google_oauth_callback(
     
     try:
         # Get the actual API URL for redirect_uri
-        base_url = str(db.bind.url).rstrip('/')  # Get from request context if available
-        api_base_url = "https://promtitude-backend-production.up.railway.app" if settings.ENVIRONMENT == "production" else settings.API_URL
+        if settings.ENVIRONMENT == "production":
+            api_base_url = "https://talentprompt-production.up.railway.app"
+        else:
+            api_base_url = settings.API_URL
         
         # Use the same redirect_uri that was used in the auth request
         oauth_redirect_uri = f"{api_base_url}/api/v1/oauth/google/callback"

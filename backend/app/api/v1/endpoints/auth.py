@@ -44,8 +44,12 @@ async def google_oauth_login(request: Request, redirect_uri: Optional[str] = Non
     # Generate state token
     state = oauth_service.generate_state_token()
     
-    # Since frontend callback was working, use that
-    redirect_uri = redirect_uri or f"{settings.FRONTEND_URL}/auth/google/callback"
+    # Use backend callback since that's what's configured in Google Console
+    base_url = str(request.base_url).rstrip('/')
+    # Force HTTPS in production
+    if settings.ENVIRONMENT == "production":
+        base_url = "https://talentprompt-production.up.railway.app"
+    redirect_uri = redirect_uri or f"{base_url}/api/v1/oauth/google/callback"
     
     # Get Google OAuth URL
     auth_url = oauth_service.get_google_auth_url(state, redirect_uri)
