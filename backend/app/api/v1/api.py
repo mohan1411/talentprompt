@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, search_progressive, debug_analytics, simple_oauth, dev_oauth
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, search_progressive, debug_analytics, simple_oauth, dev_oauth, oauth_frontend
 # bulk_import temporarily disabled - pandas not in Docker image
 
 api_router = APIRouter()
@@ -36,6 +36,9 @@ api_router.include_router(debug_analytics.router, prefix="/debug/analytics", tag
 
 # OAuth endpoints - simple implementation without authlib
 api_router.include_router(simple_oauth.router, prefix="/oauth", tags=["oauth"])
+
+# OAuth frontend callback endpoints
+api_router.include_router(oauth_frontend.router, prefix="/auth/oauth", tags=["oauth"])
 
 # Dev OAuth endpoint - enabled for OAuth testing
 api_router.include_router(dev_oauth.router, prefix="/auth/dev", tags=["dev"])

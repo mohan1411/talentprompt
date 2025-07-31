@@ -2,7 +2,7 @@
 
 import logging
 from datetime import timedelta
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -27,24 +27,33 @@ logger = logging.getLogger(__name__)
 
 # Simple OAuth endpoint for frontend compatibility
 @router.get("/oauth/google/login")
-async def google_oauth_login(request: Request):
+async def google_oauth_login(request: Request, redirect_uri: Optional[str] = None):
     """Simple OAuth endpoint that works without authlib for development."""
-    # Get the base URL from the request
-    base_url = str(request.base_url).rstrip('/')
-    
     # For local development, use mock OAuth flow
     if settings.ENVIRONMENT == "development" or "localhost" in settings.FRONTEND_URL:
+        base_url = str(request.base_url).rstrip('/')
         mock_oauth_url = f"{base_url}/api/v1/auth/oauth/mock/select-user"
         return {
             "auth_url": mock_oauth_url,
             "state": "dummy_state"
         }
     
-    # For production, redirect to the simple OAuth endpoint
-    # The simple_oauth router is mounted at /api/v1/oauth
-    oauth_url = f"{base_url}/api/v1/oauth/google/login"
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=oauth_url)
+    # For production, directly call the OAuth service
+    from app.services.oauth import oauth_service
+    
+    # Generate state token
+    state = oauth_service.generate_state_token()
+    
+    # Since frontend callback was working, use that
+    redirect_uri = redirect_uri or f"{settings.FRONTEND_URL}/auth/google/callback"
+    
+    # Get Google OAuth URL
+    auth_url = oauth_service.get_google_auth_url(state, redirect_uri)
+    
+    return {
+        "auth_url": auth_url,
+        "state": state
+    }
 
 @router.get("/oauth/mock/select-user")
 async def mock_oauth_select_user():
