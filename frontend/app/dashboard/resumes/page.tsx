@@ -228,7 +228,7 @@ export default function ResumesPage() {
   useEffect(() => {
     const updateDimensions = () => {
       if (gridContainerRef.current) {
-        const width = gridContainerRef.current.offsetWidth;
+        const width = gridContainerRef.current.offsetWidth || gridContainerRef.current.clientWidth;
         const containerRect = gridContainerRef.current.getBoundingClientRect();
         const height = Math.max(600, window.innerHeight - containerRect.top - 100);
         const columns = width < 640 ? 1 : width < 1024 ? 2 : 3;
@@ -237,6 +237,14 @@ export default function ResumesPage() {
         if (width > 0) {
           setGridDimensions({ width, height, columns });
           setIsGridReady(true);
+        } else {
+          // Fallback: use window dimensions if container dimensions not available
+          const fallbackWidth = window.innerWidth - 100;
+          if (fallbackWidth > 0) {
+            const fallbackColumns = fallbackWidth < 640 ? 1 : fallbackWidth < 1024 ? 2 : 3;
+            setGridDimensions({ width: fallbackWidth, height, columns: fallbackColumns });
+            setIsGridReady(true);
+          }
         }
       }
     };
@@ -248,6 +256,21 @@ export default function ResumesPage() {
     const timeout1 = setTimeout(updateDimensions, 50);
     const timeout2 = setTimeout(updateDimensions, 150);
     const timeout3 = setTimeout(updateDimensions, 300);
+    const timeout4 = setTimeout(updateDimensions, 500);
+    
+    // Force grid ready after 1 second as last resort
+    const forceReady = setTimeout(() => {
+      if (!isGridReady) {
+        const fallbackWidth = window.innerWidth - 100;
+        const fallbackColumns = fallbackWidth < 640 ? 1 : fallbackWidth < 1024 ? 2 : 3;
+        setGridDimensions({ 
+          width: fallbackWidth, 
+          height: 600, 
+          columns: fallbackColumns 
+        });
+        setIsGridReady(true);
+      }
+    }, 1000);
     
     // Set up resize observer for more reliable dimension updates
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -265,11 +288,13 @@ export default function ResumesPage() {
       clearTimeout(timeout1);
       clearTimeout(timeout2);
       clearTimeout(timeout3);
+      clearTimeout(timeout4);
+      clearTimeout(forceReady);
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateDimensions);
       window.removeEventListener('load', updateDimensions);
     };
-  }, []);
+  }, [isGridReady]);
 
   const ResumeCard = memo(({ resume }: { resume: Resume }) => {
     const [showActions, setShowActions] = useState(false);
