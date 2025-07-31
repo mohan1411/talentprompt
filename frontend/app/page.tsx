@@ -5,148 +5,50 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { 
-  Search, Zap, Brain, Shield, Users, BarChart, 
-  Mic, FileText, Sparkles, Target, Upload, Tags, 
-  Headphones, FileCheck, TrendingUp, MessageSquare,
-  Calendar, Bot, Check, Mail, Chrome, LineChart,
-  Radar, GitBranch, Activity
+  Search, Chrome, Clock, Check, ChevronRight,
+  FileText, Mic, Mail, Shield, DollarSign
 } from 'lucide-react';
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const [showSearchPrompt, setShowSearchPrompt] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showResults, setShowResults] = useState(false);
+  const [demoTyping, setDemoTyping] = useState('');
 
+  // Redirect authenticated users to dashboard
   useEffect(() => {
     if (!isLoading && user) {
       router.push('/dashboard');
     }
   }, [user, isLoading, router]);
 
-  const handleSearchClick = () => {
-    setShowSearchPrompt(true);
-    setTimeout(() => {
-      router.push('/register');
-    }, 1500);
+  // Demo typing effect
+  useEffect(() => {
+    const demoQuery = "Senior Python developer with AWS experience";
+    let index = 0;
+    const timer = setInterval(() => {
+      if (index <= demoQuery.length) {
+        setDemoTyping(demoQuery.slice(0, index));
+        index++;
+      } else {
+        clearInterval(timer);
+        setTimeout(() => setShowResults(true), 500);
+      }
+    }, 50);
+    
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.push('/register');
   };
 
-  const features = [
-    // Search & Discovery
-    {
-      icon: Sparkles,
-      title: 'Mind Reader Search',
-      description: 'AI that understands what you really want - with typo correction, skill expansion, and progressive results',
-      category: 'search',
-      isNew: true,
-    },
-    {
-      icon: Search,
-      title: 'Natural Language Search',
-      description: 'Find candidates by describing what you need in plain English',
-      category: 'search',
-    },
-    {
-      icon: Tags,
-      title: 'Smart Filters & Tags',
-      description: 'Advanced filtering with tag clouds and skill matching',
-      category: 'search',
-    },
-    {
-      icon: Upload,
-      title: 'Bulk Resume Upload',
-      description: 'Process hundreds of resumes at once with AI parsing',
-      category: 'search',
-    },
-    // AI Interview Suite
-    {
-      icon: Bot,
-      title: 'AI Interview Copilot',
-      description: 'Conduct smarter interviews with real-time AI assistance',
-      category: 'interview',
-      isNew: true,
-    },
-    {
-      icon: Mic,
-      title: 'Live Transcription',
-      description: 'Real-time transcription powered by OpenAI Whisper',
-      category: 'interview',
-      isNew: true,
-    },
-    {
-      icon: Sparkles,
-      title: 'Live Coaching',
-      description: 'Get real-time suggestions and follow-up questions',
-      category: 'interview',
-      isNew: true,
-    },
-    {
-      icon: FileCheck,
-      title: 'Smart Scorecards',
-      description: 'AI-generated scorecards that adapt to your interviews',
-      category: 'interview',
-      isNew: true,
-    },
-    // Intelligence & Analytics
-    {
-      icon: Brain,
-      title: 'Interview Intelligence',
-      description: 'Comprehensive analytics and insights dashboard',
-      category: 'analytics',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Sentiment Analysis',
-      description: 'Track candidate engagement and emotional cues',
-      category: 'analytics',
-      isNew: true,
-    },
-    {
-      icon: FileText,
-      title: 'Interview Templates',
-      description: 'Pre-built templates for different roles and levels',
-      category: 'analytics',
-    },
-    // Outreach & Communication
-    {
-      icon: Mail,
-      title: 'AI Outreach Messages',
-      description: 'Generate personalized outreach with GPT-4 in multiple tones',
-      category: 'outreach',
-      isNew: true,
-    },
-    {
-      icon: Chrome,
-      title: 'LinkedIn Chrome Extension',
-      description: 'Import profiles instantly with one-click browser extension',
-      category: 'outreach',
-      isNew: true,
-    },
-    // Platform & Security
-    {
-      icon: Shield,
-      title: 'Enterprise Security',
-      description: 'Privacy-focused, secure data handling, end-to-end encryption',
-      category: 'platform',
-    },
-    {
-      icon: Users,
-      title: 'Team Collaboration',
-      description: 'Share candidates, interviews, and insights with your team',
-      category: 'platform',
-    },
-    {
-      icon: LineChart,
-      title: 'Usage Analytics',
-      description: 'Track platform usage, popular searches, and performance',
-      category: 'platform',
-      isNew: true,
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Header */}
-      <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-white dark:bg-gray-900 sticky top-0 z-50">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/" className="flex items-center">
             <img 
@@ -165,715 +67,379 @@ export default function HomePage() {
               <Chrome className="h-4 w-4" />
               <span className="hidden sm:inline">Chrome Extension</span>
             </a>
-            <Link
-              href="/login"
-              className="btn-secondary"
-            >
+            <Link href="/login" className="btn-secondary">
               Login
             </Link>
-            <Link
-              href="/register"
-              className="btn-primary"
-            >
-              Get Started
+            <Link href="/register" className="btn-primary">
+              Try It Free
             </Link>
           </nav>
         </div>
       </header>
 
       <main>
-        {/* Hero Section */}
-        <section className="container mx-auto px-4 py-24 text-center">
-          <div className="animate-fade-in">
-            <h1 className="mb-6 text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Where{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                AI Meets Aptitude
-              </span>
+        {/* Hero Section with Working Demo */}
+        <section className="container mx-auto px-4 py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
+              Natural Language Resume Search for Recruiters
             </h1>
-            <p className="mx-auto mb-8 max-w-3xl text-xl text-gray-600 dark:text-gray-400">
-              The complete AI-powered recruitment platform featuring revolutionary <span className="font-semibold text-blue-600">Mind Reader Search</span>, 
-              AI Interview Copilot, personalized outreach messages, and data-driven hiring insights.
+            <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
+              Find candidates by describing what you need. No Boolean queries.
             </p>
-            
-            {/* Demo Search Bar */}
-            <div className="mx-auto max-w-2xl mb-8">
-              <div className="relative group">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5 z-10 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="Try: Product manager with B2B SaaS experience and strong analytics skills..."
-                  className="w-full pl-12 pr-4 py-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm group-hover:shadow-md transition-all cursor-pointer hover:border-blue-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  onClick={handleSearchClick}
-                  onFocus={handleSearchClick}
-                  readOnly
-                />
-                {showSearchPrompt && (
-                  <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg shadow-lg animate-fade-in">
-                    <p className="text-sm text-blue-700 dark:text-blue-300 font-medium">
-                      🚀 Sign up to unlock powerful AI search capabilities!
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
 
-            <div className="flex justify-center gap-4 flex-wrap">
-              <Link
-                href="/register"
-                className="btn-primary px-8 py-3 text-lg flex items-center gap-2"
-              >
-                <Sparkles className="h-5 w-5" />
-                Try Mind Reader Search
-              </Link>
-              <Link
-                href="#interview-copilot"
-                className="btn-secondary px-8 py-3 text-lg flex items-center gap-2"
-              >
-                <MessageSquare className="h-5 w-5" />
-                See AI Copilot
-              </Link>
-              <Link
-                href="#features"
-                className="btn-secondary px-8 py-3 text-lg"
-              >
-                Learn More
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works */}
-        <section className="py-24 bg-gray-50 dark:bg-gray-800/50">
-          <div className="container mx-auto px-4">
-            <h2 className="mb-12 text-center text-3xl font-bold text-gray-900 dark:text-white">
-              How It Works
-            </h2>
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-              <div className="text-center animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30">
-                  <Upload className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                  Upload & Organize
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Bulk upload resumes. AI automatically parses and organizes candidate data.
-                </p>
-              </div>
-              <div className="text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30">
-                  <Search className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                  Search with AI
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Use natural language to find perfect matches with advanced filters.
-                </p>
-              </div>
-              <div className="text-center animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30">
-                  <Bot className="h-8 w-8 text-purple-600 dark:text-purple-400" />
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                  Interview Smarter
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  AI Copilot assists with live transcription and smart suggestions.
-                </p>
-              </div>
-              <div className="text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <div className="mb-4 inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30">
-                  <FileCheck className="h-8 w-8 text-orange-600 dark:text-orange-400" />
-                </div>
-                <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                  Hire with Confidence
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  AI-generated scorecards and analytics help you make better decisions.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Mind Reader Search Showcase */}
-        <section className="py-24 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20">
-          <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="animate-fade-in">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300 mb-4">
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  Revolutionary Search Technology
-                </span>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                  Mind Reader Search
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                  Experience search that truly understands you. Our AI doesn't just match keywords - 
-                  it understands context, corrects typos, expands skills, and finds hidden gems you'd miss with traditional search.
-                </p>
-                
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Progressive 3-Stage Search</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Instant results in &lt;50ms, enhanced in &lt;200ms, AI insights in &lt;500ms</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Natural Language Understanding</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Knows "unicorn developer" means full-stack + leadership skills</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Intelligent Corrections</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Auto-corrects "Pythonn developr" to find Python developers</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Skill Expansion</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Searching for React? Also finds Next.js, Redux, and TypeScript experts</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-6 mb-8">
-                  <div>
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">95%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Relevance Accuracy</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">&lt;300ms</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Response Time</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">1M+</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Resumes Searchable</div>
-                  </div>
-                </div>
-
-                <Link href="/register" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
-                  <Sparkles className="h-5 w-5" />
-                  Experience Mind Reader Search
-                </Link>
-              </div>
-              
-              <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center">
-                        <Brain className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Mind Reader Search</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered intelligent search</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Search className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Your Search</span>
-                      </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">"Pythonn developr with AMS experience"</p>
-                    </div>
-                    
-                    <div className="bg-amber-50 dark:bg-amber-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="h-4 w-4 text-amber-500" />
-                        <span className="text-xs font-medium text-amber-600 dark:text-amber-400">Auto-Corrected</span>
-                      </div>
-                      <p className="text-sm text-amber-700 dark:text-amber-300">Searching for "Python developer with AWS experience"</p>
-                    </div>
-                    
-                    <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Brain className="h-4 w-4 text-blue-500" />
-                        <span className="text-xs font-medium text-blue-600 dark:text-blue-400">AI Understanding</span>
-                      </div>
-                      <div className="text-xs space-y-1">
-                        <p className="text-blue-700 dark:text-blue-300"><span className="font-medium">Primary:</span> Python, AWS</p>
-                        <p className="text-blue-700 dark:text-blue-300"><span className="font-medium">Related:</span> Django, Flask, Lambda, EC2</p>
-                        <p className="text-blue-700 dark:text-blue-300"><span className="font-medium">Experience:</span> Mid to Senior level</p>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Zap className="h-4 w-4 text-green-500" />
-                        <span className="text-xs font-medium text-green-600 dark:text-green-400">Progressive Results</span>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                            <div className="absolute inset-0 w-3 h-3 bg-yellow-500 rounded-full animate-ping opacity-75"></div>
-                          </div>
-                          <span className="text-xs text-green-700 dark:text-green-300">Stage 1: 15 instant matches (48ms)</span>
-                        </div>
-                        <div className="w-full h-px bg-gradient-to-r from-yellow-400 to-blue-400 opacity-50"></div>
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-                            <div className="absolute inset-0 w-3 h-3 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-                          </div>
-                          <span className="text-xs text-blue-700 dark:text-blue-300">Stage 2: 25 enhanced matches (186ms)</span>
-                        </div>
-                        <div className="w-full h-px bg-gradient-to-r from-blue-400 to-purple-400 opacity-50"></div>
-                        <div className="flex items-center gap-3">
-                          <div className="relative">
-                            <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-                            <div className="absolute inset-0 w-3 h-3 bg-purple-500 rounded-full animate-ping opacity-75"></div>
-                          </div>
-                          <span className="text-xs text-purple-700 dark:text-purple-300">Stage 3: AI insights generated (423ms)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* New Features Announcement */}
-        <section className="py-16 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-8">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300 mb-4">
-                <Sparkles className="h-4 w-4 mr-1" />
-                Just Launched
-              </span>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                Intelligence Beyond Keywords
-              </h2>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-full flex items-center justify-center mb-4">
-                  <Radar className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Smart Talent Radar
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Visualize candidates on an interactive radar showing availability, learning speed, and match strength at a glance.
-                </p>
-                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Green = Available now</li>
-                  <li>• Size = Match strength</li>
-                  <li>• Animation = Learning velocity</li>
-                </ul>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mb-4">
-                  <GitBranch className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Career DNA Matching
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  Find candidates with similar career trajectories to your top performers using AI pattern recognition.
-                </p>
-                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Fast track vs. deep specialist</li>
-                  <li>• Growth pattern analysis</li>
-                  <li>• "Find similar" with one click</li>
-                </ul>
-              </div>
-              
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full flex items-center justify-center mb-4">
-                  <Activity className="h-6 w-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Real-Time Analytics
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  See candidate availability scores and learning velocity calculated from their career data in real-time.
-                </p>
-                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                  <li>• Availability indicators</li>
-                  <li>• Learning speed metrics</li>
-                  <li>• Career trajectory insights</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="py-16 border-y border-gray-200 dark:border-gray-700">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 text-center">
-              <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">1000+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Resumes Processed</div>
-              </div>
-              <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">200+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Interviews Conducted</div>
-              </div>
-              <div className="animate-fade-in" style={{ animationDelay: '0.3s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">&lt;300ms</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Search Response</div>
-              </div>
-              <div className="animate-fade-in" style={{ animationDelay: '0.4s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">95%</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Match Accuracy</div>
-              </div>
-              <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">500+</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Outreach Messages</div>
-              </div>
-              <div className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                <div className="text-4xl font-bold text-primary mb-2">3x</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Response Rate</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Features */}
-        <section id="features" className="py-24">
-          <div className="container mx-auto px-4">
-            <h2 className="mb-4 text-center text-3xl font-bold text-gray-900 dark:text-white">
-              Everything You Need to Hire Better
-            </h2>
-            <p className="mb-12 text-center text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              From finding candidates to making hiring decisions, Promptitude has you covered with AI-powered features.
-            </p>
-            
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {features.map((feature, index) => {
-                const getCategoryColor = (category: string) => {
-                  switch(category) {
-                    case 'search': return 'from-blue-500/10 to-blue-600/10 border-blue-500/20';
-                    case 'interview': return 'from-purple-500/10 to-purple-600/10 border-purple-500/20';
-                    case 'analytics': return 'from-green-500/10 to-green-600/10 border-green-500/20';
-                    case 'outreach': return 'from-orange-500/10 to-orange-600/10 border-orange-500/20';
-                    case 'platform': return 'from-gray-500/10 to-gray-600/10 border-gray-500/20';
-                    default: return 'from-gray-500/10 to-gray-600/10 border-gray-500/20';
-                  }
-                };
-
-                const getIconColor = (category: string) => {
-                  switch(category) {
-                    case 'search': return 'text-blue-600 dark:text-blue-400';
-                    case 'interview': return 'text-purple-600 dark:text-purple-400';
-                    case 'analytics': return 'text-green-600 dark:text-green-400';
-                    case 'outreach': return 'text-orange-600 dark:text-orange-400';
-                    case 'platform': return 'text-gray-600 dark:text-gray-400';
-                    default: return 'text-gray-600 dark:text-gray-400';
-                  }
-                };
-
-                return (
-                  <div
-                    key={feature.title}
-                    className={`relative card p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-in bg-gradient-to-br ${getCategoryColor(feature.category)} border`}
-                    style={{ animationDelay: `${index * 0.05}s` }}
+            {/* Interactive Search Demo */}
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 mb-8">
+              <form onSubmit={handleSearch} className="mb-6">
+                <div className="relative max-w-2xl mx-auto">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery || demoTyping}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Try: Python developer with AWS experience"
+                    className="w-full pl-12 pr-4 py-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  />
+                  <button 
+                    type="submit"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
-                    {feature.isNew && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        NEW
-                      </span>
-                    )}
-                    <feature.icon className={`h-10 w-10 mb-4 ${getIconColor(feature.category)}`} />
-                    <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
-                      {feature.title}
-                    </h3>
+                    Search
+                  </button>
+                </div>
+              </form>
+
+              {/* Demo Results */}
+              {showResults && (
+                <div className="space-y-3 max-w-2xl mx-auto">
+                  <div className="text-left p-4 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-white">Sarah Chen</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Senior Python Developer • 8 years exp</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          Python, AWS, Django, PostgreSQL, Docker
+                        </p>
+                      </div>
+                      <span className="text-sm font-semibold text-green-600 dark:text-green-400">92% match</span>
+                    </div>
+                  </div>
+                  <div className="text-center">
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {feature.description}
+                      Found 47 matching candidates in 0.3 seconds
                     </p>
                   </div>
-                );
-              })}
+                </div>
+              )}
             </div>
+
+            <Link
+              href="/register"
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
+            >
+              Try It Free - No Credit Card
+              <ChevronRight className="ml-2 h-5 w-5" />
+            </Link>
+
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              Free tier: 20 resumes, 10 searches/month
+            </p>
           </div>
         </section>
 
-        {/* AI Interview Copilot Showcase */}
-        <section id="interview-copilot" className="py-24 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20">
+        {/* Value Metrics */}
+        <section className="border-y bg-gray-50 dark:bg-gray-800/50 py-12">
           <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="animate-fade-in">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300 mb-4">
-                  <Sparkles className="h-4 w-4 mr-1" />
-                  Game-Changing Feature
-                </span>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                  AI Interview Copilot
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                  Transform your interviews with real-time AI assistance. Never miss important questions, 
-                  get instant insights, and make better hiring decisions.
-                </p>
-                
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Live Transcription</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Real-time transcription with speaker identification and timestamps</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Smart Suggestions</h4>
-                      <p className="text-gray-600 dark:text-gray-400">AI-powered follow-up questions and red flag alerts</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Instant Scorecards</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Auto-generated scorecards based on actual interview content</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-6 mb-8">
-                  <div>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">70%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Time Saved</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">$0.27</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Per Interview</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">95%</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Accuracy</div>
-                  </div>
-                </div>
-
-                <Link href="/register" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
-                  <Bot className="h-5 w-5" />
-                  Try AI Copilot Free
-                </Link>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">0.3s</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Average search time</div>
               </div>
-              
-              <div className="relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center">
-                        <Bot className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">Interview Assistant</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered live assistance</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Mic className="h-4 w-4 text-red-500" />
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Recording</span>
-                      </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">"Tell me about your experience with React and TypeScript..."</p>
-                    </div>
-                    
-                    <div className="bg-purple-50 dark:bg-purple-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles className="h-4 w-4 text-purple-500" />
-                        <span className="text-xs font-medium text-purple-600 dark:text-purple-400">AI Suggestion</span>
-                      </div>
-                      <p className="text-sm text-purple-700 dark:text-purple-300">Ask about their experience with state management libraries</p>
-                    </div>
-                    
-                    <div className="bg-green-50 dark:bg-green-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-1">
-                        <TrendingUp className="h-4 w-4 text-green-500" />
-                        <span className="text-xs font-medium text-green-600 dark:text-green-400">Sentiment</span>
-                      </div>
-                      <p className="text-sm text-green-700 dark:text-green-300">Candidate showing high engagement and enthusiasm</p>
-                    </div>
-                  </div>
-                </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">85-90%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Relevance accuracy</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">70%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Time saved screening</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">$1.27</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Per resume/month</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* AI Outreach & Engagement Showcase */}
-        <section className="py-24 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20">
+        {/* Problem/Solution Comparison */}
+        <section className="py-16 lg:py-24">
           <div className="container mx-auto px-4">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              <div className="order-2 lg:order-1 relative animate-fade-in" style={{ animationDelay: '0.2s' }}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-12 h-12 bg-gradient-to-r from-orange-600 to-amber-600 rounded-full flex items-center justify-center">
-                        <Mail className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">AI Outreach Generator</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">Personalized messages in seconds</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Candidate Profile</span>
-                      </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Sarah Chen - Senior Frontend Engineer</p>
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">React, TypeScript, 8 years experience</p>
-                    </div>
-                    
-                    <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-3">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-orange-500" />
-                        <span className="text-xs font-medium text-orange-600 dark:text-orange-400">AI Generated - Professional Tone</span>
-                      </div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300">
-                        "Hi Sarah, I came across your impressive background in React and TypeScript. 
-                        We're looking for a Senior Frontend Engineer to lead our UI architecture initiative. 
-                        Your experience with design systems particularly caught my attention..."
-                      </p>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <button className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                        Casual
-                      </button>
-                      <button className="text-xs px-3 py-1 rounded-full bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400 font-medium">
-                        Professional
-                      </button>
-                      <button className="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                        Technical
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="order-1 lg:order-2 animate-fade-in">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-800/30 dark:text-orange-300 mb-4">
-                  <Mail className="h-4 w-4 mr-1" />
-                  Boost Response Rates
-                </span>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                  AI-Powered Outreach Messages
-                </h2>
-                <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
-                  Stop spending hours crafting personalized messages. Our AI generates compelling, 
-                  contextual outreach in seconds, with multiple tone options to match your style.
-                </p>
-                
-                <div className="space-y-4 mb-8">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Personalized at Scale</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Generate unique messages based on each candidate's profile</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Multiple Tones</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Choose between casual, professional, or technical messaging styles</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Chrome Extension</h4>
-                      <p className="text-gray-600 dark:text-gray-400">Import LinkedIn profiles instantly with our browser extension</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-6 mb-8">
-                  <div>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">3x</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Higher Response Rate</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">10s</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Per Message</div>
-                  </div>
-                  <div>
-                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">GPT-4</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Powered</div>
-                  </div>
-                </div>
-
-                <div className="flex flex-wrap gap-4">
-                  <Link href="/register" className="btn-primary inline-flex items-center gap-2 px-6 py-3">
-                    <Mail className="h-5 w-5" />
-                    Try AI Outreach Free
-                  </Link>
-                  <a 
-                    href="https://chromewebstore.google.com/detail/promtitude-linkedin-profi/hioainkifmclnejpkdhplemgfdpeddio" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="btn-secondary inline-flex items-center gap-2 px-6 py-3"
-                  >
-                    <Chrome className="h-5 w-5" />
-                    Get Chrome Extension
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-24 bg-primary text-white">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="mb-6 text-3xl font-bold">
-              Ready to Transform Your Hiring Process?
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+              The Screening Time Problem
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-xl opacity-90">
-              Join thousands of recruiters who are finding better candidates faster with Promtitude.
+            
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              {/* Traditional Way */}
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-red-900 dark:text-red-400 mb-4">
+                  Traditional Screening
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Clock className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <strong>15 minutes</strong> per resume manual review
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Clock className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <strong>3 hours</strong> for 100 resumes
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Clock className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Boolean search complexity
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Clock className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Miss candidates due to typos
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* With Promtitude */}
+              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-green-900 dark:text-green-400 mb-4">
+                  With Promtitude
+                </h3>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <strong>5 minutes</strong> per resume with AI assist
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      <strong>30 minutes</strong> for 100 resumes
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Natural language search
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      Auto-corrects typos
+                    </span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Core Features with Proof */}
+        <section className="py-16 lg:py-24 bg-gray-50 dark:bg-gray-800/50">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+              Three Features That Save You Time
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Mind Reader Search */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <Search className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  Natural Language Search
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Search like you think. Our AI understands context and corrects typos automatically.
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-3 text-sm">
+                  <p className="text-gray-600 dark:text-gray-400 mb-1">You type:</p>
+                  <p className="font-mono text-red-600 dark:text-red-400">"Pythonn developr"</p>
+                  <p className="text-gray-600 dark:text-gray-400 mt-2 mb-1">We search for:</p>
+                  <p className="font-mono text-green-600 dark:text-green-400">"Python developer"</p>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                  <strong>Time saved:</strong> 70% faster than Boolean
+                </p>
+              </div>
+
+              {/* Chrome Extension */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <Chrome className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  One-Click Import
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Import LinkedIn profiles instantly with our Chrome extension. No copy-paste needed.
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-3">
+                  <ol className="text-sm space-y-2">
+                    <li className="flex items-start gap-2">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">1.</span>
+                      <span className="text-gray-600 dark:text-gray-400">Visit LinkedIn profile</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">2.</span>
+                      <span className="text-gray-600 dark:text-gray-400">Click extension button</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-semibold text-gray-700 dark:text-gray-300">3.</span>
+                      <span className="text-gray-600 dark:text-gray-400">Profile imported!</span>
+                    </li>
+                  </ol>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                  <strong>Time saved:</strong> 2 minutes per profile
+                </p>
+              </div>
+
+              {/* AI Interview Assistant */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <Mic className="h-10 w-10 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  Interview Assistant
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Real-time transcription and AI suggestions during interviews. Never miss important details.
+                </p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Live transcription</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Smart follow-ups</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Auto scorecard</span>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
+                  <strong>Cost:</strong> $0.50 per 30-min interview
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing Preview */}
+        <section className="py-16 lg:py-24">
+          <div className="container mx-auto px-4">
+            <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
+              Simple, Transparent Pricing
+            </h2>
+
+            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+              {/* Free Tier */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Free</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$0<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 20 resumes</li>
+                  <li>• 10 searches/month</li>
+                  <li>• Chrome extension</li>
+                  <li>• Basic support</li>
+                </ul>
+              </div>
+
+              {/* Starter */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border-2 border-blue-500 relative">
+                <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded">Most Popular</span>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Starter</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$199<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 100 resumes</li>
+                  <li>• 50 AI searches/month</li>
+                  <li>• 100 outreach messages</li>
+                  <li>• Email support</li>
+                </ul>
+              </div>
+
+              {/* Professional */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Professional</h3>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$499<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
+                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 500 resumes</li>
+                  <li>• 200 AI searches/month</li>
+                  <li>• 10 AI interviews</li>
+                  <li>• Priority support</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="text-center mt-8">
+              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
+                See detailed pricing →
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Technical Transparency */}
+        <section className="py-12 bg-gray-50 dark:bg-gray-800/50">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Built with Trust and Transparency
+              </h3>
+              <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  <span>GDPR Compliant</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  <span>OpenAI GPT-4.1-mini</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4" />
+                  <span>No hidden fees</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
+                Best for teams hiring 5-50 people/year. Not a full ATS replacement.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Final CTA */}
+        <section className="py-16">
+          <div className="container mx-auto px-4 text-center">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Start Finding Better Candidates Today
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
+              Join recruiters who save 2.5 hours per 100 resumes with natural language search.
             </p>
             <Link
               href="/register"
-              className="inline-flex items-center px-8 py-3 bg-white text-primary hover:bg-gray-100 rounded-md font-medium transition-colors"
+              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
             >
-              Start Your Free Trial
+              Start Free - Find 20 Candidates
+              <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
         </section>
@@ -889,22 +455,13 @@ export default function HomePage() {
               </p>
             </div>
             <nav className="flex gap-6">
-              <Link
-                href="/privacy"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary"
-              >
+              <Link href="/privacy" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
                 Privacy Policy
               </Link>
-              <Link
-                href="/terms"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary"
-              >
+              <Link href="/terms" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
                 Terms of Service
               </Link>
-              <Link
-                href="/contact"
-                className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary"
-              >
+              <Link href="/contact" className="text-sm text-gray-600 dark:text-gray-400 hover:text-primary">
                 Contact
               </Link>
             </nav>
