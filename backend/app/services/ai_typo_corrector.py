@@ -162,10 +162,13 @@ Consider the technical recruiting context. Common issues include:
         return result
     
     async def _fallback_correction(self, query: str) -> Dict[str, Any]:
-        """Simple fallback correction using pattern matching."""
+        """Simple fallback correction using pattern matching and fuzzy matching."""
         corrections = []
         words = query.split()
         corrected_words = []
+        
+        # Import fuzzy matcher for dynamic typo correction
+        from app.services.fuzzy_matcher import fuzzy_matcher
         
         # Common technical typos
         common_typos = {

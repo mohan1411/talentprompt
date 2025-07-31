@@ -146,6 +146,16 @@ Be comprehensive but realistic. Don't over-interpret."""
         """Enhance basic parse with rule-based logic when GPT-4.1-mini unavailable."""
         enhanced = basic_parse.copy()
         
+        # IMPORTANT: If we have a corrected_query but empty skills, re-extract skills
+        if enhanced.get("corrected_query") and not enhanced.get("skills"):
+            corrected_words = enhanced["corrected_query"].lower().split()
+            for word in corrected_words:
+                if word in query_parser.known_skills:
+                    if "skills" not in enhanced:
+                        enhanced["skills"] = []
+                    enhanced["skills"].append(word)
+            logger.info(f"[GPT4] Re-extracted skills from corrected query: {enhanced.get('skills')}")
+        
         # Add implied skills based on primary skills
         implied_skills = []
         # Define secondary skills (nice to have) for each primary skill
@@ -219,7 +229,13 @@ Be comprehensive but realistic. Don't over-interpret."""
         logger.info(f"[GPT4] Original query: {enhanced.get('original_query')}")
         logger.info(f"[GPT4] Corrected query: {enhanced.get('corrected_query')}")
         
-        for skill in enhanced.get("skills", []):
+        # Ensure we have skills to work with
+        skills_to_process = enhanced.get("skills", [])
+        if not skills_to_process and enhanced.get("primary_skills"):
+            skills_to_process = enhanced.get("primary_skills", [])
+            logger.info(f"[GPT4] Using primary_skills instead: {skills_to_process}")
+        
+        for skill in skills_to_process:
             skill_lower = skill.lower()
             # Try exact match first
             if skill_lower in secondary_skill_map:

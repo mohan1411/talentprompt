@@ -133,6 +133,30 @@ class ProgressiveSearchEngine:
                 # Get suggestions from enhanced basic analysis
                 search_suggestions = gpt4_analyzer.get_search_suggestions(enhanced_basic)
                 logger.info(f"[PROGRESSIVE] Using enhanced basic analysis - secondary skills: {frontend_query_analysis['secondary_skills']}")
+                
+                # CRITICAL FIX: If we still have no secondary skills but we have primary skills,
+                # force populate them based on the primary skills
+                if (not frontend_query_analysis.get("secondary_skills") and 
+                    frontend_query_analysis.get("primary_skills")):
+                    logger.warning("[PROGRESSIVE] No secondary skills found, forcing population")
+                    
+                    # Manual skill mappings as last resort
+                    skill_map = {
+                        "javascript": ["react", "node.js", "typescript", "vue", "angular"],
+                        "python": ["django", "flask", "fastapi", "pandas", "numpy"],
+                        "java": ["spring", "spring boot", "hibernate", "maven", "gradle"],
+                        "aws": ["docker", "terraform", "kubernetes", "lambda", "s3"],
+                        "react": ["redux", "next.js", "styled-components", "webpack", "jest"],
+                        "go": ["microservices", "grpc", "docker", "kubernetes", "prometheus"],
+                        "golang": ["microservices", "grpc", "docker", "kubernetes", "prometheus"],
+                    }
+                    
+                    for primary_skill in frontend_query_analysis["primary_skills"]:
+                        skill_lower = primary_skill.lower()
+                        if skill_lower in skill_map:
+                            frontend_query_analysis["secondary_skills"] = skill_map[skill_lower]
+                            logger.info(f"[PROGRESSIVE] Force populated secondary skills: {skill_map[skill_lower]}")
+                            break
             except Exception as e2:
                 logger.error(f"Enhanced basic analysis also failed: {e2}")
                 # Ultimate fallback
