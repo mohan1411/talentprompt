@@ -13,10 +13,10 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Promtitude"
     VERSION: str = "0.1.0"
     API_V1_STR: str = "/api/v1"
-    DEBUG: bool = True  # Set to False in production
+    DEBUG: bool = Field(default=False)  # Must be False in production, can override for dev
     
     # Security
-    SECRET_KEY: str = Field(default="local-dev-secret-key-change-in-production", min_length=32)
+    SECRET_KEY: str = Field(min_length=32)  # No default - must be set via environment
     JWT_SECRET_KEY: Optional[str] = Field(default=None)  # Alias for SECRET_KEY if provided
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
     
@@ -25,6 +25,10 @@ class Settings(BaseSettings):
         """Use JWT_SECRET_KEY as SECRET_KEY if SECRET_KEY is not provided."""
         if not values.get('SECRET_KEY') and values.get('JWT_SECRET_KEY'):
             values['SECRET_KEY'] = values['JWT_SECRET_KEY']
+        # Validate DEBUG is False in production
+        import os
+        if os.getenv('ENVIRONMENT') == 'production' and values.get('DEBUG', False):
+            raise ValueError('DEBUG must be False in production environment')
         return values
     
     @model_validator(mode='after')
@@ -63,8 +67,17 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    # Allowed Hosts
-    ALLOWED_HOSTS: List[str] = ["*"]
+    # Allowed Hosts - restrict in production
+    ALLOWED_HOSTS: List[str] = Field(
+        default=[
+            "localhost",
+            "127.0.0.1",
+            "promtitude.com",
+            "www.promtitude.com",
+            "promtitude-backend-production.up.railway.app",
+            "talentprompt-production.up.railway.app"
+        ]
+    )
     
     # Database
     POSTGRES_SERVER: str = "localhost"
