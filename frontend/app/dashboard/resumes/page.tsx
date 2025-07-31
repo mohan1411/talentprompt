@@ -212,7 +212,17 @@ export default function ResumesPage() {
 
   // Calculate grid dimensions based on viewport
   const gridContainerRef = useRef<HTMLDivElement>(null);
-  const [gridDimensions, setGridDimensions] = useState({ width: 0, height: 600, columns: 3 });
+  // Initialize with reasonable defaults based on window size
+  const getInitialColumns = () => {
+    if (typeof window === 'undefined') return 3;
+    const width = window.innerWidth;
+    return width < 640 ? 1 : width < 1024 ? 2 : 3;
+  };
+  const [gridDimensions, setGridDimensions] = useState({ 
+    width: typeof window !== 'undefined' ? window.innerWidth - 100 : 1200, 
+    height: 600, 
+    columns: getInitialColumns() 
+  });
   const [isGridReady, setIsGridReady] = useState(false);
 
   useEffect(() => {
@@ -222,13 +232,22 @@ export default function ResumesPage() {
         const containerRect = gridContainerRef.current.getBoundingClientRect();
         const height = Math.max(600, window.innerHeight - containerRect.top - 100);
         const columns = width < 640 ? 1 : width < 1024 ? 2 : 3;
-        setGridDimensions({ width, height, columns });
-        setIsGridReady(true);
+        
+        // Only update if we have valid dimensions
+        if (width > 0) {
+          setGridDimensions({ width, height, columns });
+          setIsGridReady(true);
+        }
       }
     };
 
-    // Initial calculation with a small delay to ensure DOM is ready
-    const timeoutId = setTimeout(updateDimensions, 100);
+    // Try multiple times to ensure dimensions are available
+    updateDimensions(); // Try immediately
+    
+    // Try again after small delays
+    const timeout1 = setTimeout(updateDimensions, 50);
+    const timeout2 = setTimeout(updateDimensions, 150);
+    const timeout3 = setTimeout(updateDimensions, 300);
     
     // Set up resize observer for more reliable dimension updates
     const resizeObserver = new ResizeObserver(updateDimensions);
@@ -239,10 +258,16 @@ export default function ResumesPage() {
     // Also listen to window resize as fallback
     window.addEventListener('resize', updateDimensions);
     
+    // Force update on load event
+    window.addEventListener('load', updateDimensions);
+    
     return () => {
-      clearTimeout(timeoutId);
+      clearTimeout(timeout1);
+      clearTimeout(timeout2);
+      clearTimeout(timeout3);
       resizeObserver.disconnect();
       window.removeEventListener('resize', updateDimensions);
+      window.removeEventListener('load', updateDimensions);
     };
   }, []);
 
@@ -806,8 +831,8 @@ export default function ResumesPage() {
         </motion.div>
       ) : viewMode === 'grid' ? (
         // Virtual Grid View
-        <div ref={gridContainerRef} className="min-h-[600px]" style={{ height: 'calc(100vh - 300px)' }}>
-          {!isGridReady ? (
+        <div ref={gridContainerRef} className="min-h-[600px] w-full" style={{ height: 'calc(100vh - 300px)' }}>
+          {!isGridReady || gridDimensions.width === 0 ? (
             // Loading skeleton while grid initializes
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
@@ -831,11 +856,11 @@ export default function ResumesPage() {
           ) : (
             <Grid
               columnCount={gridDimensions.columns}
-              columnWidth={(gridDimensions.width - 32) / gridDimensions.columns}
+              columnWidth={Math.max(300, (gridDimensions.width - 32) / gridDimensions.columns)}
               height={gridDimensions.height}
               rowCount={Math.ceil(filteredAndSortedResumes.length / gridDimensions.columns)}
               rowHeight={320}
-              width={gridDimensions.width}
+              width={gridDimensions.width || window.innerWidth - 100}
               itemData={{
                 resumes: filteredAndSortedResumes,
                 columns: gridDimensions.columns,
