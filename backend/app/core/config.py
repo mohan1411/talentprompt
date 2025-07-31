@@ -27,8 +27,13 @@ class Settings(BaseSettings):
             values['SECRET_KEY'] = values['JWT_SECRET_KEY']
         # Validate DEBUG is False in production
         import os
-        if os.getenv('ENVIRONMENT') == 'production' and values.get('DEBUG', False):
-            raise ValueError('DEBUG must be False in production environment')
+        if os.getenv('ENVIRONMENT') == 'production':
+            debug_value = values.get('DEBUG', False)
+            # Handle string values from environment variables
+            if isinstance(debug_value, str):
+                debug_value = debug_value.lower() in ('true', '1', 'yes', 'on')
+            if debug_value:
+                raise ValueError('DEBUG must be False in production environment')
         return values
     
     @model_validator(mode='after')
