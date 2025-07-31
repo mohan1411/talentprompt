@@ -174,13 +174,21 @@ Consider the technical recruiting context. Common issues include:
             "pyton": "python",
             "javscript": "javascript",
             "javascirpt": "javascript",
+            "javascpt": "javascript",  # Common typo
+            "javasript": "javascript",
+            "javascrpt": "javascript",
             "typscript": "typescript",
+            "typescipt": "typescript",
             "kuberentes": "kubernetes",
+            "kubernets": "kubernetes",
             "dokcer": "docker",
+            "dockr": "docker",
             "ams": "aws",  # In tech context
             "amazone": "amazon",
             "gogle": "google",
-            "miscrosoft": "microsoft"
+            "googl": "google",
+            "miscrosoft": "microsoft",
+            "microsft": "microsoft"
         }
         
         for word in words:

@@ -22,7 +22,7 @@ class FuzzyMatcher:
         
         # Common typos and variations
         self.common_replacements = {
-            "javascript": ["javscript", "javascirpt", "javascrpt", "javasript", "javascipt"],
+            "javascript": ["javscript", "javascirpt", "javascrpt", "javasript", "javascipt", "javascpt", "javascrpt"],
             "python": ["pyton", "pythoon", "pythn", "pythonn", "pythno", "phyton", "pyhton"],
             "kubernetes": ["kubernets", "kuberentes", "k8", "kubenetes", "kubernates"],
             "postgresql": ["postgre", "postgres", "postgress", "postgressql", "psql"],
