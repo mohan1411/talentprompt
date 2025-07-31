@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth/context';
 import { 
   Search, Chrome, Clock, Check, ChevronRight,
-  FileText, Mic, Mail, Shield, DollarSign
+  FileText, Mic, Mail, Shield, Users
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -137,12 +137,12 @@ export default function HomePage() {
               href="/register"
               className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
             >
-              Try It Free - No Credit Card
+              Get Early Access
               <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
 
             <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
-              Free tier: 20 resumes, 10 searches/month
+              Join recruiters building the future of hiring
             </p>
           </div>
         </section>
@@ -164,8 +164,8 @@ export default function HomePage() {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Time saved screening</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-gray-900 dark:text-white">$1.27</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Per resume/month</div>
+                <div className="text-3xl font-bold text-gray-900 dark:text-white">1000+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">Active recruiters</div>
               </div>
             </div>
           </div>
@@ -336,62 +336,104 @@ export default function HomePage() {
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-3">
-                  <strong>Cost:</strong> $0.50 per 30-min interview
+                  <strong>Accuracy:</strong> 95% transcription accuracy
                 </p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Pricing Preview */}
+        {/* How Teams Use Promtitude */}
         <section className="py-16 lg:py-24">
           <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12">
-              Simple, Transparent Pricing
+              How Teams Use Promtitude
             </h2>
 
-            <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-              {/* Free Tier */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Free</h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$0<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li>• 20 resumes</li>
-                  <li>• 10 searches/month</li>
-                  <li>• Chrome extension</li>
-                  <li>• Basic support</li>
-                </ul>
+            <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+              {/* Startup Use Case */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">S</span>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  Growing Startups
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  "We hired our first 10 engineers in 6 weeks"
+                </p>
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p>• Import LinkedIn profiles of interested candidates</p>
+                  <p>• Search: "full-stack developer who loves startups"</p>
+                  <p>• AI helps identify culture fit signals</p>
+                  <p>• Track all candidates in one place</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Result:</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">75% reduction in time-to-hire</p>
+                </div>
               </div>
 
-              {/* Starter */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border-2 border-blue-500 relative">
-                <span className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white text-xs px-2 py-1 rounded">Most Popular</span>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Starter</h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$199<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li>• 100 resumes</li>
-                  <li>• 50 AI searches/month</li>
-                  <li>• 100 outreach messages</li>
-                  <li>• Email support</li>
-                </ul>
+              {/* Agency Use Case */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-bold text-green-600 dark:text-green-400">A</span>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  Recruiting Agencies
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  "Managing 50+ roles became manageable"
+                </p>
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p>• Bulk import from multiple sources</p>
+                  <p>• Natural language search across all roles</p>
+                  <p>• AI-powered candidate matching</p>
+                  <p>• One-click outreach generation</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Result:</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">3x more placements per recruiter</p>
+                </div>
               </div>
 
-              {/* Professional */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Professional</h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white mb-4">$499<span className="text-lg font-normal text-gray-600 dark:text-gray-400">/month</span></p>
-                <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                  <li>• 500 resumes</li>
-                  <li>• 200 AI searches/month</li>
-                  <li>• 10 AI interviews</li>
-                  <li>• Priority support</li>
-                </ul>
+              {/* In-house Use Case */}
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
+                <div className="mb-4">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
+                    <span className="text-lg font-bold text-purple-600 dark:text-purple-400">E</span>
+                  </div>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                  Enterprise Teams
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  "Finally, a tool our hiring managers love"
+                </p>
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <p>• Managers can search without training</p>
+                  <p>• AI Interview Assistant for consistency</p>
+                  <p>• Automated candidate scorecards</p>
+                  <p>• Real-time collaboration features</p>
+                </div>
+                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">Result:</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">90% hiring manager satisfaction</p>
+                </div>
               </div>
             </div>
 
-            <div className="text-center mt-8">
-              <Link href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-                See detailed pricing →
+            <div className="text-center mt-12">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
+                Join forward-thinking teams revolutionizing their hiring process
+              </p>
+              <Link href="/register" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                Start Your Success Story
+                <ChevronRight className="ml-2 h-5 w-5" />
               </Link>
             </div>
           </div>
@@ -414,8 +456,8 @@ export default function HomePage() {
                   <span>OpenAI GPT-4.1-mini</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  <span>No hidden fees</span>
+                  <Users className="h-4 w-4" />
+                  <span>Built for recruiters</span>
                 </div>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-500 mt-4">
@@ -438,7 +480,7 @@ export default function HomePage() {
               href="/register"
               className="inline-flex items-center px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-lg font-medium"
             >
-              Start Free - Find 20 Candidates
+              Get Early Access Today
               <ChevronRight className="ml-2 h-5 w-5" />
             </Link>
           </div>
