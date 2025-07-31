@@ -50,7 +50,8 @@ class Settings(BaseSettings):
             "http://localhost:8000",
             "https://promtitude.com",
             "https://www.promtitude.com",
-            "https://promtitude.vercel.app"
+            "https://promtitude.vercel.app",
+            "https://promtitude-backend-production.up.railway.app"
         ]
     )
 
