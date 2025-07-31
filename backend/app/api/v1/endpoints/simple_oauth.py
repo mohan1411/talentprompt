@@ -26,10 +26,20 @@ oauth_states: Dict[str, Dict[str, Any]] = {}
 
 
 @router.get("/google/login")
-async def google_oauth_login(redirect_uri: Optional[str] = None):
+async def google_oauth_login(request: Request, redirect_uri: Optional[str] = None):
     """Initiate Google OAuth login flow."""
     # Generate a random state for CSRF protection
     state = secrets.token_urlsafe(32)
+    
+    # Get the actual API URL from the request
+    base_url = str(request.base_url).rstrip('/')
+    # In production, this should be the actual backend URL
+    api_base_url = base_url if "localhost" not in base_url else settings.API_URL
+    
+    # For production environments, use the actual backend URL
+    if settings.ENVIRONMENT == "production" or "promtitude" in settings.FRONTEND_URL:
+        # Use the production backend URL
+        api_base_url = "https://promtitude-backend-production.up.railway.app"
     
     # Store state with expiration (5 minutes)
     oauth_states[state] = {
@@ -49,7 +59,7 @@ async def google_oauth_login(redirect_uri: Optional[str] = None):
     # Build Google OAuth URL
     google_auth_params = {
         "client_id": settings.GOOGLE_CLIENT_ID or "dummy_client_id",
-        "redirect_uri": f"{settings.API_URL}/api/v1/oauth/google/callback",
+        "redirect_uri": f"{api_base_url}/api/v1/oauth/google/callback",
         "response_type": "code",
         "scope": "openid email profile",
         "state": state,

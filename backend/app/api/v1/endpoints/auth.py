@@ -4,7 +4,7 @@ import logging
 from datetime import timedelta
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,14 +27,24 @@ logger = logging.getLogger(__name__)
 
 # Simple OAuth endpoint for frontend compatibility
 @router.get("/oauth/google/login")
-async def google_oauth_login():
+async def google_oauth_login(request: Request):
     """Simple OAuth endpoint that works without authlib for development."""
-    # For development, redirect to a mock OAuth flow
-    mock_oauth_url = "http://localhost:8001/api/v1/auth/oauth/mock/select-user"
-    return {
-        "auth_url": mock_oauth_url,
-        "state": "dummy_state"
-    }
+    # Get the base URL from the request
+    base_url = str(request.base_url).rstrip('/')
+    
+    # For local development, use mock OAuth flow
+    if settings.ENVIRONMENT == "development" or "localhost" in settings.FRONTEND_URL:
+        mock_oauth_url = f"{base_url}/api/v1/auth/oauth/mock/select-user"
+        return {
+            "auth_url": mock_oauth_url,
+            "state": "dummy_state"
+        }
+    
+    # For production, redirect to the simple OAuth endpoint
+    # The simple_oauth router is mounted at /api/v1/oauth
+    oauth_url = f"{base_url}/api/v1/oauth/google/login"
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=oauth_url)
 
 @router.get("/oauth/mock/select-user")
 async def mock_oauth_select_user():
@@ -98,7 +108,7 @@ async def mock_oauth_callback(email: str, db: AsyncSession = Depends(get_db)):
     )
     
     # Redirect to frontend with token
-    redirect_url = f"http://localhost:3000/auth/callback?access_token={access_token}&token_type=bearer&email={email}"
+    redirect_url = f"{settings.FRONTEND_URL}/auth/callback?access_token={access_token}&token_type=bearer&email={email}"
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url=redirect_url)
 

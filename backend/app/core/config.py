@@ -149,6 +149,9 @@ class Settings(BaseSettings):
     # Frontend URL for OAuth redirects
     FRONTEND_URL: str = "http://localhost:3000"
     
+    # Backend API URL for OAuth callbacks
+    API_URL: str = "http://localhost:8000"
+    
     # Other
     SENTRY_DSN: Optional[str] = None
     LOG_LEVEL: str = "INFO"
