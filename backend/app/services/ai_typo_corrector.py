@@ -177,6 +177,7 @@ Consider the technical recruiting context. Common issues include:
             "javascpt": "javascript",  # Common typo
             "javasript": "javascript",
             "javascrpt": "javascript",
+            "javacript": "javascript",  # Another common typo
             "typscript": "typescript",
             "typescipt": "typescript",
             "kuberentes": "kubernetes",
