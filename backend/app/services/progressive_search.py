@@ -72,17 +72,64 @@ class ProgressiveSearchEngine:
         required_skills = parsed_query["skills"]
         primary_skill = parsed_query.get("primary_skill")
         
-        # Transform parsed_query to match frontend expectations
-        frontend_query_analysis = {
-            "primary_skills": parsed_query.get("skills", []),
-            "secondary_skills": [],  # TODO: Implement secondary skills detection
-            "implied_skills": [],    # TODO: Implement implied skills
-            "experience_level": self._determine_experience_level(parsed_query),
-            "role_type": parsed_query.get("roles", ["any"])[0] if parsed_query.get("roles") else "any",
-            "search_intent": "technical" if parsed_query.get("skills") else "general",
-            "corrected_query": parsed_query.get("corrected_query"),
-            "original_query": parsed_query.get("original_query", query)
-        }
+        # Get advanced analysis using GPT4 for Mind Reader Search
+        search_suggestions = []
+        try:
+            # Use corrected query if available, otherwise use original query
+            query_for_analysis = parsed_query.get("corrected_query", query)
+            gpt4_analysis = await gpt4_analyzer.analyze_query(query_for_analysis)
+            
+            # Transform to frontend format, preferring GPT4 analysis when available
+            frontend_query_analysis = {
+                "primary_skills": gpt4_analysis.get("primary_skills", parsed_query.get("skills", [])),
+                "secondary_skills": gpt4_analysis.get("secondary_skills", []),
+                "implied_skills": gpt4_analysis.get("implied_skills", []),
+                "experience_level": gpt4_analysis.get("experience_level", self._determine_experience_level(parsed_query)),
+                "role_type": gpt4_analysis.get("role_type", parsed_query.get("roles", ["any"])[0] if parsed_query.get("roles") else "any"),
+                "search_intent": gpt4_analysis.get("search_intent", "technical" if parsed_query.get("skills") else "general"),
+                "corrected_query": parsed_query.get("corrected_query") if parsed_query.get("corrected_query") != query else None,
+                "original_query": query if parsed_query.get("corrected_query") else None
+            }
+            
+            # Get search suggestions
+            search_suggestions = gpt4_analyzer.get_search_suggestions(gpt4_analysis)
+            
+            logger.info(f"[PROGRESSIVE] GPT4 analysis successful")
+            logger.info(f"[PROGRESSIVE] Primary skills: {frontend_query_analysis['primary_skills']}")
+            logger.info(f"[PROGRESSIVE] Secondary skills: {frontend_query_analysis['secondary_skills']}")
+            logger.info(f"[PROGRESSIVE] Implied skills: {frontend_query_analysis['implied_skills']}")
+            logger.info(f"[PROGRESSIVE] Suggestions: {search_suggestions}")
+        except Exception as e:
+            logger.warning(f"GPT4 analysis failed, using enhanced basic analysis: {e}")
+            # Use the enhanced basic parse from GPT4 analyzer
+            try:
+                enhanced_basic = gpt4_analyzer._enhance_basic_parse(parsed_query)
+                frontend_query_analysis = {
+                    "primary_skills": enhanced_basic.get("primary_skills", parsed_query.get("skills", [])),
+                    "secondary_skills": enhanced_basic.get("secondary_skills", []),
+                    "implied_skills": enhanced_basic.get("implied_skills", []),
+                    "experience_level": enhanced_basic.get("experience_level", self._determine_experience_level(parsed_query)),
+                    "role_type": enhanced_basic.get("role_type", parsed_query.get("roles", ["any"])[0] if parsed_query.get("roles") else "any"),
+                    "search_intent": enhanced_basic.get("search_intent", "technical" if parsed_query.get("skills") else "general"),
+                    "corrected_query": parsed_query.get("corrected_query") if parsed_query.get("corrected_query") != query else None,
+                    "original_query": query if parsed_query.get("corrected_query") else None
+                }
+                # Get suggestions from enhanced basic analysis
+                search_suggestions = gpt4_analyzer.get_search_suggestions(enhanced_basic)
+                logger.info(f"[PROGRESSIVE] Using enhanced basic analysis - secondary skills: {frontend_query_analysis['secondary_skills']}")
+            except Exception as e2:
+                logger.error(f"Enhanced basic analysis also failed: {e2}")
+                # Ultimate fallback
+                frontend_query_analysis = {
+                    "primary_skills": parsed_query.get("skills", []),
+                    "secondary_skills": [],
+                    "implied_skills": [],
+                    "experience_level": self._determine_experience_level(parsed_query),
+                    "role_type": parsed_query.get("roles", ["any"])[0] if parsed_query.get("roles") else "any",
+                    "search_intent": "technical" if parsed_query.get("skills") else "general",
+                    "corrected_query": parsed_query.get("corrected_query") if parsed_query.get("corrected_query") != query else None,
+                    "original_query": query if parsed_query.get("corrected_query") else None
+                }
         
         logger.info(f"Progressive search started: '{query}' for user {user_id}")
         print(f"\n[PROGRESSIVE SEARCH] Started for query: '{query}'")
@@ -99,6 +146,7 @@ class ProgressiveSearchEngine:
             "search_id": search_id,
             "query": query,
             "parsed_query": frontend_query_analysis,
+            "suggestions": search_suggestions,
             "results": stage1_results,
             "count": len(stage1_results),
             "timing_ms": int((time.time() - start_time) * 1000),
@@ -127,6 +175,7 @@ class ProgressiveSearchEngine:
             "search_id": search_id,
             "query": query,
             "parsed_query": frontend_query_analysis,
+            "suggestions": search_suggestions,
             "results": merged_results,
             "count": len(merged_results),
             "timing_ms": int((time.time() - start_time) * 1000),
@@ -148,6 +197,7 @@ class ProgressiveSearchEngine:
             "search_id": search_id,
             "query": query,
             "parsed_query": frontend_query_analysis,
+            "suggestions": search_suggestions,
             "results": final_results[:limit],
             "count": len(final_results[:limit]),
             "timing_ms": int((time.time() - start_time) * 1000),

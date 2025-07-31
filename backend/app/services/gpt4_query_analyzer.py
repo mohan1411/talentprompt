@@ -130,22 +130,47 @@ Be comprehensive but realistic. Don't over-interpret."""
         
         # Add implied skills based on primary skills
         implied_skills = []
-        skill_implications = {
-            "python": ["pip", "virtualenv", "debugging"],
-            "javascript": ["npm", "es6", "async/await"],
-            "react": ["javascript", "jsx", "state management"],
-            "aws": ["cloud", "linux", "networking"],
-            "docker": ["containers", "linux", "devops"],
-            "kubernetes": ["docker", "yaml", "helm"],
-            "machine learning": ["python", "statistics", "data analysis"],
-            "frontend": ["html", "css", "responsive design"],
-            "backend": ["api", "database", "server"],
-            "fullstack": ["frontend", "backend", "database"]
+        # Define secondary skills (nice to have) for each primary skill
+        secondary_skill_map = {
+            "python": ["django", "flask", "fastapi", "pandas", "numpy"],
+            "javascript": ["react", "node.js", "typescript", "vue", "angular"],
+            "typescript": ["react", "node.js", "angular", "nestjs"],
+            "react": ["redux", "next.js", "styled-components", "webpack"],
+            "aws": ["docker", "terraform", "kubernetes", "lambda", "s3"],
+            "docker": ["kubernetes", "docker-compose", "ci/cd", "jenkins"],
+            "java": ["spring", "spring boot", "hibernate", "maven", "gradle"],
+            "kubernetes": ["helm", "prometheus", "grafana", "istio"],
+            "devops": ["terraform", "ansible", "jenkins", "gitlab ci"],
+            "golang": ["microservices", "grpc", "docker", "kubernetes"],
+            "rust": ["webassembly", "async", "tokio", "actix"],
+            "nodejs": ["express", "nestjs", "mongodb", "postgresql"],
+            "django": ["rest framework", "celery", "postgresql", "redis"],
+            "rails": ["rspec", "sidekiq", "postgresql", "redis"]
         }
         
+        # Define implied skills (commonly needed but not mentioned)
+        skill_implications = {
+            "python": ["pip", "virtualenv", "debugging", "git"],
+            "javascript": ["npm", "es6", "async/await", "git", "json"],
+            "react": ["jsx", "state management", "hooks", "dom"],
+            "aws": ["cloud", "linux", "networking", "security"],
+            "docker": ["containers", "linux", "devops", "yaml"],
+            "kubernetes": ["docker", "yaml", "helm", "cloud native"],
+            "machine learning": ["python", "statistics", "data analysis", "math"],
+            "frontend": ["html", "css", "responsive design", "browser"],
+            "backend": ["api", "database", "server", "rest"],
+            "fullstack": ["frontend", "backend", "database", "deployment"]
+        }
+        
+        # Collect secondary skills based on primary skills
+        collected_secondary_skills = []
         for skill in enhanced.get("skills", []):
-            if skill in skill_implications:
-                implied_skills.extend(skill_implications[skill])
+            skill_lower = skill.lower()
+            if skill_lower in secondary_skill_map:
+                collected_secondary_skills.extend(secondary_skill_map[skill_lower])
+                logger.info(f"[GPT4] Adding secondary skills for {skill}: {secondary_skill_map[skill_lower]}")
+            if skill_lower in skill_implications:
+                implied_skills.extend(skill_implications[skill_lower])
         
         # Determine role type from skills and query
         role_type = self._determine_role_type(enhanced)
@@ -180,17 +205,33 @@ Be comprehensive but realistic. Don't over-interpret."""
         # Get deduplicated skills
         all_skills = dedupe_skills(enhanced.get("skills", []))
         
+        # Remove primary skills from secondary skills and deduplicate
+        primary_skills_lower = [s.lower() for s in all_skills[:3]]
+        secondary_skills_deduped = []
+        seen_secondary = set()
+        
+        for skill in collected_secondary_skills:
+            skill_lower = skill.lower()
+            if skill_lower not in primary_skills_lower and skill_lower not in seen_secondary:
+                secondary_skills_deduped.append(skill)
+                seen_secondary.add(skill_lower)
+        
+        # Limit secondary skills to top 5
+        secondary_skills = secondary_skills_deduped[:5]
+        
         # Build enhanced analysis
         enhanced.update({
             "primary_skills": all_skills[:3],
-            "secondary_skills": all_skills[3:],
-            "implied_skills": dedupe_skills(list(set(implied_skills) - set([s.lower() for s in all_skills]))),
+            "secondary_skills": secondary_skills,
+            "implied_skills": dedupe_skills(list(set(implied_skills) - set([s.lower() for s in all_skills]) - set([s.lower() for s in secondary_skills])))[:5],
             "experience_level": experience_level,
             "role_type": role_type,
             "search_intent": "skill_focused" if all_skills else "exploratory",
             "query_type": query_type,
             "query_quality": "high" if all_skills else "medium"
         })
+        
+        logger.info(f"[GPT4] Enhanced analysis - primary: {enhanced.get('primary_skills')}, secondary: {enhanced.get('secondary_skills')}, implied: {enhanced.get('implied_skills')}")
         
         return enhanced
     

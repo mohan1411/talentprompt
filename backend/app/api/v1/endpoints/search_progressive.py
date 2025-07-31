@@ -138,6 +138,10 @@ async def search_progressive_sse(
                 if stage_result["stage"] == "instant" and "parsed_query" in stage_result:
                     event_data["parsed_query"] = stage_result["parsed_query"]
                 
+                # Include suggestions if available
+                if "suggestions" in stage_result:
+                    event_data["suggestions"] = stage_result["suggestions"]
+                
                 # Format results
                 for resume_data, score in stage_result["results"]:
                     result_item = {

@@ -172,6 +172,7 @@ export function useProgressiveSearch() {
           results: data.results,
           searchId: data.search_id,
           queryAnalysis: data.parsed_query || prev.queryAnalysis, // Include parsed_query from first stage
+          suggestions: data.suggestions || prev.suggestions, // Include suggestions from backend
           timing: {
             ...prev.timing,
             [data.stage]: data.timing_ms,
