@@ -48,15 +48,10 @@ class AITypoCorrector:
             logger.info(f"Cache hit for typo correction: '{query}'")
             return cached
         
-        # If no OpenAI key, return original
+        # If no OpenAI key, use fallback correction
         if not self.client:
-            return {
-                "original": query,
-                "corrected": query,
-                "corrections": [],
-                "confidence": 1.0,
-                "method": "no_api_key"
-            }
+            logger.info("No OpenAI API key, using fallback typo correction")
+            return await self._fallback_correction(query)
         
         try:
             # Build the correction prompt

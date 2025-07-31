@@ -131,6 +131,7 @@ Be comprehensive but realistic. Don't over-interpret."""
         # Add implied skills based on primary skills
         implied_skills = []
         # Define secondary skills (nice to have) for each primary skill
+        # Using lowercase keys for case-insensitive matching
         secondary_skill_map = {
             "python": ["django", "flask", "fastapi", "pandas", "numpy"],
             "javascript": ["react", "node.js", "typescript", "vue", "angular"],
@@ -142,33 +143,77 @@ Be comprehensive but realistic. Don't over-interpret."""
             "kubernetes": ["helm", "prometheus", "grafana", "istio"],
             "devops": ["terraform", "ansible", "jenkins", "gitlab ci"],
             "golang": ["microservices", "grpc", "docker", "kubernetes"],
+            "go": ["microservices", "grpc", "docker", "kubernetes"],  # Alias for golang
             "rust": ["webassembly", "async", "tokio", "actix"],
             "nodejs": ["express", "nestjs", "mongodb", "postgresql"],
+            "node.js": ["express", "nestjs", "mongodb", "postgresql"],  # Alternative spelling
+            "node": ["express", "nestjs", "mongodb", "postgresql"],  # Short form
             "django": ["rest framework", "celery", "postgresql", "redis"],
-            "rails": ["rspec", "sidekiq", "postgresql", "redis"]
+            "rails": ["rspec", "sidekiq", "postgresql", "redis"],
+            "c++": ["stl", "boost", "cmake", "qt", "opencv"],
+            "c#": ["asp.net", "entity framework", "unity", "xamarin"],
+            "csharp": ["asp.net", "entity framework", "unity", "xamarin"],  # Alternative spelling
+            "php": ["laravel", "symfony", "wordpress", "composer"],
+            "ruby": ["rails", "sinatra", "rspec", "sidekiq"],
+            "swift": ["ios", "swiftui", "cocoapods", "xcode"],
+            "kotlin": ["android", "spring boot", "gradle", "coroutines"],
+            "scala": ["akka", "play", "spark", "sbt"],
+            "vue": ["vuex", "nuxt.js", "vue router", "vuetify"],
+            "angular": ["rxjs", "ngrx", "material", "ionic"],
+            "flutter": ["dart", "firebase", "bloc", "provider"],
+            "mongodb": ["mongoose", "aggregation", "atlas", "nosql"],
+            "postgresql": ["pgadmin", "postgis", "replication", "optimization"],
+            "mysql": ["mariadb", "replication", "optimization", "workbench"],
+            "redis": ["caching", "pub/sub", "lua scripting", "cluster"],
+            "elasticsearch": ["kibana", "logstash", "beats", "lucene"],
         }
         
         # Define implied skills (commonly needed but not mentioned)
         skill_implications = {
             "python": ["pip", "virtualenv", "debugging", "git"],
             "javascript": ["npm", "es6", "async/await", "git", "json"],
+            "typescript": ["npm", "es6", "types", "git", "json"],
             "react": ["jsx", "state management", "hooks", "dom"],
             "aws": ["cloud", "linux", "networking", "security"],
             "docker": ["containers", "linux", "devops", "yaml"],
             "kubernetes": ["docker", "yaml", "helm", "cloud native"],
+            "java": ["jvm", "maven", "gradle", "junit", "git"],
+            "golang": ["modules", "goroutines", "channels", "git"],
+            "go": ["modules", "goroutines", "channels", "git"],  # Alias
+            "nodejs": ["npm", "async/await", "modules", "git"],
+            "node.js": ["npm", "async/await", "modules", "git"],  # Alternative
+            "node": ["npm", "async/await", "modules", "git"],  # Short form
             "machine learning": ["python", "statistics", "data analysis", "math"],
             "frontend": ["html", "css", "responsive design", "browser"],
             "backend": ["api", "database", "server", "rest"],
-            "fullstack": ["frontend", "backend", "database", "deployment"]
+            "fullstack": ["frontend", "backend", "database", "deployment"],
+            "c++": ["pointers", "memory management", "compilation", "git"],
+            "c#": [".net", "visual studio", "nuget", "git"],
+            "csharp": [".net", "visual studio", "nuget", "git"],  # Alternative
+            "php": ["composer", "apache/nginx", "mysql", "git"],
+            "ruby": ["gems", "bundler", "rake", "git"],
+            "rust": ["cargo", "ownership", "memory safety", "git"]
         }
         
         # Collect secondary skills based on primary skills
         collected_secondary_skills = []
+        logger.info(f"[GPT4] Skills from parsed_query: {enhanced.get('skills', [])}")
+        logger.info(f"[GPT4] Original query: {enhanced.get('original_query')}")
+        logger.info(f"[GPT4] Corrected query: {enhanced.get('corrected_query')}")
+        
         for skill in enhanced.get("skills", []):
             skill_lower = skill.lower()
+            # Try exact match first
             if skill_lower in secondary_skill_map:
                 collected_secondary_skills.extend(secondary_skill_map[skill_lower])
-                logger.info(f"[GPT4] Adding secondary skills for {skill}: {secondary_skill_map[skill_lower]}")
+                logger.info(f"[GPT4] Found secondary skills for '{skill}': {secondary_skill_map[skill_lower]}")
+            else:
+                logger.info(f"[GPT4] No secondary skills found for '{skill}' (lowercased: '{skill_lower}')")
+                # Log available keys for debugging
+                similar_keys = [k for k in secondary_skill_map.keys() if k.startswith(skill_lower[:3])]
+                if similar_keys:
+                    logger.info(f"[GPT4] Similar keys in map: {similar_keys}")
+            
             if skill_lower in skill_implications:
                 implied_skills.extend(skill_implications[skill_lower])
         

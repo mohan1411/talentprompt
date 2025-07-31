@@ -234,6 +234,14 @@ export const oauthApi = {
       body: oauthData,
     });
   },
+
+  // Mock OAuth login for testing
+  async mockOAuthLogin(email: string) {
+    return makeRequest('/oauth/mock/login', {
+      method: 'POST',
+      params: { email }
+    });
+  },
 };
 
 // Resume endpoints

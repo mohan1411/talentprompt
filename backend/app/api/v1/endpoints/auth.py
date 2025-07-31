@@ -25,6 +25,83 @@ from app.services.extension_token import extension_token_service
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# Simple OAuth endpoint for frontend compatibility
+@router.get("/oauth/google/login")
+async def google_oauth_login():
+    """Simple OAuth endpoint that works without authlib for development."""
+    # For development, redirect to a mock OAuth flow
+    mock_oauth_url = "http://localhost:8001/api/v1/auth/oauth/mock/select-user"
+    return {
+        "auth_url": mock_oauth_url,
+        "state": "dummy_state"
+    }
+
+@router.get("/oauth/mock/select-user")
+async def mock_oauth_select_user():
+    """Mock OAuth user selection page for development."""
+    html = """
+    <html>
+    <head>
+        <title>Select OAuth User - Development</title>
+        <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+            .user-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; cursor: pointer; }
+            .user-card:hover { background-color: #f5f5f5; }
+            h1 { color: #333; }
+        </style>
+    </head>
+    <body>
+        <h1>Select OAuth User (Development Mode)</h1>
+        <p>Click on a user to login:</p>
+        
+        <div class="user-card" onclick="selectUser('promtitude@gmail.com')">
+            <strong>promtitude@gmail.com</strong><br>
+            Provider: Google
+        </div>
+        
+        <div class="user-card" onclick="selectUser('taskmasterai1411@gmail.com')">
+            <strong>taskmasterai1411@gmail.com</strong><br>
+            Provider: Google
+        </div>
+        
+        <div class="user-card" onclick="selectUser('mohan.g1411@gmail.com')">
+            <strong>mohan.g1411@gmail.com</strong><br>
+            Provider: Google
+        </div>
+        
+        <script>
+            function selectUser(email) {
+                window.location.href = '/api/v1/auth/oauth/mock/callback?email=' + encodeURIComponent(email);
+            }
+        </script>
+    </body>
+    </html>
+    """
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html)
+
+@router.get("/oauth/mock/callback")
+async def mock_oauth_callback(email: str, db: AsyncSession = Depends(get_db)):
+    """Mock OAuth callback that authenticates existing OAuth users."""
+    # Find the user
+    user = await get_user_by_email(db, email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if not user.oauth_provider:
+        raise HTTPException(status_code=400, detail="User is not an OAuth user")
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        subject=str(user.id), expires_delta=access_token_expires
+    )
+    
+    # Redirect to frontend with token
+    redirect_url = f"http://localhost:3000/auth/callback?access_token={access_token}&token_type=bearer&email={email}"
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url=redirect_url)
+
 
 @router.post("/register", response_model=UserSchema)
 async def register(

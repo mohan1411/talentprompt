@@ -59,6 +59,8 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-promtitude}:${POSTGRES_PASSWORD:-promtitude123}@postgres:5432/${POSTGRES_DB:-promtitude}
       - REDIS_URL=redis://redis:6379/0
       - QDRANT_URL=http://qdrant:6333
+    env_file:
+      - .env
     volumes:
       - ./backend:/app
     ports:
