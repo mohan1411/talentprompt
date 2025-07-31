@@ -53,8 +53,10 @@ export default function HomePage() {
           <Link href="/" className="flex items-center">
             <img 
               src="/logo-horizontal.svg" 
-              alt="Promtitude" 
+              alt="Promtitude - AI Recruitment Platform" 
               className="h-10 w-auto"
+              width={180}
+              height={40}
             />
           </Link>
           <nav className="flex gap-4 items-center">
@@ -79,10 +81,10 @@ export default function HomePage() {
 
       <main>
         {/* Hero Section with Working Demo */}
-        <section className="container mx-auto px-4 py-16 lg:py-24">
+        <section className="container mx-auto px-4 py-16 lg:py-24" aria-label="Hero">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Natural Language Resume Search for Recruiters
+              AI-Powered Natural Language Resume Search for Recruiters
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">
               Find candidates by describing what you need. No Boolean queries.

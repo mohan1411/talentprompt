@@ -1,0 +1,57 @@
+{
+  "name": "Promtitude - AI Recruitment Platform",
+  "short_name": "Promtitude",
+  "description": "Find perfect candidates 10x faster with AI-powered natural language search",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Search Candidates",
+      "short_name": "Search",
+      "description": "Search for candidates using natural language",
+      "url": "/dashboard?focus=search",
+      "icons": [{ "src": "/search-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Import from LinkedIn",
+      "short_name": "Import",
+      "description": "Import candidate profiles from LinkedIn",
+      "url": "/dashboard/import",
+      "icons": [{ "src": "/import-icon.png", "sizes": "96x96" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "type": "image/png",
+      "sizes": "1280x720"
+    },
+    {
+      "src": "/screenshots/search.png",
+      "type": "image/png",
+      "sizes": "1280x720"
+    }
+  ]
+}
