@@ -3,14 +3,20 @@
  */
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001';
-// Force production URL if on promtitude.com
-const ACTUAL_API_URL = typeof window !== 'undefined' && window.location.hostname === 'promtitude.com' 
+// Force production URL if on promtitude.com or any production domain
+const ACTUAL_API_URL = typeof window !== 'undefined' && 
+  (window.location.hostname === 'promtitude.com' || 
+   window.location.hostname === 'www.promtitude.com' ||
+   window.location.hostname.includes('promtitude') ||
+   window.location.hostname.includes('vercel.app'))
   ? 'https://talentprompt-production.up.railway.app' 
   : API_BASE_URL;
 
 // Debug log for API URL
 if (typeof window !== 'undefined') {
-  console.log('API Base URL:', API_BASE_URL);
+  console.log('Current hostname:', window.location.hostname);
+  console.log('API Base URL from env:', API_BASE_URL);
+  console.log('Actual API URL being used:', ACTUAL_API_URL);
 }
 
 export class ApiError extends Error {
