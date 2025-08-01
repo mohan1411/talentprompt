@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from sqlalchemy import select, and_, or_, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import async_session_maker
+from app.db.session import async_session_maker
 from app.models.resume import Resume
 from app.models.user import User
 from app.services.vector_search import vector_search
