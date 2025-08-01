@@ -301,6 +301,12 @@ export const resumeApi = {
     
     return makeRequest('/resumes/statistics', { params });
   },
+
+  async retryParsing(resumeId: string) {
+    return makeRequest(`/resumes/${resumeId}/reparse`, {
+      method: 'POST',
+    });
+  },
 };
 
 // Search endpoints

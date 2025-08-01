@@ -69,6 +69,43 @@ export default function ResumesPage() {
     fetchResumes();
   }, []);
 
+  // Polling for async updates
+  useEffect(() => {
+    // Check if any resumes need updates
+    const needsPolling = resumes.some(r => 
+      r.parse_status === 'pending' || r.parse_status === 'processing'
+    );
+
+    if (!needsPolling) return;
+
+    // Poll every 5 seconds for updates
+    const interval = setInterval(async () => {
+      try {
+        const updatedData = await resumeApi.getMyResumes(0, 1000);
+        
+        // Check for status changes
+        updatedData.forEach(newResume => {
+          const oldResume = resumes.find(r => r.id === newResume.id);
+          if (oldResume && oldResume.parse_status !== newResume.parse_status) {
+            console.log(`Resume ${newResume.id} status changed: ${oldResume.parse_status} → ${newResume.parse_status}`);
+            
+            // Show notification for completed resumes
+            if (newResume.parse_status === 'completed' && oldResume.parse_status === 'processing') {
+              // You can add toast notification here
+              console.log(`✓ Resume for ${newResume.first_name} ${newResume.last_name} parsed successfully`);
+            }
+          }
+        });
+        
+        setResumes(updatedData);
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [resumes]);
+
   const fetchResumes = async () => {
     try {
       setIsLoading(true);
@@ -342,6 +379,47 @@ export default function ResumesPage() {
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {resume.current_title}
                   </p>
+                )}
+                {/* Parse Status Badge */}
+                {resume.parse_status && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                      resume.parse_status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                      resume.parse_status === 'processing' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                      resume.parse_status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                      resume.parse_status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400'
+                    }`}>
+                      {resume.parse_status === 'completed' ? '✓ Parsed' :
+                       resume.parse_status === 'processing' ? (
+                         <span className="flex items-center gap-1">
+                           <span className="animate-pulse">●</span> Processing
+                         </span>
+                       ) :
+                       resume.parse_status === 'pending' ? 'Pending' :
+                       resume.parse_status === 'failed' ? 'Failed' :
+                       resume.parse_status}
+                    </span>
+                    {resume.parse_status === 'failed' && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await resumeApi.retryParsing(resume.id);
+                            // Update local state to show processing
+                            setResumes(prev => prev.map(r => 
+                              r.id === resume.id ? { ...r, parse_status: 'processing' } : r
+                            ));
+                          } catch (error) {
+                            console.error('Failed to retry parsing:', error);
+                          }
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      >
+                        Retry
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
@@ -1025,6 +1103,14 @@ export default function ResumesPage() {
       >
         <Plus className="h-6 w-6" />
       </Link>
+
+      {/* Polling Indicator */}
+      {resumes.some(r => r.parse_status === 'pending' || r.parse_status === 'processing') && (
+        <div className="fixed bottom-20 right-6 flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg shadow-lg">
+          <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full" />
+          <span className="text-sm">Checking for updates...</span>
+        </div>
+      )}
 
       {/* Keyboard Shortcut Hint */}
       <div className="fixed bottom-6 left-6 text-sm text-gray-500 dark:text-gray-400 bg-white/90 dark:bg-gray-800/90 backdrop-blur px-3 py-2 rounded-lg shadow-sm">
