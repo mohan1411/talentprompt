@@ -2,9 +2,12 @@
 
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from app.api.v1.api import api_router
 from app.core.config import settings
@@ -30,14 +33,25 @@ async def lifespan(app: FastAPI):
     await close_redis()
     print("Redis connection closed")
 
+
+# Conditionally enable API documentation
+docs_url = "/docs" if settings.ENVIRONMENT != "production" else None
+redoc_url = "/redoc" if settings.ENVIRONMENT != "production" else None
+openapi_url = f"{settings.API_V1_STR}/openapi.json" if settings.ENVIRONMENT != "production" else None
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    openapi_url=openapi_url,
+    docs_url=docs_url,
+    redoc_url=redoc_url,
     lifespan=lifespan,
 )
+
+# Import shared limiter instance
+from app.core.limiter import limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Force Railway redeploy - 2025-01-18
 
 # Log startup configuration
@@ -83,6 +97,48 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
         allow_origin_regex="chrome-extension://.*"  # Allow all Chrome extensions
     )
+
+# Security headers middleware
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Add security headers to all responses."""
+    response = await call_next(request)
+    
+    # Security headers
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    
+    # HSTS for production
+    if settings.ENVIRONMENT == "production":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    
+    # Content Security Policy
+    csp = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data: https:; "
+        "connect-src 'self' https://www.google.com; "
+        "frame-src 'self' https://www.google.com; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "frame-ancestors 'none'"
+    )
+    response.headers["Content-Security-Policy"] = csp
+    
+    # Note: Server header cannot be removed via middleware in FastAPI
+    # It's set by the ASGI server (uvicorn) - use --header server:Promtitude when running uvicorn
+    
+    # Cache control for auth endpoints
+    if request.url.path.startswith("/api/v1/auth"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    
+    return response
 
 # Add trusted host middleware
 app.add_middleware(

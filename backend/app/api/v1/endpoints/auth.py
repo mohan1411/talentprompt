@@ -23,7 +23,13 @@ from app.services.email import email_service
 from app.services.extension_token import extension_token_service
 
 router = APIRouter()
+
+# Import rate limiter
+from app.core.limiter import limiter
+from fastapi import Request
 logger = logging.getLogger(__name__)
+
+# Import shared limiter instance
 
 # Simple OAuth endpoint for frontend compatibility
 @router.get("/oauth/google/login")
@@ -127,7 +133,9 @@ async def mock_oauth_callback(email: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/register", response_model=UserSchema)
+@limiter.limit("3/minute")
 async def register(
+    request: Request,
     user_in: UserCreate,
     db: AsyncSession = Depends(get_db)
 ) -> Any:
@@ -177,7 +185,9 @@ async def register(
 
 
 @router.post("/login", response_model=Token)
+@limiter.limit("5/minute")
 async def login(
+    request: Request,
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Any:
@@ -275,7 +285,9 @@ async def refresh_token() -> Any:
 
 
 @router.post("/verify-email")
+@limiter.limit("10/minute")
 async def verify_email(
+    request: Request,
     token: str,
     db: AsyncSession = Depends(get_db)
 ) -> Any:
@@ -298,7 +310,9 @@ async def verify_email(
 
 
 @router.post("/resend-verification")
+@limiter.limit("3/hour")
 async def resend_verification(
+    request: Request,
     email: str,
     db: AsyncSession = Depends(get_db)
 ) -> Any:
@@ -329,7 +343,9 @@ async def resend_verification(
 
 
 @router.post("/generate-extension-token")
+@limiter.limit("5/hour")
 async def generate_extension_token(
+    request: Request,
     current_user: User = Depends(deps.get_current_active_user)
 ) -> Any:
     """Generate an access token for Chrome extension (OAuth users only)."""
