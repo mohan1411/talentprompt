@@ -84,7 +84,7 @@ export default function ResumesPage() {
         const updatedData = await resumeApi.getMyResumes(0, 1000);
         
         // Check for status changes
-        updatedData.forEach(newResume => {
+        updatedData.forEach((newResume: Resume) => {
           const oldResume = resumes.find(r => r.id === newResume.id);
           if (oldResume && oldResume.parse_status !== newResume.parse_status) {
             console.log(`Resume ${newResume.id} status changed: ${oldResume.parse_status} → ${newResume.parse_status}`);
