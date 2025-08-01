@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, memo, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+// Removed framer-motion to fix flickering
 import { FixedSizeGrid as Grid, areEqual } from 'react-window';
 import { 
   FileText, 
@@ -340,7 +340,7 @@ export default function ResumesPage() {
 
     return (
       <div
-        className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg transition-shadow duration-200 overflow-hidden p-6 h-full"
+        className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg overflow-hidden p-6 h-full"
         onMouseEnter={() => setHoveredResumeId(resume.id)}
         onMouseLeave={() => setHoveredResumeId(null)}
       >
@@ -859,34 +859,29 @@ export default function ResumesPage() {
         </div>
 
         {/* Bulk Actions Bar */}
-        <AnimatePresence>
-          {selectedResumes.size > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="mt-4 bg-primary/10 dark:bg-primary/20 rounded-lg p-4 flex items-center justify-between"
-            >
-              <span className="text-sm font-medium">
-                {selectedResumes.size} resume{selectedResumes.size > 1 ? 's' : ''} selected
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowBulkPositionModal(true)}
-                  className="px-3 py-1.5 bg-white dark:bg-gray-800 text-sm rounded-lg hover:shadow-md transition-shadow"
-                >
-                  Update Position
-                </button>
-                <button
-                  onClick={handleBulkDelete}
-                  className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  Delete Selected
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {selectedResumes.size > 0 && (
+          <div
+            className="mt-4 bg-primary/10 dark:bg-primary/20 rounded-lg p-4 flex items-center justify-between"
+          >
+            <span className="text-sm font-medium">
+              {selectedResumes.size} resume{selectedResumes.size > 1 ? 's' : ''} selected
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowBulkPositionModal(true)}
+                className="px-3 py-1.5 bg-white dark:bg-gray-800 text-sm rounded-lg hover:shadow-md transition-shadow"
+              >
+                Update Position
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="px-3 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+              >
+                Delete Selected
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -895,9 +890,7 @@ export default function ResumesPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
         </div>
       ) : filteredAndSortedResumes.length === 0 ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        <div
           className="text-center py-16 px-4"
         >
           <div className="max-w-md mx-auto">
@@ -931,7 +924,7 @@ export default function ResumesPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       ) : viewMode === 'grid' ? (
         // Virtual Grid View
         <div ref={gridContainerRef} className="min-h-[600px] w-full" style={{ height: 'calc(100vh - 300px)' }}>
@@ -1120,9 +1113,7 @@ export default function ResumesPage() {
       {/* Modals */}
       {showBulkPositionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+          <div
             className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl"
           >
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1165,7 +1156,7 @@ export default function ResumesPage() {
                 Update Position
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
 
