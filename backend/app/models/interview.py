@@ -83,12 +83,16 @@ class InterviewSession(Base):
     # Pipeline journey tracking
     journey_id = Column(UUID(as_uuid=True), ForeignKey("candidate_journeys.id"), nullable=True)
     
+    # Recruitment pipeline tracking
+    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id"), nullable=True)
+    
     # Relationships
     resume = relationship("Resume", back_populates="interview_sessions")
     interviewer = relationship("User", back_populates="conducted_interviews")
     questions = relationship("InterviewQuestion", back_populates="session")
     feedback = relationship("InterviewFeedback", back_populates="session")
     journey = relationship("CandidateJourney", back_populates="interview_sessions")
+    pipeline_state = relationship("CandidatePipelineState", back_populates="interview_sessions")
 
 
 class InterviewQuestion(Base):

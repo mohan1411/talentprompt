@@ -41,6 +41,7 @@ class InterviewPrepareRequest(BaseModel):
     focus_areas: Optional[List[str]] = None
     difficulty_level: int = Field(default=3, ge=1, le=5)
     num_questions: int = Field(default=10, ge=5, le=30)
+    pipeline_state_id: Optional[UUID] = None  # Link to recruitment pipeline
 
 
 class GenerateQuestionsRequest(BaseModel):
@@ -140,6 +141,10 @@ class InterviewSessionResponse(InterviewSessionBase):
     concerns: Optional[List[str]] = None
     created_at: datetime
     updated_at: datetime
+    
+    # Pipeline integration
+    pipeline_state_id: Optional[UUID] = None
+    journey_id: Optional[UUID] = None
     
     # Include related data - make it optional and set via dict
     questions: Optional[List[InterviewQuestionResponse]] = None

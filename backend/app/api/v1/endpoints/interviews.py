@@ -18,6 +18,7 @@ from app.models.interview import (
     InterviewSession, InterviewQuestion, InterviewFeedback,
     InterviewStatus, QuestionCategory
 )
+from app.models.pipeline import PipelineActivity, PipelineActivityType
 from app.schemas.interview import (
     InterviewPrepareRequest, InterviewPreparationResponse,
     InterviewSessionCreate, InterviewSessionUpdate, InterviewSessionResponse,
@@ -72,10 +73,12 @@ async def prepare_interview(
         job_requirements=request.job_requirements,
         interview_type=request.interview_type,  # Mode: IN_PERSON, VIRTUAL, PHONE
         interview_category=request.interview_category,  # Category: general, technical, etc
+        pipeline_state_id=request.pipeline_state_id,  # Link to recruitment pipeline
         preparation_notes={
             "analysis": analysis,
             "company_culture": request.company_culture,
-            "focus_areas": request.focus_areas
+            "focus_areas": request.focus_areas,
+            "pipeline_state_id": str(request.pipeline_state_id) if request.pipeline_state_id else None
         },
         suggested_questions=questions_data["questions"]
     )
@@ -100,6 +103,23 @@ async def prepare_interview(
         await db.flush()
         
         question_responses.append(InterviewQuestionResponse.model_validate(question))
+    
+    # Create pipeline activity if linked to pipeline
+    if request.pipeline_state_id:
+        activity = PipelineActivity(
+            candidate_id=request.resume_id,
+            pipeline_state_id=request.pipeline_state_id,
+            user_id=current_user.id,
+            activity_type=PipelineActivityType.INTERVIEW_SCHEDULED,
+            details={
+                "interview_id": str(session.id),
+                "job_position": request.job_position,
+                "interview_type": request.interview_type,
+                "interview_category": request.interview_category,
+                "scheduled_at": session.scheduled_at.isoformat() if session.scheduled_at else None
+            }
+        )
+        db.add(activity)
     
     await db.commit()
     
@@ -126,6 +146,7 @@ async def get_interview_sessions(
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     status: Optional[InterviewStatus] = None,
+    pipeline_state_id: Optional[UUID] = None,
     db: AsyncSession = Depends(deps.get_db),
     current_user: User = Depends(deps.get_current_active_user)
 ) -> List[InterviewSessionResponse]:
@@ -137,6 +158,9 @@ async def get_interview_sessions(
     
     if status:
         query = query.where(InterviewSession.status == status)
+    
+    if pipeline_state_id:
+        query = query.where(InterviewSession.pipeline_state_id == pipeline_state_id)
     
     query = query.order_by(InterviewSession.created_at.desc())
     query = query.offset(skip).limit(limit)
@@ -170,6 +194,8 @@ async def get_interview_sessions(
             "concerns": session.concerns,
             "created_at": session.created_at,
             "updated_at": session.updated_at,
+            "pipeline_state_id": session.pipeline_state_id,
+            "journey_id": session.journey_id,
             "questions": []  # Don't load questions for list view
         }
         responses.append(InterviewSessionResponse(**response_dict))
@@ -224,7 +250,9 @@ async def get_interview_session(
         "strengths": session.strengths,
         "concerns": session.concerns,
         "created_at": session.created_at,
-        "updated_at": session.updated_at
+        "updated_at": session.updated_at,
+        "pipeline_state_id": session.pipeline_state_id,
+        "journey_id": session.journey_id
     }
     
     # Load questions separately
@@ -284,6 +312,25 @@ async def update_interview_session(
     for field, value in update_dict.items():
         setattr(session, field, value)
     
+    # Create pipeline activity if interview completed and linked to pipeline
+    if session.pipeline_state_id and "status" in update_dict and update_dict["status"] == InterviewStatus.COMPLETED:
+        activity = PipelineActivity(
+            candidate_id=session.resume_id,
+            pipeline_state_id=session.pipeline_state_id,
+            user_id=current_user.id,
+            activity_type=PipelineActivityType.INTERVIEW_COMPLETED,
+            details={
+                "interview_id": str(session.id),
+                "job_position": session.job_position,
+                "interview_type": session.interview_type,
+                "interview_category": session.interview_category,
+                "overall_rating": session.overall_rating,
+                "recommendation": session.recommendation,
+                "duration_minutes": session.duration_minutes
+            }
+        )
+        db.add(activity)
+    
     await db.commit()
     await db.refresh(session)
     
@@ -313,7 +360,9 @@ async def update_interview_session(
         "strengths": session.strengths,
         "concerns": session.concerns,
         "created_at": session.created_at,
-        "updated_at": session.updated_at
+        "updated_at": session.updated_at,
+        "pipeline_state_id": session.pipeline_state_id,
+        "journey_id": session.journey_id
     }
     
     # Load questions for response
