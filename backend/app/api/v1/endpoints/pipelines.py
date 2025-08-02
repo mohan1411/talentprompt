@@ -91,6 +91,7 @@ class AddEvaluationRequest(BaseModel):
 class CandidateInPipelineResponse(BaseModel):
     """Response schema for candidate in pipeline."""
     id: UUID
+    resume_id: Optional[UUID]
     pipeline_state_id: UUID
     first_name: str
     last_name: str

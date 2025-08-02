@@ -128,17 +128,50 @@ export default function PrepareInterviewPage() {
   // Handle resume selection after resumes are loaded
   useEffect(() => {
     const pendingResumeId = sessionStorage.getItem('pendingResumeId')
-    if (pendingResumeId && resumes.length > 0) {
-      console.log('Looking for resume with ID:', pendingResumeId)
-      console.log('Available resumes:', resumes.map(r => ({ id: r.id, name: `${r.first_name} ${r.last_name}` })))
+    const pendingCandidateSearch = sessionStorage.getItem('pendingCandidateSearch')
+    
+    if (resumes.length > 0) {
+      // First try to find by resume ID
+      if (pendingResumeId) {
+        console.log('Looking for resume with ID:', pendingResumeId)
+        console.log('Available resumes:', resumes.map(r => ({ id: r.id, name: `${r.first_name} ${r.last_name}` })))
+        
+        const resume = resumes.find(r => r.id === pendingResumeId)
+        if (resume) {
+          console.log('Found and selecting resume by ID:', resume)
+          setSelectedResume(resume)
+          sessionStorage.removeItem('pendingResumeId')
+          sessionStorage.removeItem('pendingCandidateSearch')
+          return
+        } else {
+          console.warn('Resume not found with ID:', pendingResumeId)
+        }
+      }
       
-      const resume = resumes.find(r => r.id === pendingResumeId)
-      if (resume) {
-        console.log('Found and selecting resume:', resume)
-        setSelectedResume(resume)
-        sessionStorage.removeItem('pendingResumeId')
-      } else {
-        console.warn('Resume not found with ID:', pendingResumeId)
+      // If not found by ID and we have search info, try to find by name/email
+      if (pendingCandidateSearch) {
+        try {
+          const searchInfo = JSON.parse(pendingCandidateSearch)
+          console.log('Searching for candidate by name/email:', searchInfo)
+          
+          const resume = resumes.find(r => {
+            const nameMatch = r.first_name === searchInfo.first_name && 
+                            r.last_name === searchInfo.last_name
+            const emailMatch = r.email === searchInfo.email
+            return nameMatch || (searchInfo.email && emailMatch)
+          })
+          
+          if (resume) {
+            console.log('Found and selecting resume by name/email match:', resume)
+            setSelectedResume(resume)
+            sessionStorage.removeItem('pendingResumeId')
+            sessionStorage.removeItem('pendingCandidateSearch')
+          } else {
+            console.warn('Could not find candidate by name/email:', searchInfo)
+          }
+        } catch (e) {
+          console.error('Error parsing candidate search info:', e)
+        }
       }
     }
   }, [resumes])

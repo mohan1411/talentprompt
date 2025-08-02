@@ -96,14 +96,26 @@ export default function CandidateDetailsDrawer({
       // Store pipeline context in sessionStorage for the interview page
       sessionStorage.setItem('interviewPipelineContext', JSON.stringify({
         candidateId: candidate.id,
-        pipelineStateId: candidate.pipeline_state_id,
         candidateName: `${candidate.first_name} ${candidate.last_name}`,
+        candidateEmail: candidate.email,
+        pipelineStateId: candidate.pipeline_state_id,
         currentStage: candidate.current_stage
       }));
       
       // Navigate to existing AI Interview Copilot preparation page
-      // Use resume_id if available, otherwise fall back to candidate.id
+      // Use resume_id if available, otherwise we'll search by name/email
       const resumeId = candidate.resume_id || candidate.id;
+      
+      if (!candidate.resume_id) {
+        console.warn('No resume_id found, will search by candidate name/email');
+        // Store candidate info for search fallback
+        sessionStorage.setItem('pendingCandidateSearch', JSON.stringify({
+          first_name: candidate.first_name,
+          last_name: candidate.last_name,
+          email: candidate.email
+        }));
+      }
+      
       router.push(`/dashboard/interviews/prepare?resumeId=${resumeId}&pipeline_state_id=${candidate.pipeline_state_id}`);
     } catch (error) {
       console.error('Error scheduling interview:', error);
