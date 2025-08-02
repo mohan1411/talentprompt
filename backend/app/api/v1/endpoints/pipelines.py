@@ -651,8 +651,21 @@ async def schedule_interview_from_pipeline(
     # Create interview session
     from app.models.interview import InterviewSession, InterviewQuestion
     
+    # Get resume_id from candidate for now (until DB migration)
+    from app.models import Candidate
+    candidate_result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id)
+    )
+    candidate_record = candidate_result.scalar_one_or_none()
+    
+    if not candidate_record or not candidate_record.resume_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Candidate does not have an associated resume"
+        )
+    
     session = InterviewSession(
-        candidate_id=candidate_id,
+        resume_id=candidate_record.resume_id,  # Use resume_id until DB is migrated
         interviewer_id=current_user.id,
         job_position=request.job_position,
         job_requirements=request.job_requirements,

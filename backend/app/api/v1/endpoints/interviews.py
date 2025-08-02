@@ -91,8 +91,11 @@ async def prepare_interview(
     
     # Create interview session
     logger.info(f"Creating interview session with pipeline_state_id: {request.pipeline_state_id}")
+    
+    # For now, use resume_id until DB migration is complete
+    # Store candidate_id in preparation_notes for future reference
     session = InterviewSession(
-        candidate_id=candidate.id,  # Use candidate_id instead of resume_id
+        resume_id=request.resume_id,  # Keep using resume_id until DB is migrated
         interviewer_id=current_user.id,
         job_position=request.job_position,
         job_requirements=request.job_requirements,
@@ -103,7 +106,8 @@ async def prepare_interview(
             "analysis": analysis,
             "company_culture": request.company_culture,
             "focus_areas": request.focus_areas,
-            "pipeline_state_id": str(request.pipeline_state_id) if request.pipeline_state_id else None
+            "pipeline_state_id": str(request.pipeline_state_id) if request.pipeline_state_id else None,
+            "candidate_id": str(candidate.id)  # Store candidate_id in notes for future use
         },
         suggested_questions=questions_data["questions"]
     )
@@ -893,7 +897,7 @@ async def schedule_next_round(
     
     # Create new interview session
     new_session = InterviewSession(
-        candidate_id=previous_session.candidate_id,  # Use candidate_id instead of resume_id
+        resume_id=previous_session.resume_id,  # Use resume_id until DB is migrated
         interviewer_id=current_user.id,
         job_position=previous_session.job_position,
         job_requirements=previous_session.job_requirements,

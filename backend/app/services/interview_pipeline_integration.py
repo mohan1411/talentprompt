@@ -191,7 +191,17 @@ class InterviewPipelineIntegrationService:
             raise ValueError(f"Pipeline state {pipeline_state_id} not found")
             
         # Create interview with pipeline link
-        interview_data["candidate_id"] = pipeline_state.candidate_id  # Use candidate_id not resume_id
+        # Get resume_id from candidate (until DB migration is complete)
+        from app.models import Candidate
+        candidate_result = await db.execute(
+            select(Candidate).where(Candidate.id == pipeline_state.candidate_id)
+        )
+        candidate = candidate_result.scalar_one_or_none()
+        
+        if not candidate or not candidate.resume_id:
+            raise ValueError("Candidate does not have an associated resume")
+        
+        interview_data["resume_id"] = candidate.resume_id  # Use resume_id until DB is migrated
         interview_data["pipeline_state_id"] = pipeline_state_id
         interview_data["interviewer_id"] = user_id
         
