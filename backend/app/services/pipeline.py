@@ -604,7 +604,7 @@ class PipelineService:
             select(PipelineAutomation).where(
                 and_(
                     PipelineAutomation.pipeline_id == pipeline_state.pipeline_id,
-                    PipelineAutomation.is_enabled == True,
+                    PipelineAutomation.is_active == True,
                     PipelineAutomation.trigger_type == "stage_enter"
                 )
             )
