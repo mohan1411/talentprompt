@@ -214,7 +214,7 @@ class InterviewPipelineIntegrationService:
             candidate_id=pipeline_state.candidate_id,
             pipeline_state_id=pipeline_state_id,
             user_id=user_id,
-            activity_type=PipelineActivityType.INTERVIEW_SCHEDULED,
+            activity_type=PipelineActivityType.noted,  # Using 'noted' for interview scheduling
             details={
                 "interview_id": str(interview.id),
                 "job_position": interview.job_position,

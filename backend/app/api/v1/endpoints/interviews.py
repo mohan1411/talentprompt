@@ -142,8 +142,9 @@ async def prepare_interview(
             candidate_id=request.resume_id,
             pipeline_state_id=request.pipeline_state_id,
             user_id=current_user.id,
-            activity_type=PipelineActivityType.INTERVIEW_SCHEDULED,
+            activity_type=PipelineActivityType.noted,  # Using 'noted' for interview scheduling
             details={
+                "action": "interview_scheduled",
                 "interview_id": str(session.id),
                 "job_position": request.job_position,
                 "interview_type": request.interview_type,
