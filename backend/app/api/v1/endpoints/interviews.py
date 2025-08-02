@@ -381,8 +381,8 @@ async def update_interview_session(
                 )
                 pipeline_state = pipeline_state_result.scalar_one_or_none()
                 
-                if pipeline_state and pipeline_state.current_stage_id not in ["interview", "offer", "rejected", "hired"]:
-                    old_stage = pipeline_state.current_stage_id
+                if pipeline_state and pipeline_state.current_stage not in ["interview", "offer", "rejected", "hired"]:
+                    old_stage = pipeline_state.current_stage
                     logger.info(f"Moving candidate from {old_stage} to interview stage")
                     
                     # Calculate time in previous stage
@@ -390,18 +390,17 @@ async def update_interview_session(
                     
                     # Update the stage
                     pipeline_state.time_in_stage_seconds = time_in_stage
-                    pipeline_state.current_stage_id = "interview"
+                    pipeline_state.current_stage = "interview"
                     pipeline_state.entered_stage_at = datetime.utcnow()
                     pipeline_state.updated_at = datetime.utcnow()
                     
                     # Create stage change activity
                     stage_activity = PipelineActivity(
-                        candidate_id=pipeline_state.candidate_id,
                         pipeline_state_id=pipeline_state.id,
-                        user_id=current_user.id,
-                        activity_type=PipelineActivityType.STAGE_CHANGED,
-                        from_stage_id=old_stage,
-                        to_stage_id="interview",
+                        performed_by=current_user.id,
+                        activity_type=PipelineActivityType.moved,  # Using 'moved' for stage changes
+                        from_stage=old_stage,
+                        to_stage="interview",
                         details={
                             "reason": "Interview started - automatically moved to Interview stage",
                             "time_in_previous_stage": time_in_stage,
@@ -432,10 +431,9 @@ async def update_interview_session(
         logger.info(f"Processing completed interview - rating: {session.overall_rating}, recommendation: {session.recommendation}")
         
         activity = PipelineActivity(
-            candidate_id=session.resume_id,
             pipeline_state_id=session.pipeline_state_id,
-            user_id=current_user.id,
-            activity_type=PipelineActivityType.INTERVIEW_COMPLETED,
+            performed_by=current_user.id,
+            activity_type=PipelineActivityType.evaluated,  # Using 'evaluated' for completed interviews
             details={
                 "interview_id": str(session.id),
                 "job_position": session.job_position,
@@ -462,7 +460,7 @@ async def update_interview_session(
             pipeline_state = pipeline_state_result.scalar_one_or_none()
             
             if pipeline_state:
-                current_stage = pipeline_state.current_stage_id
+                current_stage = pipeline_state.current_stage
                 logger.info(f"Candidate currently in {current_stage} stage")
                 
                 # Determine final stage based on interview outcome
@@ -491,12 +489,11 @@ async def update_interview_session(
                         
                         # Create activity for moving to interview
                         interview_activity = PipelineActivity(
-                            candidate_id=pipeline_state.candidate_id,
                             pipeline_state_id=pipeline_state.id,
-                            user_id=current_user.id,
-                            activity_type=PipelineActivityType.STAGE_CHANGED,
-                            from_stage_id=current_stage,
-                            to_stage_id="interview",
+                            performed_by=current_user.id,
+                            activity_type=PipelineActivityType.moved,  # Using 'moved' for stage changes
+                            from_stage=current_stage,
+                            to_stage="interview",
                             details={
                                 "reason": "Interview completed - moved through interview stage",
                                 "time_in_previous_stage": time_in_previous_stage,
@@ -507,7 +504,7 @@ async def update_interview_session(
                         
                         # Update to interview stage briefly
                         pipeline_state.time_in_stage_seconds = time_in_previous_stage
-                        pipeline_state.current_stage_id = "interview"
+                        pipeline_state.current_stage = "interview"
                         pipeline_state.entered_stage_at = datetime.utcnow()
                         pipeline_state.updated_at = datetime.utcnow()
                         
@@ -523,7 +520,7 @@ async def update_interview_session(
                         
                         # Update to final stage
                         pipeline_state.time_in_stage_seconds = time_in_stage
-                        pipeline_state.current_stage_id = final_stage
+                        pipeline_state.current_stage = final_stage
                         pipeline_state.entered_stage_at = datetime.utcnow()
                         pipeline_state.updated_at = datetime.utcnow()
                         
@@ -533,12 +530,11 @@ async def update_interview_session(
                         
                         # Create stage change activity
                         stage_activity = PipelineActivity(
-                            candidate_id=pipeline_state.candidate_id,
                             pipeline_state_id=pipeline_state.id,
-                            user_id=current_user.id,
-                            activity_type=PipelineActivityType.STAGE_CHANGED,
-                            from_stage_id=current_stage,
-                            to_stage_id=final_stage,
+                            performed_by=current_user.id,
+                            activity_type=PipelineActivityType.moved,  # Using 'moved' for stage changes
+                            from_stage=current_stage,
+                            to_stage=final_stage,
                             details={
                                 "reason": reason,
                                 "time_in_previous_stage": time_in_stage,
