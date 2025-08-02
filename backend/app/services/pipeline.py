@@ -144,7 +144,7 @@ class PipelineService:
         pipeline_state = CandidatePipelineState(
             candidate_id=candidate_id,
             pipeline_id=pipeline_id,
-            current_stage_id=stage_id,
+            current_stage=stage_id,
             assigned_to=assigned_to,
             assigned_at=datetime.utcnow() if assigned_to else None
         )
@@ -203,31 +203,29 @@ class PipelineService:
             logger.error(f"Pipeline state {pipeline_state_id} not found")
             raise ValueError(f"Pipeline state {pipeline_state_id} not found")
         
-        old_stage_id = pipeline_state.current_stage_id
+        old_stage_id = pipeline_state.current_stage
         logger.info(f"Current stage: {old_stage_id}, moving to: {new_stage_id}")
         
         # Calculate time in previous stage
-        time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
-        pipeline_state.time_in_stage_seconds = time_in_stage
+        time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
         
         # Update to new stage
-        pipeline_state.current_stage_id = new_stage_id
-        pipeline_state.entered_stage_at = datetime.utcnow()
+        pipeline_state.current_stage = new_stage_id
+        pipeline_state.stage_entered_at = datetime.utcnow()
         
-        # Handle rejection/withdrawal
-        if new_stage_id == "rejected":
-            pipeline_state.rejection_reason = reason
-        elif new_stage_id == "withdrawn":
-            pipeline_state.withdrawal_reason = reason
+        # Store rejection/withdrawal reason in metadata if provided
+        if reason and (new_stage_id == "rejected" or new_stage_id == "withdrawn"):
+            if not pipeline_state.meta_data:
+                pipeline_state.meta_data = {}
+            pipeline_state.meta_data[f"{new_stage_id}_reason"] = reason
         
         # Log the activity
         activity = PipelineActivity(
-            candidate_id=pipeline_state.candidate_id,
             pipeline_state_id=pipeline_state.id,
-            user_id=user_id,
-            activity_type=PipelineActivityType.STAGE_CHANGED,
-            from_stage_id=old_stage_id,
-            to_stage_id=new_stage_id,
+            performed_by=user_id,
+            activity_type="moved",  # Using string instead of enum
+            from_stage=old_stage_id,
+            to_stage=new_stage_id,
             details={
                 "reason": reason,
                 "time_in_previous_stage": time_in_stage
@@ -471,42 +469,38 @@ class PipelineService:
             .where(CandidatePipelineState.pipeline_id == pipeline_id)
         )
         
-        if not include_inactive:
-            query = query.where(CandidatePipelineState.is_active == True)
-        
         if stage_id:
-            query = query.where(CandidatePipelineState.current_stage_id == stage_id)
+            query = query.where(CandidatePipelineState.current_stage == stage_id)
         
         if assigned_to:
             query = query.where(CandidatePipelineState.assigned_to == assigned_to)
         
-        query = query.order_by(CandidatePipelineState.entered_stage_at.desc())
+        query = query.order_by(CandidatePipelineState.stage_entered_at.desc())
         query = query.limit(limit).offset(offset)
         
         result = await db.execute(query)
         rows = result.all()
         
         candidates = []
-        for pipeline_state, resume, assignee in rows:
+        for pipeline_state, candidate, assignee in rows:
             # Calculate time in current stage
-            time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+            time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
             
             candidates.append({
-                "id": str(resume.id),
+                "id": str(candidate.id),
                 "pipeline_state_id": str(pipeline_state.id),
-                "first_name": resume.first_name,
-                "last_name": resume.last_name,
-                "email": resume.email,
-                "current_title": resume.current_title,
-                "current_stage": pipeline_state.current_stage_id,
+                "first_name": candidate.first_name,
+                "last_name": candidate.last_name,
+                "email": candidate.email,
+                "current_title": candidate.current_title,
+                "current_stage": pipeline_state.current_stage,
                 "time_in_stage": time_in_stage,
                 "assigned_to": {
                     "id": str(assignee.id),
-                    "name": assignee.full_name or assignee.username
+                    "name": assignee.full_name or assignee.email
                 } if assignee else None,
                 "tags": pipeline_state.tags,
-                "entered_stage_at": pipeline_state.entered_stage_at.isoformat(),
-                "is_active": pipeline_state.is_active
+                "entered_stage_at": pipeline_state.stage_entered_at.isoformat()
             })
         
         return candidates
