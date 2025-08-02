@@ -51,7 +51,7 @@ class PipelineResponse(BaseModel):
 
 class AddCandidateRequest(BaseModel):
     """Request schema for adding candidate to pipeline."""
-    candidate_id: UUID
+    candidate_id: UUID  # Can be either resume_id or candidate_id
     pipeline_id: UUID
     assigned_to: Optional[UUID] = None
     stage_id: Optional[str] = None
@@ -274,7 +274,7 @@ async def add_candidate_to_pipeline(
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
     """Add a candidate to a pipeline."""
-    # Verify candidate exists and user has access
+    # First, check if this is a resume ID and get/create the corresponding candidate
     result = await db.execute(
         select(models.Resume).where(
             and_(
@@ -288,12 +288,36 @@ async def add_candidate_to_pipeline(
     if not resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Candidate not found or access denied"
+            detail="Resume not found or access denied"
         )
+    
+    # Check if a candidate record exists for this resume
+    result = await db.execute(
+        select(models.Candidate).where(
+            models.Candidate.resume_id == resume.id
+        )
+    )
+    candidate = result.scalar_one_or_none()
+    
+    # If no candidate exists, create one from the resume
+    if not candidate:
+        candidate = models.Candidate(
+            resume_id=resume.id,
+            first_name=resume.first_name,
+            last_name=resume.last_name,
+            email=resume.email,
+            phone=resume.phone,
+            current_title=resume.current_title,
+            location=resume.location,
+            skills=resume.skills if isinstance(resume.skills, list) else [],
+            years_of_experience=float(resume.years_experience) if resume.years_experience else None
+        )
+        db.add(candidate)
+        await db.flush()
     
     pipeline_state = await pipeline_service.add_candidate_to_pipeline(
         db=db,
-        candidate_id=request.candidate_id,
+        candidate_id=candidate.id,  # Use the actual candidate ID
         pipeline_id=request.pipeline_id,
         assigned_to=request.assigned_to,
         stage_id=request.stage_id,
