@@ -125,16 +125,18 @@ class PipelineService:
         if not pipeline:
             raise ValueError(f"Pipeline {pipeline_id} not found")
         
-        # Deactivate any existing active state for this candidate in this pipeline
-        await db.execute(
-            update(CandidatePipelineState).where(
+        # Check if candidate already exists in this pipeline
+        existing = await db.execute(
+            select(CandidatePipelineState).where(
                 and_(
                     CandidatePipelineState.candidate_id == candidate_id,
-                    CandidatePipelineState.pipeline_id == pipeline_id,
-                    CandidatePipelineState.is_active == True
+                    CandidatePipelineState.pipeline_id == pipeline_id
                 )
-            ).values(is_active=False)
+            )
         )
+        if existing.scalar_one_or_none():
+            logger.warning(f"Candidate {candidate_id} already in pipeline {pipeline_id}")
+            raise ValueError("Candidate already exists in this pipeline")
         
         # Get the starting stage
         if not stage_id and pipeline.stages:
