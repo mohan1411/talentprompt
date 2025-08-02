@@ -76,6 +76,5 @@ class Resume(Base):
     match_scores = Column(JSON)  # Historical match scores
     
     # Relationships
-    interview_sessions = relationship("InterviewSession", back_populates="resume")
     candidate_journeys = relationship("CandidateJourney", back_populates="resume")
     outreach_messages = relationship("OutreachMessage", back_populates="resume")

@@ -53,4 +53,3 @@ class Candidate(Base):
     
     # Relationships
     resume = relationship("Resume", backref="candidate")
-    interview_sessions = relationship("InterviewSession", back_populates="candidate")
