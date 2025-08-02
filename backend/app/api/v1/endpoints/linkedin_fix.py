@@ -75,6 +75,7 @@ async def simple_linkedin_import(
                         resume_id=str(existing.id),
                         text=search_text,
                         metadata={
+                            "user_id": str(current_user.id),  # CRITICAL: Include user_id for security
                             "name": f"{existing.first_name} {existing.last_name}",
                             "skills": existing.skills or [],
                             "location": existing.location or "",
@@ -159,6 +160,7 @@ async def simple_linkedin_import(
                         resume_id=str(resume.id),
                         text=raw_text,
                         metadata={
+                            "user_id": str(current_user.id),  # CRITICAL: Include user_id for security
                             "name": f"{first_name} {last_name}",
                             "skills": resume.skills or [],
                             "location": resume.location or "",
@@ -278,6 +280,7 @@ async def import_or_update_linkedin_profile(
                         resume_id=str(existing_resume.id),
                         text=search_text,
                         metadata={
+                            "user_id": str(current_user.id),  # CRITICAL: Include user_id for security
                             "name": f"{existing_resume.first_name} {existing_resume.last_name}",
                             "skills": existing_resume.skills or [],
                             "location": existing_resume.location or "",
@@ -334,6 +337,7 @@ async def import_or_update_linkedin_profile(
                         resume_id=str(resume.id),
                         text=search_text,
                         metadata={
+                            "user_id": str(current_user.id),  # CRITICAL: Include user_id for security
                             "name": f"{parsed_data.get('first_name', '')} {parsed_data.get('last_name', '')}",
                             "skills": resume_data['skills'],
                             "location": resume_data['location'],

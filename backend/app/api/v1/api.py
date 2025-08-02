@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, search_progressive, debug_analytics, simple_oauth, dev_oauth, oauth_frontend
+from app.api.v1.endpoints import auth, health, resumes, search, users, interviews, interview_pipelines, websocket, linkedin, debug_search, debug_profiles, search_debug, debug_skills, fix_data, debug_duplicates, admin, debug, cleanup, linkedin_fix, outreach, admin_migrate, search_progressive, debug_analytics, simple_oauth, dev_oauth, oauth_frontend, pipelines
 # bulk_import temporarily disabled - pandas not in Docker image
 
 api_router = APIRouter()
@@ -16,6 +16,7 @@ api_router.include_router(search.router, prefix="/search", tags=["search"])
 api_router.include_router(search_progressive.router, prefix="/search", tags=["search-progressive"])
 api_router.include_router(interviews.router, prefix="/interviews", tags=["interviews"])
 api_router.include_router(interview_pipelines.router, prefix="/pipelines", tags=["pipelines"])
+api_router.include_router(pipelines.router, prefix="/workflow", tags=["workflow"])
 api_router.include_router(linkedin.router, prefix="/linkedin", tags=["linkedin"])
 # api_router.include_router(submissions.router, prefix="/submissions", tags=["submissions"])  # Disabled - missing module
 api_router.include_router(linkedin_fix.router, prefix="/linkedin-fix", tags=["linkedin-fix"])

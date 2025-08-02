@@ -32,6 +32,7 @@ class ReindexService:
             
             # Build metadata
             metadata = {
+                "user_id": str(resume.user_id),  # CRITICAL: Include user_id for security
                 "name": f"{resume.first_name} {resume.last_name}",
                 "title": resume.current_title,
                 "location": resume.location,

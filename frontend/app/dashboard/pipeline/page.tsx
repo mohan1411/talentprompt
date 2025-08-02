@@ -40,12 +40,12 @@ export default function PipelinePage() {
       setPipelines(allPipelines);
       
       // Select pipeline to display
-      let selectedPipeline = null;
+      let selectedPipeline: Pipeline | null = null;
       if (pipelineId) {
-        selectedPipeline = allPipelines.find(p => p.id === pipelineId);
+        selectedPipeline = allPipelines.find((p: Pipeline) => p.id === pipelineId) || null;
       } else {
         // Try to get default pipeline first
-        selectedPipeline = allPipelines.find(p => p.is_default);
+        selectedPipeline = allPipelines.find((p: Pipeline) => p.is_default) || null;
         // If no default, use the first pipeline
         if (!selectedPipeline && allPipelines.length > 0) {
           selectedPipeline = allPipelines[0];

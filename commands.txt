@@ -8,14 +8,14 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 
   Backend (in the backend directory):
   cd backend
-  uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
   Frontend (in the frontend directory):
   cd frontend
   npm run dev
 
   Docker services (PostgreSQL, Redis, Qdrant):
-  docker-compose up postgres redis qdrant
+  docker-compose up -d postgres redis qdrant
 
   So your full local development setup:
   1. Start Docker services (databases)
@@ -29,5 +29,27 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
   2. Stop the backend container: docker stop promtitude-backend
   3. Run backend locally: python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
   4. Keep other services in Docker: PostgreSQL, Redis, and Qdrant can stay in containers
+  
+   The following critical security improvements are now being deployed:
 
+  1. Rate Limiting - Protects against brute force attacks:
+    - Login: 5 requests/minute
+    - Registration: 3 requests/minute
+    - Email verification: 10 requests/minute
+    - Resend verification: 3 requests/hour
+    - Extension token generation: 5 requests/hour
+  2. Security Headers - Protects against common web vulnerabilities:
+    - X-Content-Type-Options: nosniff
+    - X-Frame-Options: DENY
+    - X-XSS-Protection: 1; mode=block
+    - Content-Security-Policy configured
+    - HSTS enabled in production
+  3. Production Hardening:
+    - DEBUG mode disabled by default
+    - API documentation endpoints disabled in production
+    - CORS properly restricted
+    - Authentication endpoints have no-cache headers
+
+
+Failed to parse DOCX: file '<_io.BytesIO object at 0x7f4ab65dbf60>' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'
 

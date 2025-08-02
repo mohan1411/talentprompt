@@ -103,6 +103,7 @@ async def reindex_anil(
             resume_id=str(anil.id),
             text=search_text,
             metadata={
+                "user_id": str(anil.user_id),  # CRITICAL: Include user_id for security
                 "name": f"{anil.first_name} {anil.last_name}",
                 "title": anil.current_title,
                 "location": anil.location,

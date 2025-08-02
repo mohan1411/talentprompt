@@ -40,7 +40,7 @@ export function AddToPipelineModal({ isOpen, onClose, candidate, onSuccess }: Ad
       setPipelines(data);
       
       // Select default pipeline if available
-      const defaultPipeline = data.find(p => p.is_default);
+      const defaultPipeline = data.find((p: Pipeline) => p.is_default);
       if (defaultPipeline) {
         setSelectedPipeline(defaultPipeline.id);
       }

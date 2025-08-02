@@ -68,9 +68,9 @@ async def reindex_active_resumes():
                         # Index in vector search
                         await vector_search.index_resume(
                             resume_id=str(resume.id),
-                            user_id=str(resume.user_id),
-                            embedding=embedding,
+                            text=search_text,
                             metadata={
+                                "user_id": str(resume.user_id),  # CRITICAL: Include user_id for security
                                 "first_name": resume.first_name,
                                 "last_name": resume.last_name,
                                 "skills": resume.skills or [],

@@ -158,6 +158,7 @@ async def import_linkedin_profile(
         #         resume_id=str(resume.id),
         #         text=search_text,
         #         metadata={
+        #             "user_id": str(current_user.id),  # CRITICAL: Include user_id for security
         #             "name": f"{parsed_data.get('first_name', '')} {parsed_data.get('last_name', '')}",
         #             "title": profile_data.headline,
         #             "location": profile_data.location,
