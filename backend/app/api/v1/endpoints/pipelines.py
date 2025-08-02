@@ -33,7 +33,6 @@ class PipelineCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     stages: List[PipelineStageSchema]
-    team_id: Optional[UUID] = None
     is_default: bool = False
 
 
@@ -43,7 +42,6 @@ class PipelineResponse(BaseModel):
     name: str
     description: Optional[str]
     stages: List[Dict[str, Any]]
-    team_id: Optional[UUID]
     is_default: bool
     is_active: bool
     created_by: UUID
@@ -115,9 +113,6 @@ async def create_pipeline(
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
     """Create a new pipeline template."""
-    if not current_user.is_superuser and pipeline_in.team_id:
-        # TODO: Check if user has permission to create pipeline for team
-        pass
     
     pipeline = await pipeline_service.create_pipeline(
         db=db,
@@ -125,7 +120,6 @@ async def create_pipeline(
         description=pipeline_in.description,
         stages=[stage.dict() for stage in pipeline_in.stages],
         created_by=current_user.id,
-        team_id=pipeline_in.team_id,
         is_default=pipeline_in.is_default
     )
     
@@ -135,19 +129,14 @@ async def create_pipeline(
 @router.get("/", response_model=List[PipelineResponse])
 async def get_pipelines(
     db: AsyncSession = Depends(deps.get_db),
-    team_id: Optional[UUID] = Query(None),
     include_inactive: bool = Query(False),
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
     """Get all accessible pipelines."""
     query = select(models.Pipeline)
     
-    # Filter by team if specified
-    if team_id:
-        query = query.where(models.Pipeline.team_id == team_id)
-    else:
-        # Get global pipelines (no team)
-        query = query.where(models.Pipeline.team_id.is_(None))
+    # Note: team_id filtering removed as pipelines are now global
+    # All users can see all active pipelines
     
     if not include_inactive:
         query = query.where(models.Pipeline.is_active == True)
@@ -161,13 +150,11 @@ async def get_pipelines(
 @router.get("/default", response_model=Optional[PipelineResponse])
 async def get_default_pipeline(
     db: AsyncSession = Depends(deps.get_db),
-    team_id: Optional[UUID] = Query(None),
     current_user: models.User = Depends(deps.get_current_active_user),
 ):
-    """Get the default pipeline for a team or global default."""
+    """Get the default pipeline."""
     pipeline = await pipeline_service.get_default_pipeline(
-        db=db,
-        team_id=team_id  # Remove reference to current_user.team_id
+        db=db
     )
     
     if not pipeline:

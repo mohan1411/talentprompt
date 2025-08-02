@@ -34,7 +34,6 @@ class PipelineService:
         description: Optional[str],
         stages: List[Dict[str, Any]],
         created_by: UUID,
-        team_id: Optional[UUID] = None,
         is_default: bool = False
     ) -> Pipeline:
         """Create a new pipeline template.
@@ -45,28 +44,23 @@ class PipelineService:
             description: Pipeline description
             stages: List of stage configurations
             created_by: User ID who created the pipeline
-            team_id: Optional team ID
             is_default: Whether this is the default pipeline
             
         Returns:
             Created Pipeline object
         """
         # If setting as default, unset any existing default
-        if is_default and team_id:
+        if is_default:
             await db.execute(
-                select(Pipeline).where(
-                    and_(
-                        Pipeline.team_id == team_id,
-                        Pipeline.is_default == True
-                    )
-                ).update({"is_default": False})
+                update(Pipeline).where(
+                    Pipeline.is_default == True
+                ).values(is_default=False)
             )
         
         pipeline = Pipeline(
             name=name,
             description=description,
             stages=stages,
-            team_id=team_id,
             is_default=is_default,
             created_by=created_by
         )
@@ -80,40 +74,22 @@ class PipelineService:
     
     async def get_default_pipeline(
         self,
-        db: AsyncSession,
-        team_id: Optional[UUID] = None
+        db: AsyncSession
     ) -> Optional[Pipeline]:
-        """Get the default pipeline for a team or global default.
+        """Get the default pipeline.
         
         Args:
             db: Database session
-            team_id: Optional team ID
             
         Returns:
             Default Pipeline or None
         """
-        # Try team-specific default first
-        if team_id:
-            result = await db.execute(
-                select(Pipeline).where(
-                    and_(
-                        Pipeline.team_id == team_id,
-                        Pipeline.is_default == True,
-                        Pipeline.is_active == True
-                    )
-                )
-            )
-            pipeline = result.scalar_one_or_none()
-            if pipeline:
-                return pipeline
-        
-        # Fall back to global default
+        # Get the default pipeline
         result = await db.execute(
             select(Pipeline).where(
                 and_(
                     Pipeline.is_default == True,
-                    Pipeline.is_active == True,
-                    Pipeline.team_id.is_(None)
+                    Pipeline.is_active == True
                 )
             )
         )
