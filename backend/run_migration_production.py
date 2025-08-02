@@ -236,11 +236,24 @@ async def run_migration():
                 is_default BOOLEAN DEFAULT false,
                 created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-                created_by UUID REFERENCES users(id),
-                CONSTRAINT only_one_default_pipeline UNIQUE (is_default) WHERE is_default = true
+                created_by UUID REFERENCES users(id)
             )
         """)
         print("  ✓ Pipelines table")
+        
+        # Add unique constraint for default pipeline
+        try:
+            await conn.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS only_one_default_pipeline 
+                ON pipelines (is_default) 
+                WHERE is_default = true
+            """)
+            print("  ✓ Default pipeline constraint")
+        except Exception as e:
+            if "already exists" in str(e):
+                print("  ⏭ Default pipeline constraint already exists")
+            else:
+                print(f"  ⚠️ Default pipeline constraint: {e}")
         
         # Candidate pipeline states table
         await conn.execute("""
@@ -459,17 +472,21 @@ async def run_migration():
         ]"""
         
         try:
-            await conn.execute("""
-                INSERT INTO pipelines (name, description, stages, is_active, is_default)
-                VALUES ($1, $2, $3::jsonb, $4, $5)
-                ON CONFLICT (is_default) WHERE is_default = true DO NOTHING
-            """, 
-            'Default Hiring Pipeline',
-            'Standard recruitment workflow with all stages including terminal states',
-            default_pipeline_stages,
-            True,
-            True)
-            print("  ✓ Default pipeline created")
+            # Check if default pipeline already exists
+            existing = await conn.fetchval("SELECT COUNT(*) FROM pipelines WHERE is_default = true")
+            if existing == 0:
+                await conn.execute("""
+                    INSERT INTO pipelines (name, description, stages, is_active, is_default)
+                    VALUES ($1, $2, $3::jsonb, $4, $5)
+                """, 
+                'Default Hiring Pipeline',
+                'Standard recruitment workflow with all stages including terminal states',
+                default_pipeline_stages,
+                True,
+                True)
+                print("  ✓ Default pipeline created")
+            else:
+                print("  ⏭ Default pipeline already exists")
         except Exception as e:
             print(f"  ⚠️ Default pipeline: {e}")
         
