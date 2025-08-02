@@ -35,6 +35,13 @@ logger = logging.getLogger(__name__)
 copilot_service = InterviewCopilotService()
 
 
+def make_timezone_naive(dt: datetime) -> datetime:
+    """Convert datetime to timezone-naive for consistent comparisons."""
+    if dt and dt.tzinfo:
+        return dt.replace(tzinfo=None)
+    return dt
+
+
 @router.post("/prepare", response_model=InterviewPreparationResponse)
 async def prepare_interview(
     request: InterviewPrepareRequest,
@@ -386,7 +393,9 @@ async def update_interview_session(
                     logger.info(f"Moving candidate from {old_stage} to interview stage")
                     
                     # Calculate time in previous stage
-                    time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
+                    stage_entered = make_timezone_naive(pipeline_state.stage_entered_at)
+                    current_time = datetime.utcnow()
+                    time_in_stage = int((current_time - stage_entered).total_seconds()) if stage_entered else 0
                     
                     # Update the stage
                     pipeline_state.current_stage = "interview"
@@ -414,8 +423,8 @@ async def update_interview_session(
             # Calculate duration if we have both timestamps
             if session.started_at:
                 # Ensure both timestamps are timezone-naive for comparison
-                started = session.started_at.replace(tzinfo=None) if session.started_at.tzinfo else session.started_at
-                ended = session.ended_at.replace(tzinfo=None) if session.ended_at.tzinfo else session.ended_at
+                started = make_timezone_naive(session.started_at)
+                ended = make_timezone_naive(session.ended_at)
                 duration = (ended - started).total_seconds() / 60
                 # Ensure minimum duration of 1 minute
                 session.duration_minutes = max(1, int(duration))
@@ -484,7 +493,9 @@ async def update_interview_session(
                         logger.info(f"Candidate needs to move through interview stage first (currently in {current_stage})")
                         
                         # First move to interview stage
-                        time_in_previous_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
+                        stage_entered = make_timezone_naive(pipeline_state.stage_entered_at)
+                        current_time = datetime.utcnow()
+                        time_in_previous_stage = int((current_time - stage_entered).total_seconds()) if stage_entered else 0
                         
                         # Create activity for moving to interview
                         interview_activity = PipelineActivity(
@@ -514,7 +525,9 @@ async def update_interview_session(
                         logger.info(f"Moving candidate from {current_stage} to {final_stage}")
                         
                         # Calculate time in current stage
-                        time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
+                        stage_entered = make_timezone_naive(pipeline_state.stage_entered_at)
+                        current_time = datetime.utcnow()
+                        time_in_stage = int((current_time - stage_entered).total_seconds()) if stage_entered else 0
                         
                         # Update to final stage
                         pipeline_state.current_stage = final_stage
