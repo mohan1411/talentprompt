@@ -606,15 +606,27 @@ class PipelineService:
                 and_(
                     PipelineAutomation.pipeline_id == pipeline_state.pipeline_id,
                     PipelineAutomation.is_active == True,
-                    PipelineAutomation.trigger_type == "stage_enter"
+                    PipelineAutomation.trigger_stage == stage_id  # Check stage directly
                 )
             )
         )
         automations = result.scalars().all()
         
         for automation in automations:
-            if automation.trigger_config.get("stage_id") == stage_id:
-                await self._execute_automation(db, automation, pipeline_state)
+            # Check additional conditions if any
+            if automation.trigger_condition and not self._check_conditions(automation.trigger_condition, pipeline_state):
+                continue
+            await self._execute_automation(db, automation, pipeline_state)
+    
+    def _check_conditions(self, conditions: dict, pipeline_state: CandidatePipelineState) -> bool:
+        """Check if automation conditions are met."""
+        # Simple condition checking - can be expanded
+        for key, value in conditions.items():
+            if key == "assigned_to" and pipeline_state.assigned_to != value:
+                return False
+            elif key == "has_tag" and value not in pipeline_state.tags:
+                return False
+        return True
     
     async def _execute_automation(
         self,

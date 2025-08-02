@@ -205,18 +205,18 @@ class PipelineAutomation(Base):
     pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id", ondelete="CASCADE"), nullable=False)
     
     name = Column(String(255), nullable=False)
-    description = Column(Text)
+    # description field doesn't exist in database
     
-    trigger_type = Column(String(50), nullable=False)  # stage_enter, time_in_stage, evaluation_complete, etc.
-    trigger_config = Column(JSON, nullable=False)
+    trigger_stage = Column(String(50))  # Stage that triggers the automation
+    trigger_condition = Column(JSON)  # Additional conditions for triggering
     
     action_type = Column(String(50), nullable=False)  # send_email, move_stage, assign_user, add_tag, etc.
-    action_config = Column(JSON, nullable=False)
+    action_config = Column(JSON)
     
     is_active = Column(Boolean, default=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # updated_at doesn't exist in database
     
     # Relationships
     pipeline = relationship("Pipeline", back_populates="automations")
