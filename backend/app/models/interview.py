@@ -14,11 +14,11 @@ from app.db.base_class import Base
 
 class InterviewStatus(str, enum.Enum):
     """Interview session status."""
-    SCHEDULED = "SCHEDULED"
-    IN_PROGRESS = "IN_PROGRESS"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
-    PROCESSING = "PROCESSING"  # Processing uploaded recording
+    SCHEDULED = "scheduled"
+    IN_PROGRESS = "in_progress"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    PROCESSING = "processing"  # Processing uploaded recording
 
 
 class QuestionCategory(str, enum.Enum):
