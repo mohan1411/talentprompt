@@ -24,6 +24,7 @@ export interface Pipeline {
 
 export interface CandidateInPipeline {
   id: string;
+  resume_id?: string;
   pipeline_state_id: string;
   first_name: string;
   last_name: string;
@@ -37,7 +38,7 @@ export interface CandidateInPipeline {
   };
   tags: string[];
   entered_stage_at: string;
-  is_active: boolean;
+  is_active?: boolean;
 }
 
 export interface PipelineActivity {

@@ -496,6 +496,7 @@ class PipelineService:
             
             candidates.append({
                 "id": str(candidate.id),
+                "resume_id": str(candidate.resume_id) if candidate.resume_id else None,
                 "pipeline_state_id": str(pipeline_state.id),
                 "first_name": candidate.first_name,
                 "last_name": candidate.last_name,

@@ -129,10 +129,16 @@ export default function PrepareInterviewPage() {
   useEffect(() => {
     const pendingResumeId = sessionStorage.getItem('pendingResumeId')
     if (pendingResumeId && resumes.length > 0) {
+      console.log('Looking for resume with ID:', pendingResumeId)
+      console.log('Available resumes:', resumes.map(r => ({ id: r.id, name: `${r.first_name} ${r.last_name}` })))
+      
       const resume = resumes.find(r => r.id === pendingResumeId)
       if (resume) {
+        console.log('Found and selecting resume:', resume)
         setSelectedResume(resume)
         sessionStorage.removeItem('pendingResumeId')
+      } else {
+        console.warn('Resume not found with ID:', pendingResumeId)
       }
     }
   }, [resumes])

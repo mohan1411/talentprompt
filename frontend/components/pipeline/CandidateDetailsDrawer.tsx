@@ -79,6 +79,7 @@ export default function CandidateDetailsDrawer({
     
     console.log('Schedule Interview clicked for candidate:', {
       id: candidate.id,
+      resume_id: candidate.resume_id,
       name: `${candidate.first_name} ${candidate.last_name}`,
       pipeline_state_id: candidate.pipeline_state_id,
       current_stage: candidate.current_stage
@@ -101,7 +102,9 @@ export default function CandidateDetailsDrawer({
       }));
       
       // Navigate to existing AI Interview Copilot preparation page
-      router.push(`/dashboard/interviews/prepare?resumeId=${candidate.id}&pipeline_state_id=${candidate.pipeline_state_id}`);
+      // Use resume_id if available, otherwise fall back to candidate.id
+      const resumeId = candidate.resume_id || candidate.id;
+      router.push(`/dashboard/interviews/prepare?resumeId=${resumeId}&pipeline_state_id=${candidate.pipeline_state_id}`);
     } catch (error) {
       console.error('Error scheduling interview:', error);
       toast.error('Failed to schedule interview');
