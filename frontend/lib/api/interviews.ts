@@ -55,6 +55,7 @@ export interface InterviewPreparationRequest {
   job_requirements?: any
   interview_type?: 'IN_PERSON' | 'VIRTUAL' | 'PHONE' | null  // Mode
   interview_category: string  // general, technical, behavioral, final
+  pipeline_state_id?: string  // Link to pipeline state if coming from pipeline view
   difficulty_level: number
   num_questions: number
   focus_areas?: string[]

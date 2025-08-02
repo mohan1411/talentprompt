@@ -465,3 +465,167 @@ export const submissionApi = {
     return makeRequest(`/submissions/campaigns/${campaignId}`);
   },
 };
+
+// Pipeline endpoints
+export const pipelineApi = {
+  // Pipeline CRUD
+  async createPipeline(data: any) {
+    return makeRequest('/workflow/', {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async getPipelines(teamId?: string, includeInactive?: boolean) {
+    const params = new URLSearchParams();
+    if (teamId) params.append('team_id', teamId);
+    if (includeInactive) params.append('include_inactive', 'true');
+    
+    return makeRequest(`/workflow/?${params.toString()}`);
+  },
+
+  async getDefaultPipeline(teamId?: string) {
+    const params = teamId ? `?team_id=${teamId}` : '';
+    return makeRequest(`/workflow/default${params}`);
+  },
+
+  async getPipeline(pipelineId: string) {
+    return makeRequest(`/workflow/${pipelineId}`);
+  },
+
+  async updatePipeline(pipelineId: string, data: any) {
+    return makeRequest(`/workflow/${pipelineId}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  async deletePipeline(pipelineId: string) {
+    return makeRequest(`/workflow/${pipelineId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Candidate pipeline management
+  async addCandidateToPipeline(data: any) {
+    return makeRequest('/workflow/candidates/add', {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async moveCandidateStage(pipelineStateId: string, data: any) {
+    return makeRequest(`/workflow/candidates/${pipelineStateId}/move`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  async assignCandidate(pipelineStateId: string, assigneeId: string | null) {
+    return makeRequest(`/workflow/candidates/${pipelineStateId}/assign`, {
+      method: 'PUT',
+      body: { assignee_id: assigneeId },
+    });
+  },
+
+  async getPipelineCandidates(pipelineId: string, options?: {
+    stageId?: string;
+    assignedTo?: string;
+    includeInactive?: boolean;
+    limit?: number;
+    offset?: number;
+  }) {
+    const params = new URLSearchParams();
+    if (options?.stageId) params.append('stage_id', options.stageId);
+    if (options?.assignedTo) params.append('assigned_to', options.assignedTo);
+    if (options?.includeInactive) params.append('include_inactive', 'true');
+    if (options?.limit) params.append('limit', options.limit.toString());
+    if (options?.offset) params.append('offset', options.offset.toString());
+    
+    return makeRequest(`/workflow/candidates/${pipelineId}?${params.toString()}`);
+  },
+
+  // Collaboration
+  async addNote(candidateId: string, data: any, pipelineStateId?: string) {
+    const params = pipelineStateId ? `?pipeline_state_id=${pipelineStateId}` : '';
+    return makeRequest(`/workflow/candidates/${candidateId}/notes${params}`, {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async getNotes(candidateId: string, pipelineStateId?: string, includePrivate?: boolean) {
+    const params = new URLSearchParams();
+    if (pipelineStateId) params.append('pipeline_state_id', pipelineStateId);
+    if (includePrivate) params.append('include_private', 'true');
+    
+    return makeRequest(`/workflow/candidates/${candidateId}/notes?${params.toString()}`);
+  },
+
+  async addEvaluation(candidateId: string, data: any, pipelineStateId?: string) {
+    const params = pipelineStateId ? `?pipeline_state_id=${pipelineStateId}` : '';
+    return makeRequest(`/workflow/candidates/${candidateId}/evaluations${params}`, {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async getCandidateTimeline(candidateId: string, pipelineStateId?: string) {
+    const params = pipelineStateId ? `?pipeline_state_id=${pipelineStateId}` : '';
+    return makeRequest(`/workflow/candidates/${candidateId}/timeline${params}`);
+  },
+
+  // Analytics
+  async getPipelineAnalytics(pipelineId: string) {
+    return makeRequest(`/workflow/${pipelineId}/analytics`);
+  },
+};
+
+// Interview endpoints
+export const interviewApi = {
+  async prepareInterview(data: {
+    resume_id: string;
+    job_position: string;
+    job_requirements?: string;
+    interview_type?: string;
+    interview_category?: string;
+    pipeline_state_id?: string;
+    focus_areas?: string[];
+    difficulty_level?: number;
+    num_questions?: number;
+  }) {
+    return makeRequest('/interviews/prepare', {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async scheduleInterviewFromPipeline(pipelineId: string, candidateId: string, data: any) {
+    return makeRequest(`/workflow/${pipelineId}/candidates/${candidateId}/interviews`, {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async getInterview(interviewId: string) {
+    return makeRequest(`/interviews/${interviewId}`);
+  },
+
+  async updateInterview(interviewId: string, data: any) {
+    return makeRequest(`/interviews/${interviewId}`, {
+      method: 'PUT',
+      body: data,
+    });
+  },
+
+  async completeInterview(interviewId: string, data: any) {
+    return makeRequest(`/interviews/${interviewId}/complete`, {
+      method: 'POST',
+      body: data,
+    });
+  },
+
+  async getMyInterviews(skip = 0, limit = 100) {
+    return makeRequest(`/interviews/?skip=${skip}&limit=${limit}`);
+  },
+};

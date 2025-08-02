@@ -32,14 +32,17 @@ import {
   TrendingUp,
   AlertCircle,
   Upload,
-  Command
+  Command,
+  GitBranch
 } from 'lucide-react';
-import { resumeApi } from '@/lib/api/client';
+import { resumeApi, pipelineApi } from '@/lib/api/client';
 import type { Resume } from '@/lib/api/client';
 import { OutreachModal } from '@/components/outreach/OutreachModal';
 import { RequestUpdateModal } from '@/components/submission/RequestUpdateModal';
+import { AddToPipelineModal } from '@/components/pipeline/AddToPipelineModal';
 import { format, formatDistanceToNow, isAfter, subDays } from 'date-fns';
 import styles from './ResumesPage.module.css';
+import { toast } from 'react-hot-toast';
 
 type ViewMode = 'grid' | 'list' | 'compact';
 type SortOption = 'recent' | 'name' | 'experience' | 'views';
@@ -56,6 +59,8 @@ export default function ResumesPage() {
   const [outreachCandidate, setOutreachCandidate] = useState<Resume | null>(null);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [updateCandidate, setUpdateCandidate] = useState<Resume | null>(null);
+  const [showPipelineModal, setShowPipelineModal] = useState(false);
+  const [pipelineCandidate, setPipelineCandidate] = useState<Resume | null>(null);
   
   // New state for modern UX
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -449,6 +454,15 @@ export default function ResumesPage() {
                   </button>
                   <button
                     onClick={() => {
+                      setPipelineCandidate(resume);
+                      setShowPipelineModal(true);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                  >
+                    <GitBranch className="h-4 w-4" /> Add to Pipeline
+                  </button>
+                  <button
+                    onClick={() => {
                       setUpdateCandidate(resume);
                       setShowUpdateModal(true);
                     }}
@@ -551,11 +565,11 @@ export default function ResumesPage() {
     columnIndex: number;
     rowIndex: number;
     style: React.CSSProperties;
-    data: { resumes: Resume[]; columns: number; selectedResumes: Set<string>; toggleResumeSelection: (id: string) => void; router: any; setUpdateCandidate: any; setShowUpdateModal: any; setOutreachCandidate: any; setShowOutreachModal: any; handleDelete: any; };
+    data: { resumes: Resume[]; columns: number; selectedResumes: Set<string>; toggleResumeSelection: (id: string) => void; router: any; setUpdateCandidate: any; setShowUpdateModal: any; setOutreachCandidate: any; setShowOutreachModal: any; setPipelineCandidate: any; setShowPipelineModal: any; handleDelete: any; };
   }) => {
     const [showActions, setShowActions] = useState(false);
     
-    const { resumes, columns, selectedResumes, toggleResumeSelection, router, setUpdateCandidate, setShowUpdateModal, setOutreachCandidate, setShowOutreachModal, handleDelete } = data;
+    const { resumes, columns, selectedResumes, toggleResumeSelection, router, setUpdateCandidate, setShowUpdateModal, setOutreachCandidate, setShowOutreachModal, setPipelineCandidate, setShowPipelineModal, handleDelete } = data;
     const index = rowIndex * columns + columnIndex;
     const resume = resumes[index];
 
@@ -664,6 +678,15 @@ export default function ResumesPage() {
                       className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                     >
                       <Mail className="h-4 w-4" /> Generate Outreach
+                    </button>
+                    <button
+                      onClick={() => {
+                        setPipelineCandidate(resume);
+                        setShowPipelineModal(true);
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                    >
+                      <GitBranch className="h-4 w-4" /> Add to Pipeline
                     </button>
                     <hr className="my-1 border-gray-200 dark:border-gray-700" />
                     <button
@@ -967,6 +990,8 @@ export default function ResumesPage() {
                 setShowUpdateModal,
                 setOutreachCandidate,
                 setShowOutreachModal,
+                setPipelineCandidate,
+                setShowPipelineModal,
                 handleDelete
               }}
             >
@@ -1194,6 +1219,27 @@ export default function ResumesPage() {
           }}
           onSuccess={() => {
             // Optionally refresh or show success message
+          }}
+        />
+      )}
+
+      {/* Add to Pipeline Modal */}
+      {showPipelineModal && pipelineCandidate && (
+        <AddToPipelineModal
+          isOpen={showPipelineModal}
+          onClose={() => {
+            setShowPipelineModal(false);
+            setPipelineCandidate(null);
+          }}
+          candidate={{
+            id: pipelineCandidate.id,
+            name: `${pipelineCandidate.first_name} ${pipelineCandidate.last_name}`,
+            title: pipelineCandidate.current_title || '',
+            email: pipelineCandidate.email
+          }}
+          onSuccess={() => {
+            // Show success message
+            toast.success('Candidate added to pipeline');
           }}
         />
       )}

@@ -572,7 +572,7 @@ class ScheduleInterviewRequest(BaseModel):
     interview_type: Optional[str] = None  # IN_PERSON, VIRTUAL, PHONE
     interview_category: str = "general"  # general, technical, behavioral, final
     scheduled_at: Optional[datetime] = None
-    duration_minutes: Optional[int] = Field(default=60, ge=1, le=480)
+    duration_minutes: int = Field(default=60, ge=15, le=480)
     focus_areas: Optional[List[str]] = None
     difficulty_level: int = Field(default=3, ge=1, le=5)
     num_questions: int = Field(default=10, ge=5, le=30)
@@ -695,6 +695,16 @@ async def schedule_interview_from_pipeline(
         }
     )
     db.add(activity)
+    
+    # Auto-move candidate to Interview stage if not already there
+    if pipeline_state.current_stage_id != "interview":
+        updated_state = await pipeline_service.move_candidate_stage(
+            db=db,
+            pipeline_state_id=pipeline_state.id,
+            new_stage_id="interview",
+            user_id=current_user.id,
+            reason="Interview scheduled - automatically moved to Interview stage"
+        )
     
     await db.commit()
     

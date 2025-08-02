@@ -28,6 +28,7 @@ from app.schemas.interview import (
 )
 from app.services.interview_ai import interview_ai_service
 from app.services.interview_copilot import InterviewCopilotService
+from app.services.interview_pipeline_integration import interview_pipeline_service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -66,6 +67,7 @@ async def prepare_interview(
     )
     
     # Create interview session
+    logger.info(f"Creating interview session with pipeline_state_id: {request.pipeline_state_id}")
     session = InterviewSession(
         resume_id=request.resume_id,
         interviewer_id=current_user.id,
@@ -85,6 +87,7 @@ async def prepare_interview(
     
     db.add(session)
     await db.flush()
+    logger.info(f"Interview session created with id: {session.id}, pipeline_state_id: {session.pipeline_state_id}")
     
     # Create question records
     question_responses = []
@@ -104,8 +107,10 @@ async def prepare_interview(
         
         question_responses.append(InterviewQuestionResponse.model_validate(question))
     
-    # Create pipeline activity if linked to pipeline
+    # Create pipeline activity if linked to pipeline (but don't move stage yet)
     if request.pipeline_state_id:
+        logger.info(f"Creating interview scheduled activity for pipeline_state_id: {request.pipeline_state_id}")
+        
         activity = PipelineActivity(
             candidate_id=request.resume_id,
             pipeline_state_id=request.pipeline_state_id,
@@ -120,8 +125,12 @@ async def prepare_interview(
             }
         )
         db.add(activity)
+        logger.info(f"Interview scheduled for candidate, but NOT moving to Interview stage yet (will move when interview starts)")
+    else:
+        logger.warning(f"No pipeline_state_id provided for interview session {session.id}")
     
     await db.commit()
+    await db.refresh(session)
     
     # Build response
     return InterviewPreparationResponse(
@@ -294,10 +303,87 @@ async def update_interview_session(
     # Update fields
     update_dict = update_data.model_dump(exclude_unset=True)
     
+    # If completing interview without rating/recommendation, calculate from question ratings
+    if "status" in update_dict and update_dict["status"] == InterviewStatus.COMPLETED:
+        if not session.overall_rating and not session.recommendation:
+            logger.info("Interview being completed without rating/recommendation, calculating from questions...")
+            
+            # Get all questions with ratings
+            questions_query = select(InterviewQuestion).where(
+                InterviewQuestion.session_id == session_id
+            )
+            questions_result = await db.execute(questions_query)
+            questions = questions_result.scalars().all()
+            
+            rated_questions = [q for q in questions if q.response_rating is not None]
+            
+            if rated_questions:
+                # Calculate average rating
+                avg_rating = sum(q.response_rating for q in rated_questions) / len(rated_questions)
+                session.overall_rating = round(avg_rating, 1)
+                
+                # Determine recommendation based on average rating
+                if avg_rating >= 4:
+                    session.recommendation = "hire"
+                elif avg_rating < 2:
+                    session.recommendation = "no_hire"
+                else:
+                    session.recommendation = "maybe"
+                
+                logger.info(f"Calculated rating: {session.overall_rating}, recommendation: {session.recommendation} from {len(rated_questions)} questions")
+            else:
+                logger.warning("No rated questions found, using default values")
+                # Default to neutral values if no questions rated
+                session.overall_rating = 3.0
+                session.recommendation = "maybe"
+    
     # Handle status transitions
     if "status" in update_dict:
         if update_dict["status"] == InterviewStatus.IN_PROGRESS and not session.started_at:
             session.started_at = datetime.utcnow()
+            
+            # Move to Interview stage when interview actually starts
+            if session.pipeline_state_id:
+                logger.info(f"Interview starting - checking if need to move candidate to Interview stage")
+                
+                from app.models import CandidatePipelineState
+                pipeline_state_result = await db.execute(
+                    select(CandidatePipelineState).where(
+                        CandidatePipelineState.id == session.pipeline_state_id
+                    )
+                )
+                pipeline_state = pipeline_state_result.scalar_one_or_none()
+                
+                if pipeline_state and pipeline_state.current_stage_id not in ["interview", "offer", "rejected", "hired"]:
+                    old_stage = pipeline_state.current_stage_id
+                    logger.info(f"Moving candidate from {old_stage} to interview stage")
+                    
+                    # Calculate time in previous stage
+                    time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                    
+                    # Update the stage
+                    pipeline_state.time_in_stage_seconds = time_in_stage
+                    pipeline_state.current_stage_id = "interview"
+                    pipeline_state.entered_stage_at = datetime.utcnow()
+                    pipeline_state.updated_at = datetime.utcnow()
+                    
+                    # Create stage change activity
+                    stage_activity = PipelineActivity(
+                        candidate_id=pipeline_state.candidate_id,
+                        pipeline_state_id=pipeline_state.id,
+                        user_id=current_user.id,
+                        activity_type=PipelineActivityType.STAGE_CHANGED,
+                        from_stage_id=old_stage,
+                        to_stage_id="interview",
+                        details={
+                            "reason": "Interview started - automatically moved to Interview stage",
+                            "time_in_previous_stage": time_in_stage,
+                            "interview_id": str(session.id)
+                        }
+                    )
+                    db.add(stage_activity)
+                    logger.info(f"Stage updated from {old_stage} to interview")
+                    
         elif update_dict["status"] == InterviewStatus.COMPLETED and not session.ended_at:
             session.ended_at = datetime.utcnow()
             # Calculate duration if we have both timestamps
@@ -313,7 +399,11 @@ async def update_interview_session(
         setattr(session, field, value)
     
     # Create pipeline activity if interview completed and linked to pipeline
+    logger.info(f"Interview update - pipeline_state_id: {session.pipeline_state_id}, status in update: {'status' in update_dict}, status value: {update_dict.get('status')}")
+    
     if session.pipeline_state_id and "status" in update_dict and update_dict["status"] == InterviewStatus.COMPLETED:
+        logger.info(f"Processing completed interview - rating: {session.overall_rating}, recommendation: {session.recommendation}")
+        
         activity = PipelineActivity(
             candidate_id=session.resume_id,
             pipeline_state_id=session.pipeline_state_id,
@@ -330,6 +420,117 @@ async def update_interview_session(
             }
         )
         db.add(activity)
+        
+        # Handle pipeline stage transition directly here
+        if session.overall_rating or session.recommendation:
+            logger.info(f"Checking pipeline state transition for rating: {session.overall_rating}, recommendation: {session.recommendation}")
+            
+            # Get current pipeline state
+            from app.models import CandidatePipelineState
+            pipeline_state_result = await db.execute(
+                select(CandidatePipelineState).where(
+                    CandidatePipelineState.id == session.pipeline_state_id
+                )
+            )
+            pipeline_state = pipeline_state_result.scalar_one_or_none()
+            
+            if pipeline_state:
+                current_stage = pipeline_state.current_stage_id
+                logger.info(f"Candidate currently in {current_stage} stage")
+                
+                # Determine final stage based on interview outcome
+                final_stage = None
+                reason = ""
+                
+                if session.recommendation == "hire" or (session.overall_rating and session.overall_rating >= 4):
+                    final_stage = "offer"
+                    reason = f"Interview completed with positive outcome - Rating: {session.overall_rating}/5, Recommendation: {session.recommendation}"
+                    logger.info(f"Interview outcome positive - will move to offer stage")
+                elif session.recommendation == "no_hire" or (session.overall_rating and session.overall_rating <= 2):
+                    final_stage = "rejected"
+                    reason = f"Interview completed with negative outcome - Rating: {session.overall_rating}/5, Recommendation: {session.recommendation}"
+                    logger.info(f"Interview outcome negative - will move to rejected stage")
+                else:
+                    logger.info(f"No clear decision - rating: {session.overall_rating}, recommendation: {session.recommendation}")
+                
+                if final_stage:
+                    # If candidate is not in interview stage yet (e.g., still in screening),
+                    # we need to move them through interview stage first
+                    if current_stage not in ["interview", "offer", "rejected", "hired"]:
+                        logger.info(f"Candidate needs to move through interview stage first (currently in {current_stage})")
+                        
+                        # First move to interview stage
+                        time_in_previous_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                        
+                        # Create activity for moving to interview
+                        interview_activity = PipelineActivity(
+                            candidate_id=pipeline_state.candidate_id,
+                            pipeline_state_id=pipeline_state.id,
+                            user_id=current_user.id,
+                            activity_type=PipelineActivityType.STAGE_CHANGED,
+                            from_stage_id=current_stage,
+                            to_stage_id="interview",
+                            details={
+                                "reason": "Interview completed - moved through interview stage",
+                                "time_in_previous_stage": time_in_previous_stage,
+                                "interview_id": str(session.id)
+                            }
+                        )
+                        db.add(interview_activity)
+                        
+                        # Update to interview stage briefly
+                        pipeline_state.time_in_stage_seconds = time_in_previous_stage
+                        pipeline_state.current_stage_id = "interview"
+                        pipeline_state.entered_stage_at = datetime.utcnow()
+                        pipeline_state.updated_at = datetime.utcnow()
+                        
+                        # Now move from interview to final stage
+                        current_stage = "interview"
+                    
+                    # Move to final stage
+                    if current_stage != final_stage:
+                        logger.info(f"Moving candidate from {current_stage} to {final_stage}")
+                        
+                        # Calculate time in current stage
+                        time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                        
+                        # Update to final stage
+                        pipeline_state.time_in_stage_seconds = time_in_stage
+                        pipeline_state.current_stage_id = final_stage
+                        pipeline_state.entered_stage_at = datetime.utcnow()
+                        pipeline_state.updated_at = datetime.utcnow()
+                        
+                        # Handle rejection/offer specific fields
+                        if final_stage == "rejected":
+                            pipeline_state.rejection_reason = reason
+                        
+                        # Create stage change activity
+                        stage_activity = PipelineActivity(
+                            candidate_id=pipeline_state.candidate_id,
+                            pipeline_state_id=pipeline_state.id,
+                            user_id=current_user.id,
+                            activity_type=PipelineActivityType.STAGE_CHANGED,
+                            from_stage_id=current_stage,
+                            to_stage_id=final_stage,
+                            details={
+                                "reason": reason,
+                                "time_in_previous_stage": time_in_stage,
+                                "interview_id": str(session.id),
+                                "interview_rating": session.overall_rating,
+                                "interview_recommendation": session.recommendation
+                            }
+                        )
+                        db.add(stage_activity)
+                        
+                        logger.info(f"Stage updated from {current_stage} to {final_stage}")
+                    else:
+                        logger.info(f"Candidate already in {final_stage} stage")
+            else:
+                logger.error(f"Pipeline state {session.pipeline_state_id} not found!")
+        else:
+            logger.info("No rating or recommendation provided, skipping pipeline update")
+    else:
+        logger.info(f"Not processing pipeline update - conditions not met")
     
     await db.commit()
     await db.refresh(session)

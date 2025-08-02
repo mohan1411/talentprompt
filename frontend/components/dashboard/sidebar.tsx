@@ -14,7 +14,8 @@ import {
   Zap,
   BrainIcon,
   Sparkles,
-  Mail
+  Mail,
+  GitBranch
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth/context';
@@ -30,6 +31,7 @@ const navigation: NavigationItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Search', href: '/dashboard/search', icon: Search },
   { name: 'Mind Reader Search', href: '/dashboard/search/progressive', icon: Sparkles, badge: 'NEW' },
+  { name: 'Pipeline', href: '/dashboard/pipeline', icon: GitBranch, badge: 'NEW' },
   { name: 'My Resumes', href: '/dashboard/resumes', icon: FileText },
   { name: 'Upload Resume', href: '/dashboard/upload', icon: Upload },
   { name: 'Bulk Upload', href: '/dashboard/bulk-upload', icon: Zap },

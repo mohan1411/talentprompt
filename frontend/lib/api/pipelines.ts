@@ -1,25 +1,23 @@
 import { apiClient } from './client'
 
 export interface PipelineStage {
-  order: number
+  id: string
   name: string
-  type: string
-  required: boolean
-  min_score: number
-  prerequisites: string[]
-  description?: string
+  order: number
+  color: string
+  type?: string
+  actions?: string[]
 }
 
 export interface Pipeline {
   id: string
   name: string
   description?: string
-  job_role?: string
-  is_active: boolean
   stages: PipelineStage[]
-  min_overall_score: number
-  auto_reject_on_fail: boolean
-  auto_approve_on_pass: boolean
+  team_id?: string
+  is_default: boolean
+  is_active: boolean
+  created_by: string
   created_at: string
   updated_at: string
 }
@@ -27,23 +25,17 @@ export interface Pipeline {
 export interface PipelineCreate {
   name: string
   description?: string
-  job_role?: string
-  is_active?: boolean
   stages: PipelineStage[]
-  min_overall_score?: number
-  auto_reject_on_fail?: boolean
-  auto_approve_on_pass?: boolean
+  team_id?: string
+  is_default?: boolean
 }
 
 export interface PipelineUpdate {
   name?: string
   description?: string
-  job_role?: string
-  is_active?: boolean
   stages?: PipelineStage[]
-  min_overall_score?: number
-  auto_reject_on_fail?: boolean
-  auto_approve_on_pass?: boolean
+  team_id?: string
+  is_default?: boolean
 }
 
 export interface CandidateJourney {
@@ -80,7 +72,7 @@ export interface CandidateProgress {
 export const pipelineApi = {
   // Pipeline management
   async createPipeline(data: PipelineCreate): Promise<Pipeline> {
-    const response = await apiClient.post('/pipelines/pipelines', data)
+    const response = await apiClient.post('/workflow/', data)
     return response.data
   },
 
@@ -90,17 +82,17 @@ export const pipelineApi = {
     job_role?: string
     is_active?: boolean
   }): Promise<Pipeline[]> {
-    const response = await apiClient.get('/pipelines/pipelines', { params })
+    const response = await apiClient.get('/workflow/', { params })
     return response.data
   },
 
   async getPipeline(id: string): Promise<Pipeline> {
-    const response = await apiClient.get(`/pipelines/pipelines/${id}`)
+    const response = await apiClient.get(`/workflow/${id}`)
     return response.data
   },
 
   async updatePipeline(id: string, data: PipelineUpdate): Promise<Pipeline> {
-    const response = await apiClient.put(`/pipelines/pipelines/${id}`, data)
+    const response = await apiClient.put(`/workflow/${id}`, data)
     return response.data
   },
 
