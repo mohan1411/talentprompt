@@ -93,7 +93,7 @@ class CandidatePipelineState(Base):
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
     tags = Column(ARRAY(Text), default=[])
-    metadata = Column(JSON, default={})
+    meta_data = Column("metadata", JSON, default={})  # Map to 'metadata' column in DB
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -193,7 +193,7 @@ class CandidateCommunication(Base):
     
     sent_at = Column(DateTime)
     sent_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    metadata = Column(JSON, default={})
+    meta_data = Column("metadata", JSON, default={})  # Map to 'metadata' column in DB
     
     created_at = Column(DateTime, default=datetime.utcnow)
     
