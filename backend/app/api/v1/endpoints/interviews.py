@@ -386,12 +386,11 @@ async def update_interview_session(
                     logger.info(f"Moving candidate from {old_stage} to interview stage")
                     
                     # Calculate time in previous stage
-                    time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                    time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
                     
                     # Update the stage
-                    pipeline_state.time_in_stage_seconds = time_in_stage
                     pipeline_state.current_stage = "interview"
-                    pipeline_state.entered_stage_at = datetime.utcnow()
+                    pipeline_state.stage_entered_at = datetime.utcnow()
                     pipeline_state.updated_at = datetime.utcnow()
                     
                     # Create stage change activity
@@ -485,7 +484,7 @@ async def update_interview_session(
                         logger.info(f"Candidate needs to move through interview stage first (currently in {current_stage})")
                         
                         # First move to interview stage
-                        time_in_previous_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                        time_in_previous_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
                         
                         # Create activity for moving to interview
                         interview_activity = PipelineActivity(
@@ -503,9 +502,8 @@ async def update_interview_session(
                         db.add(interview_activity)
                         
                         # Update to interview stage briefly
-                        pipeline_state.time_in_stage_seconds = time_in_previous_stage
                         pipeline_state.current_stage = "interview"
-                        pipeline_state.entered_stage_at = datetime.utcnow()
+                        pipeline_state.stage_entered_at = datetime.utcnow()
                         pipeline_state.updated_at = datetime.utcnow()
                         
                         # Now move from interview to final stage
@@ -516,12 +514,11 @@ async def update_interview_session(
                         logger.info(f"Moving candidate from {current_stage} to {final_stage}")
                         
                         # Calculate time in current stage
-                        time_in_stage = int((datetime.utcnow() - pipeline_state.entered_stage_at).total_seconds())
+                        time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
                         
                         # Update to final stage
-                        pipeline_state.time_in_stage_seconds = time_in_stage
                         pipeline_state.current_stage = final_stage
-                        pipeline_state.entered_stage_at = datetime.utcnow()
+                        pipeline_state.stage_entered_at = datetime.utcnow()
                         pipeline_state.updated_at = datetime.utcnow()
                         
                         # Handle rejection/offer specific fields
