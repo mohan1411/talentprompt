@@ -156,11 +156,10 @@ class PipelineService:
         # Log the activity
         if user_id:
             activity = PipelineActivity(
-                candidate_id=candidate_id,
                 pipeline_state_id=pipeline_state.id,
-                user_id=user_id,
-                activity_type=PipelineActivityType.STAGE_CHANGED,
-                to_stage_id=stage_id,
+                performed_by=user_id,
+                activity_type="moved",
+                to_stage=stage_id,
                 details={"action": "added_to_pipeline"}
             )
             db.add(activity)
@@ -332,12 +331,10 @@ class PipelineService:
             Created CandidateNote
         """
         note = CandidateNote(
-            candidate_id=candidate_id,
             pipeline_state_id=pipeline_state_id,
-            user_id=user_id,
-            content=content,
-            is_private=is_private,
-            mentioned_users=mentioned_users or []
+            created_by=user_id,
+            note=content,
+            is_private=is_private
         )
         
         db.add(note)
@@ -345,10 +342,9 @@ class PipelineService:
         # Log activity if part of a pipeline
         if pipeline_state_id:
             activity = PipelineActivity(
-                candidate_id=candidate_id,
                 pipeline_state_id=pipeline_state_id,
-                user_id=user_id,
-                activity_type=PipelineActivityType.NOTE_ADDED,
+                performed_by=user_id,
+                activity_type="noted",
                 details={
                     "note_id": str(note.id),
                     "is_private": is_private,
@@ -399,7 +395,6 @@ class PipelineService:
             Created CandidateEvaluation
         """
         evaluation = CandidateEvaluation(
-            candidate_id=candidate_id,
             pipeline_state_id=pipeline_state_id,
             evaluator_id=evaluator_id,
             interview_id=interview_id,
@@ -416,10 +411,9 @@ class PipelineService:
         # Log activity if part of a pipeline
         if pipeline_state_id:
             activity = PipelineActivity(
-                candidate_id=candidate_id,
                 pipeline_state_id=pipeline_state_id,
-                user_id=evaluator_id,
-                activity_type=PipelineActivityType.EVALUATION_SUBMITTED,
+                performed_by=evaluator_id,
+                activity_type="evaluated",
                 details={
                     "evaluation_id": str(evaluation.id),
                     "stage_id": stage_id,
@@ -523,8 +517,9 @@ class PipelineService:
         # Get activities
         query = (
             select(PipelineActivity, User)
-            .join(User, PipelineActivity.user_id == User.id)
-            .where(PipelineActivity.candidate_id == candidate_id)
+            .join(User, PipelineActivity.performed_by == User.id)
+            .join(CandidatePipelineState, PipelineActivity.pipeline_state_id == CandidatePipelineState.id)
+            .where(CandidatePipelineState.candidate_id == candidate_id)
         )
         
         if pipeline_state_id:
@@ -539,13 +534,13 @@ class PipelineService:
         for activity, user in activities:
             timeline.append({
                 "id": str(activity.id),
-                "type": activity.activity_type.value,
+                "type": activity.activity_type,
                 "user": {
                     "id": str(user.id),
                     "name": user.full_name or user.username
                 },
-                "from_stage": activity.from_stage_id,
-                "to_stage": activity.to_stage_id,
+                "from_stage": activity.from_stage,
+                "to_stage": activity.to_stage,
                 "details": activity.details,
                 "created_at": activity.created_at.isoformat()
             })
@@ -553,8 +548,9 @@ class PipelineService:
         # Get notes
         notes_query = (
             select(CandidateNote, User)
-            .join(User, CandidateNote.user_id == User.id)
-            .where(CandidateNote.candidate_id == candidate_id)
+            .join(User, CandidateNote.created_by == User.id)
+            .join(CandidatePipelineState, CandidateNote.pipeline_state_id == CandidatePipelineState.id)
+            .where(CandidatePipelineState.candidate_id == candidate_id)
         )
         
         if pipeline_state_id:
@@ -572,7 +568,7 @@ class PipelineService:
                         "id": str(user.id),
                         "name": user.full_name or user.username
                     },
-                    "content": note.content,
+                    "content": note.note,
                     "created_at": note.created_at.isoformat()
                 })
         
@@ -593,7 +589,7 @@ class PipelineService:
             select(PipelineAutomation).where(
                 and_(
                     PipelineAutomation.pipeline_id == pipeline_state.pipeline_id,
-                    PipelineAutomation.is_active == True,
+                    PipelineAutomation.is_enabled == True,
                     PipelineAutomation.trigger_type == "stage_enter"
                 )
             )

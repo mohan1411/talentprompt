@@ -101,7 +101,6 @@ class CandidateInPipelineResponse(BaseModel):
     assigned_to: Optional[Dict[str, Any]]
     tags: List[str]
     entered_stage_at: datetime
-    is_active: bool
 
 
 # Pipeline CRUD endpoints
@@ -328,7 +327,7 @@ async def add_candidate_to_pipeline(
         "pipeline_state_id": str(pipeline_state.id),
         "candidate_id": str(pipeline_state.candidate_id),
         "pipeline_id": str(pipeline_state.pipeline_id),
-        "current_stage": pipeline_state.current_stage_id,
+        "current_stage": pipeline_state.current_stage,
         "assigned_to": str(pipeline_state.assigned_to) if pipeline_state.assigned_to else None
     }
 
@@ -352,8 +351,8 @@ async def move_candidate_stage(
     
     return {
         "pipeline_state_id": str(pipeline_state.id),
-        "current_stage": pipeline_state.current_stage_id,
-        "entered_stage_at": pipeline_state.entered_stage_at.isoformat()
+        "current_stage": pipeline_state.current_stage,
+        "entered_stage_at": pipeline_state.stage_entered_at.isoformat()
     }
 
 
@@ -375,8 +374,7 @@ async def assign_candidate(
     
     return {
         "pipeline_state_id": str(pipeline_state.id),
-        "assigned_to": str(pipeline_state.assigned_to) if pipeline_state.assigned_to else None,
-        "assigned_at": pipeline_state.assigned_at.isoformat() if pipeline_state.assigned_at else None
+        "assigned_to": str(pipeline_state.assigned_to) if pipeline_state.assigned_to else None
     }
 
 
@@ -444,8 +442,10 @@ async def get_candidate_notes(
 ):
     """Get notes for a candidate."""
     query = select(models.CandidateNote, models.User).join(
-        models.User, models.CandidateNote.user_id == models.User.id
-    ).where(models.CandidateNote.candidate_id == candidate_id)
+        models.User, models.CandidateNote.created_by == models.User.id
+    ).join(
+        models.CandidatePipelineState, models.CandidateNote.pipeline_state_id == models.CandidatePipelineState.id
+    ).where(models.CandidatePipelineState.candidate_id == candidate_id)
     
     if pipeline_state_id:
         query = query.where(models.CandidateNote.pipeline_state_id == pipeline_state_id)
@@ -453,7 +453,7 @@ async def get_candidate_notes(
     if not include_private:
         query = query.where(
             (models.CandidateNote.is_private == False) | 
-            (models.CandidateNote.user_id == current_user.id)
+            (models.CandidateNote.created_by == current_user.id)
         )
     
     query = query.order_by(models.CandidateNote.created_at.desc())
@@ -464,13 +464,12 @@ async def get_candidate_notes(
     return [
         {
             "id": str(note.id),
-            "content": note.content,
+            "content": note.note,
             "is_private": note.is_private,
             "user": {
                 "id": str(user.id),
                 "name": user.full_name or user.username
             },
-            "mentioned_users": [str(uid) for uid in note.mentioned_users],
             "created_at": note.created_at.isoformat(),
             "updated_at": note.updated_at.isoformat()
         }
@@ -539,28 +538,26 @@ async def get_pipeline_analytics(
     """Get analytics for a pipeline."""
     # Get stage distribution
     stage_query = select(
-        models.CandidatePipelineState.current_stage_id,
+        models.CandidatePipelineState.current_stage,
         func.count(models.CandidatePipelineState.id).label("count")
     ).where(
-        and_(
-            models.CandidatePipelineState.pipeline_id == pipeline_id,
-            models.CandidatePipelineState.is_active == True
-        )
-    ).group_by(models.CandidatePipelineState.current_stage_id)
+        models.CandidatePipelineState.pipeline_id == pipeline_id
+    ).group_by(models.CandidatePipelineState.current_stage)
     
     stage_result = await db.execute(stage_query)
     stage_distribution = {row[0]: row[1] for row in stage_result}
     
-    # Get average time in stage
+    # Get average time in stage (calculate from stage_entered_at)
+    # Since time_in_stage_seconds doesn't exist, we calculate it
+    from datetime import datetime
     time_query = select(
-        models.CandidatePipelineState.current_stage_id,
-        func.avg(models.CandidatePipelineState.time_in_stage_seconds).label("avg_time")
+        models.CandidatePipelineState.current_stage,
+        func.avg(
+            func.extract('epoch', func.now() - models.CandidatePipelineState.stage_entered_at)
+        ).label("avg_time")
     ).where(
-        and_(
-            models.CandidatePipelineState.pipeline_id == pipeline_id,
-            models.CandidatePipelineState.time_in_stage_seconds > 0
-        )
-    ).group_by(models.CandidatePipelineState.current_stage_id)
+        models.CandidatePipelineState.pipeline_id == pipeline_id
+    ).group_by(models.CandidatePipelineState.current_stage)
     
     time_result = await db.execute(time_query)
     avg_time_in_stage = {row[0]: float(row[1]) if row[1] else 0 for row in time_result}
@@ -608,7 +605,6 @@ async def schedule_interview_from_pipeline(
         and_(
             models.CandidatePipelineState.pipeline_id == pipeline_id,
             models.CandidatePipelineState.candidate_id == candidate_id,
-            models.CandidatePipelineState.is_active == True
         )
     )
     
@@ -655,7 +651,7 @@ async def schedule_interview_from_pipeline(
     from app.models.interview import InterviewSession, InterviewQuestion
     
     session = InterviewSession(
-        resume_id=candidate_id,
+        candidate_id=candidate_id,
         interviewer_id=current_user.id,
         job_position=request.job_position,
         job_requirements=request.job_requirements,
@@ -669,7 +665,7 @@ async def schedule_interview_from_pipeline(
             "focus_areas": request.focus_areas,
             "pipeline_id": str(pipeline_id),
             "pipeline_state_id": str(pipeline_state.id),
-            "current_stage": pipeline_state.current_stage_id
+            "current_stage": pipeline_state.current_stage
         },
         suggested_questions=questions_data["questions"]
     )
@@ -693,10 +689,9 @@ async def schedule_interview_from_pipeline(
     
     # Create pipeline activity
     activity = models.PipelineActivity(
-        candidate_id=candidate_id,
         pipeline_state_id=pipeline_state.id,
-        user_id=current_user.id,
-        activity_type=models.PipelineActivityType.INTERVIEW_SCHEDULED,
+        performed_by=current_user.id,
+        activity_type="interview_scheduled",
         details={
             "interview_id": str(session.id),
             "job_position": request.job_position,
@@ -708,7 +703,7 @@ async def schedule_interview_from_pipeline(
     db.add(activity)
     
     # Auto-move candidate to Interview stage if not already there
-    if pipeline_state.current_stage_id != "interview":
+    if pipeline_state.current_stage != "interview":
         updated_state = await pipeline_service.move_candidate_stage(
             db=db,
             pipeline_state_id=pipeline_state.id,
