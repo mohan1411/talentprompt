@@ -434,9 +434,11 @@ async def update_interview_session(
     
     # Create pipeline activity if interview completed and linked to pipeline
     logger.info(f"Interview update - pipeline_state_id: {session.pipeline_state_id}, status in update: {'status' in update_dict}, status value: {update_dict.get('status')}")
+    logger.info(f"Session overall_rating: {session.overall_rating}, recommendation: {session.recommendation}")
     
     if session.pipeline_state_id and "status" in update_dict and update_dict["status"] == InterviewStatus.COMPLETED:
         logger.info(f"Processing completed interview - rating: {session.overall_rating}, recommendation: {session.recommendation}")
+        logger.info(f"Will check for pipeline stage transition based on score")
         
         activity = PipelineActivity(
             pipeline_state_id=session.pipeline_state_id,
@@ -479,7 +481,7 @@ async def update_interview_session(
                     final_stage = "offer"
                     reason = f"Interview completed with positive outcome - Rating: {session.overall_rating}/5, Recommendation: {session.recommendation}"
                     logger.info(f"Interview outcome positive - will move to offer stage")
-                elif session.recommendation == "no_hire" or (session.overall_rating and session.overall_rating <= 2):
+                elif session.recommendation == "no_hire" or (session.overall_rating and session.overall_rating <= 2.5):
                     final_stage = "rejected"
                     reason = f"Interview completed with negative outcome - Rating: {session.overall_rating}/5, Recommendation: {session.recommendation}"
                     logger.info(f"Interview outcome negative - will move to rejected stage")
