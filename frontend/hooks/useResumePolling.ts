@@ -3,7 +3,7 @@ import { Resume } from '@/lib/api/client';
 
 interface UseResumePollingProps {
   resumes: Resume[];
-  setResumes: (resumes: Resume[]) => void;
+  setResumes: React.Dispatch<React.SetStateAction<Resume[]>>;
   resumeApi: any;
   pollingInterval?: number;
 }
@@ -55,7 +55,7 @@ export const useResumePolling = ({
       const updates = await Promise.all(updatePromises);
       
       // Update the resumes state with new data
-      setResumes(prevResumes => {
+      setResumes((prevResumes: Resume[]) => {
         const updatedResumes = [...prevResumes];
         
         updates.forEach(updatedResume => {
@@ -121,7 +121,7 @@ export const useResumePolling = ({
     try {
       const updated = await resumeApi.getResume(resumeId);
       if (updated) {
-        setResumes(prevResumes => 
+        setResumes((prevResumes: Resume[]) => 
           prevResumes.map(r => r.id === resumeId ? updated : r)
         );
       }
