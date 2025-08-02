@@ -207,11 +207,11 @@ class PipelineAutomation(Base):
     name = Column(String(255), nullable=False)
     # description field doesn't exist in database
     
-    trigger_stage = Column(String(50))  # Stage that triggers the automation
-    trigger_condition = Column(JSON)  # Additional conditions for triggering
+    trigger_type = Column(String(50), nullable=False)  # stage_enter, time_in_stage, evaluation_complete, etc.
+    trigger_config = Column(JSON, nullable=False)  # Additional conditions for triggering
     
     action_type = Column(String(50), nullable=False)  # send_email, move_stage, assign_user, add_tag, etc.
-    action_config = Column(JSON)
+    action_config = Column(JSON, nullable=False)
     
     is_active = Column(Boolean, default=True)
     

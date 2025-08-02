@@ -606,17 +606,15 @@ class PipelineService:
                 and_(
                     PipelineAutomation.pipeline_id == pipeline_state.pipeline_id,
                     PipelineAutomation.is_active == True,
-                    PipelineAutomation.trigger_stage == stage_id  # Check stage directly
+                    PipelineAutomation.trigger_type == "stage_enter"
                 )
             )
         )
         automations = result.scalars().all()
         
         for automation in automations:
-            # Check additional conditions if any
-            if automation.trigger_condition and not self._check_conditions(automation.trigger_condition, pipeline_state):
-                continue
-            await self._execute_automation(db, automation, pipeline_state)
+            if automation.trigger_config.get("stage_id") == stage_id:
+                await self._execute_automation(db, automation, pipeline_state)
     
     def _check_conditions(self, conditions: dict, pipeline_state: CandidatePipelineState) -> bool:
         """Check if automation conditions are met."""
