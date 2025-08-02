@@ -31,20 +31,13 @@ class PipelineStageType(str, enum.Enum):
 
 class PipelineActivityType(str, enum.Enum):
     """Types of activities that can occur in the pipeline."""
-    STAGE_CHANGED = "stage_changed"
+    # These must match the database enum exactly
+    MOVED = "moved"
+    NOTED = "noted"
     ASSIGNED = "assigned"
-    UNASSIGNED = "unassigned"
-    NOTE_ADDED = "note_added"
-    EMAIL_SENT = "email_sent"
-    EMAIL_RECEIVED = "email_received"
-    INTERVIEW_SCHEDULED = "interview_scheduled"
-    INTERVIEW_COMPLETED = "interview_completed"
-    EVALUATION_SUBMITTED = "evaluation_submitted"
-    OFFER_EXTENDED = "offer_extended"
-    OFFER_ACCEPTED = "offer_accepted"
-    OFFER_REJECTED = "offer_rejected"
-    CANDIDATE_WITHDRAWN = "candidate_withdrawn"
-    REJECTED = "rejected"
+    TAGGED = "tagged"
+    CONTACTED = "contacted"
+    EVALUATED = "evaluated"
 
 
 class Pipeline(Base):
@@ -118,7 +111,7 @@ class PipelineActivity(Base):
     
     pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"), nullable=False)
     
-    activity_type = Column(String(50), nullable=False)  # Simplified to string instead of enum
+    activity_type = Column(Enum(PipelineActivityType, name='pipeline_activity_type', create_type=False), nullable=False)
     from_stage = Column(String(50))
     to_stage = Column(String(50))
     

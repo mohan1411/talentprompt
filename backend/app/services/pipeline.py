@@ -16,6 +16,7 @@ from app.models import (
     PipelineStageType, PipelineActivityType,
     Candidate, User
 )
+from app.models.pipeline import PipelineActivityType
 from app.services.analytics import analytics_service
 from app.services.email_service_production import email_service
 from app.core.redis import get_redis_client
@@ -158,7 +159,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state.id,
                 performed_by=user_id,
-                activity_type="moved",
+                activity_type=PipelineActivityType.MOVED,
                 to_stage=stage_id,
                 details={"action": "added_to_pipeline"}
             )
@@ -223,7 +224,7 @@ class PipelineService:
         activity = PipelineActivity(
             pipeline_state_id=pipeline_state.id,
             performed_by=user_id,
-            activity_type="moved",  # Using string instead of enum
+            activity_type=PipelineActivityType.MOVED,
             from_stage=old_stage_id,
             to_stage=new_stage_id,
             details={
@@ -289,7 +290,7 @@ class PipelineService:
         activity = PipelineActivity(
             pipeline_state_id=pipeline_state.id,
             performed_by=user_id,
-            activity_type="assigned" if assignee_id else "unassigned",
+            activity_type=PipelineActivityType.ASSIGNED,
             details={
                 "old_assignee": str(old_assignee) if old_assignee else None,
                 "new_assignee": str(assignee_id) if assignee_id else None
@@ -344,7 +345,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state_id,
                 performed_by=user_id,
-                activity_type="noted",
+                activity_type=PipelineActivityType.NOTED,
                 details={
                     "note_id": str(note.id),
                     "is_private": is_private,
@@ -413,7 +414,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state_id,
                 performed_by=evaluator_id,
-                activity_type="evaluated",
+                activity_type=PipelineActivityType.EVALUATED,
                 details={
                     "evaluation_id": str(evaluation.id),
                     "stage_id": stage_id,
@@ -534,7 +535,7 @@ class PipelineService:
         for activity, user in activities:
             timeline.append({
                 "id": str(activity.id),
-                "type": activity.activity_type,
+                "type": activity.activity_type.value,
                 "user": {
                     "id": str(user.id),
                     "name": user.full_name or user.username

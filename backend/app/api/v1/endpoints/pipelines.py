@@ -691,7 +691,7 @@ async def schedule_interview_from_pipeline(
     activity = models.PipelineActivity(
         pipeline_state_id=pipeline_state.id,
         performed_by=current_user.id,
-        activity_type="interview_scheduled",
+        activity_type=models.PipelineActivityType.CONTACTED,  # Using CONTACTED for interview scheduling
         details={
             "interview_id": str(session.id),
             "job_position": request.job_position,
