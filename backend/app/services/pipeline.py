@@ -1,7 +1,7 @@
 """Pipeline service for managing candidate workflows."""
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional, Dict, Any, Tuple
 from uuid import UUID
 
@@ -208,11 +208,18 @@ class PipelineService:
         logger.info(f"Current stage: {old_stage_id}, moving to: {new_stage_id}")
         
         # Calculate time in previous stage
-        time_in_stage = int((datetime.now(timezone.utc) - pipeline_state.stage_entered_at).total_seconds())
+        # Handle both naive and aware datetimes
+        now = datetime.utcnow()
+        stage_entered = pipeline_state.stage_entered_at
+        if hasattr(stage_entered, 'tzinfo') and stage_entered.tzinfo is not None:
+            # If stage_entered_at is timezone-aware, make now aware too
+            from datetime import timezone
+            now = datetime.now(timezone.utc)
+        time_in_stage = int((now - stage_entered).total_seconds())
         
         # Update to new stage
         pipeline_state.current_stage = new_stage_id
-        pipeline_state.stage_entered_at = datetime.now(timezone.utc)
+        pipeline_state.stage_entered_at = datetime.utcnow()  # Use naive datetime for database
         
         # Store rejection/withdrawal reason in metadata if provided
         if reason and (new_stage_id == "rejected" or new_stage_id == "withdrawn"):
@@ -478,7 +485,14 @@ class PipelineService:
         candidates = []
         for pipeline_state, candidate, assignee in rows:
             # Calculate time in current stage
-            time_in_stage = int((datetime.now(timezone.utc) - pipeline_state.stage_entered_at).total_seconds())
+            # Handle both naive and aware datetimes
+            now = datetime.utcnow()
+            stage_entered = pipeline_state.stage_entered_at
+            if hasattr(stage_entered, 'tzinfo') and stage_entered.tzinfo is not None:
+                # If stage_entered_at is timezone-aware, make now aware too
+                from datetime import timezone
+                now = datetime.now(timezone.utc)
+            time_in_stage = int((now - stage_entered).total_seconds())
             
             candidates.append({
                 "id": str(candidate.id),

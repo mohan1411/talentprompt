@@ -1,6 +1,6 @@
 """Pipeline and workflow management endpoints."""
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 
@@ -221,7 +221,7 @@ async def update_pipeline(
     pipeline.description = pipeline_update.description
     pipeline.stages = [stage.dict() for stage in pipeline_update.stages]
     pipeline.is_default = pipeline_update.is_default
-    pipeline.updated_at = datetime.now(timezone.utc)
+    pipeline.updated_at = datetime.utcnow()
     
     await db.commit()
     await db.refresh(pipeline)
@@ -257,7 +257,7 @@ async def delete_pipeline(
     
     # Soft delete
     pipeline.is_active = False
-    pipeline.updated_at = datetime.now(timezone.utc)
+    pipeline.updated_at = datetime.utcnow()
     
     await db.commit()
     
