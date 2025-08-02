@@ -31,13 +31,13 @@ class PipelineStageType(str, enum.Enum):
 
 class PipelineActivityType(str, enum.Enum):
     """Types of activities that can occur in the pipeline."""
-    # These must match the database enum exactly
-    MOVED = "moved"
-    NOTED = "noted"
-    ASSIGNED = "assigned"
-    TAGGED = "tagged"
-    CONTACTED = "contacted"
-    EVALUATED = "evaluated"
+    # These must match the database enum exactly (lowercase)
+    moved = "moved"
+    noted = "noted"
+    assigned = "assigned"
+    tagged = "tagged"
+    contacted = "contacted"
+    evaluated = "evaluated"
 
 
 class Pipeline(Base):

@@ -159,7 +159,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state.id,
                 performed_by=user_id,
-                activity_type=PipelineActivityType.MOVED,
+                activity_type=PipelineActivityType.moved,
                 to_stage=stage_id,
                 details={"action": "added_to_pipeline"}
             )
@@ -224,7 +224,7 @@ class PipelineService:
         activity = PipelineActivity(
             pipeline_state_id=pipeline_state.id,
             performed_by=user_id,
-            activity_type=PipelineActivityType.MOVED,
+            activity_type=PipelineActivityType.moved,
             from_stage=old_stage_id,
             to_stage=new_stage_id,
             details={
@@ -290,7 +290,7 @@ class PipelineService:
         activity = PipelineActivity(
             pipeline_state_id=pipeline_state.id,
             performed_by=user_id,
-            activity_type=PipelineActivityType.ASSIGNED,
+            activity_type=PipelineActivityType.assigned,
             details={
                 "old_assignee": str(old_assignee) if old_assignee else None,
                 "new_assignee": str(assignee_id) if assignee_id else None
@@ -345,7 +345,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state_id,
                 performed_by=user_id,
-                activity_type=PipelineActivityType.NOTED,
+                activity_type=PipelineActivityType.noted,
                 details={
                     "note_id": str(note.id),
                     "is_private": is_private,
@@ -414,7 +414,7 @@ class PipelineService:
             activity = PipelineActivity(
                 pipeline_state_id=pipeline_state_id,
                 performed_by=evaluator_id,
-                activity_type=PipelineActivityType.EVALUATED,
+                activity_type=PipelineActivityType.evaluated,
                 details={
                     "evaluation_id": str(evaluation.id),
                     "stage_id": stage_id,
