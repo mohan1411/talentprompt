@@ -14,7 +14,7 @@ from app.models import (
     CandidateNote, CandidateEvaluation, CandidateCommunication,
     PipelineAutomation, PipelineTeamMember,
     PipelineStageType, PipelineActivityType,
-    Resume, User
+    Candidate, User
 )
 from app.services.analytics import analytics_service
 from app.services.email_service_production import email_service
@@ -108,7 +108,7 @@ class PipelineService:
         
         Args:
             db: Database session
-            candidate_id: Resume/candidate ID
+            candidate_id: Candidate ID
             pipeline_id: Pipeline ID
             assigned_to: Optional user to assign to
             stage_id: Optional starting stage (defaults to first stage)
@@ -324,7 +324,7 @@ class PipelineService:
         
         Args:
             db: Database session
-            candidate_id: Resume/candidate ID
+            candidate_id: Candidate ID
             content: Note content
             user_id: User adding the note
             pipeline_state_id: Optional pipeline state ID
@@ -387,7 +387,7 @@ class PipelineService:
         
         Args:
             db: Database session
-            candidate_id: Resume/candidate ID
+            candidate_id: Candidate ID
             evaluator_id: User providing evaluation
             stage_id: Stage being evaluated
             rating: Rating (1-5)
@@ -465,8 +465,8 @@ class PipelineService:
             List of candidate data with pipeline state
         """
         query = (
-            select(CandidatePipelineState, Resume, User)
-            .join(Resume, CandidatePipelineState.candidate_id == Resume.id)
+            select(CandidatePipelineState, Candidate, User)
+            .join(Candidate, CandidatePipelineState.candidate_id == Candidate.id)
             .outerjoin(User, CandidatePipelineState.assigned_to == User.id)
             .where(CandidatePipelineState.pipeline_id == pipeline_id)
         )
@@ -521,7 +521,7 @@ class PipelineService:
         
         Args:
             db: Database session
-            candidate_id: Resume/candidate ID
+            candidate_id: Candidate ID
             pipeline_state_id: Optional filter by pipeline state
             
         Returns:
