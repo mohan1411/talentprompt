@@ -191,7 +191,7 @@ class InterviewPipelineIntegrationService:
             raise ValueError(f"Pipeline state {pipeline_state_id} not found")
             
         # Create interview with pipeline link
-        interview_data["resume_id"] = pipeline_state.candidate_id
+        interview_data["candidate_id"] = pipeline_state.candidate_id  # Use candidate_id not resume_id
         interview_data["pipeline_state_id"] = pipeline_state_id
         interview_data["interviewer_id"] = user_id
         

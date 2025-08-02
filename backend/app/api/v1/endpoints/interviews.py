@@ -66,10 +66,33 @@ async def prepare_interview(
         interview_type=request.interview_category  # Pass category to AI service
     )
     
+    # Get or create candidate from resume
+    from app.models import Candidate
+    candidate_result = await db.execute(
+        select(Candidate).where(Candidate.resume_id == request.resume_id)
+    )
+    candidate = candidate_result.scalar_one_or_none()
+    
+    if not candidate:
+        # Create candidate from resume
+        candidate = Candidate(
+            resume_id=resume.id,
+            first_name=resume.first_name,
+            last_name=resume.last_name,
+            email=resume.email,
+            phone=resume.phone,
+            current_title=resume.current_title,
+            location=resume.location,
+            skills=resume.skills if isinstance(resume.skills, list) else [],
+            years_of_experience=float(resume.years_experience) if resume.years_experience else None
+        )
+        db.add(candidate)
+        await db.flush()
+    
     # Create interview session
     logger.info(f"Creating interview session with pipeline_state_id: {request.pipeline_state_id}")
     session = InterviewSession(
-        resume_id=request.resume_id,
+        candidate_id=candidate.id,  # Use candidate_id instead of resume_id
         interviewer_id=current_user.id,
         job_position=request.job_position,
         job_requirements=request.job_requirements,
@@ -870,7 +893,7 @@ async def schedule_next_round(
     
     # Create new interview session
     new_session = InterviewSession(
-        resume_id=previous_session.resume_id,
+        candidate_id=previous_session.candidate_id,  # Use candidate_id instead of resume_id
         interviewer_id=current_user.id,
         job_position=previous_session.job_position,
         job_requirements=previous_session.job_requirements,
