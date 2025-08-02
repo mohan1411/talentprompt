@@ -43,9 +43,9 @@ class InterviewSession(Base):
     __tablename__ = "interview_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    # Temporary: support both resume_id and candidate_id during migration
-    resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=True)
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=True)
+    # Using resume_id until database migration is complete
+    resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=False)
+    # candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=True)  # Commented out until DB migration
     job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=True)
     interviewer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     
@@ -90,8 +90,8 @@ class InterviewSession(Base):
     pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id"), nullable=True)
     
     # Relationships
-    resume = relationship("Resume", backref="interview_sessions")  # Temporary for migration
-    candidate = relationship("Candidate", backref="interview_sessions")
+    resume = relationship("Resume", backref="interview_sessions")
+    # candidate = relationship("Candidate", backref="interview_sessions")  # Commented out until DB migration
     interviewer = relationship("User", back_populates="conducted_interviews")
     questions = relationship("InterviewQuestion", back_populates="session")
     feedback = relationship("InterviewFeedback", back_populates="session", uselist=False)
