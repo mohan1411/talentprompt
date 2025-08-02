@@ -44,7 +44,7 @@ class PipelineResponse(BaseModel):
     stages: List[Dict[str, Any]]
     is_default: bool
     is_active: bool
-    created_by: UUID
+    created_by: Optional[UUID]
     created_at: datetime
     updated_at: datetime
 
