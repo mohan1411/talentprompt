@@ -51,9 +51,6 @@ class Pipeline(Base):
     """Pipeline template for managing candidate workflows."""
     
     __tablename__ = "pipelines"
-    __table_args__ = (
-        UniqueConstraint('team_id', 'is_default', name='unique_default_pipeline_per_team'),
-    )
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     name = Column(String(255), nullable=False)
@@ -63,11 +60,10 @@ class Pipeline(Base):
     # Format: [{"id": "sourced", "name": "Sourced", "order": 1, "color": "#94a3b8", "type": "sourced", "actions": []}]
     stages = Column(JSON, nullable=False, default=[])
     
-    team_id = Column(UUID(as_uuid=True))
     is_default = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     
-    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -83,36 +79,27 @@ class CandidatePipelineState(Base):
     
     __tablename__ = "candidate_pipeline_states"
     __table_args__ = (
-        UniqueConstraint('candidate_id', 'pipeline_id', 'is_active', name='unique_active_candidate_pipeline'),
+        UniqueConstraint('candidate_id', 'pipeline_id', name='unique_candidate_pipeline'),
     )
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id"), nullable=False)
+    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id", ondelete="CASCADE"), nullable=False)
+    pipeline_id = Column(UUID(as_uuid=True), ForeignKey("pipelines.id", ondelete="CASCADE"), nullable=False)
     
-    current_stage_id = Column(String(50), nullable=False)
-    current_stage_type = Column(Enum(PipelineStageType, name='pipeline_stage_type', values_callable=lambda x: [e.value for e in x]))
+    current_stage = Column(String(50), nullable=False)  # Maps to current_stage in DB
+    stage_entered_at = Column(DateTime, default=datetime.utcnow)
     
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"))
-    assigned_at = Column(DateTime)
     
-    entered_stage_at = Column(DateTime, default=datetime.utcnow)
-    time_in_stage_seconds = Column(Integer, default=0)
-    
-    rejection_reason = Column(Text)
-    rejection_details = Column(JSON)
-    withdrawal_reason = Column(Text)
-    
-    is_active = Column(Boolean, default=True)
-    tags = Column(JSON, default=[])
-    custom_fields = Column(JSON, default={})
+    tags = Column(ARRAY(Text), default=[])
+    metadata = Column(JSON, default={})
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    candidate = relationship("Resume", backref="pipeline_states")
+    candidate = relationship("Candidate", backref="pipeline_states")
     pipeline = relationship("Pipeline", back_populates="pipeline_states")
     assignee = relationship("User", foreign_keys=[assigned_to])
     activities = relationship("PipelineActivity", back_populates="pipeline_state", cascade="all, delete-orphan")
@@ -129,23 +116,20 @@ class PipelineActivity(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"), nullable=False)
     
-    activity_type = Column(Enum(PipelineActivityType, name='pipeline_activity_type', values_callable=lambda x: [e.value for e in x]), nullable=False)
-    from_stage_id = Column(String(50))
-    to_stage_id = Column(String(50))
+    activity_type = Column(String(50), nullable=False)  # Simplified to string instead of enum
+    from_stage = Column(String(50))
+    to_stage = Column(String(50))
     
+    performed_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     details = Column(JSON, default={})
-    activity_metadata = Column("metadata", JSON, default={})  # Map to 'metadata' column in DB
     
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
-    candidate = relationship("Resume")
     pipeline_state = relationship("CandidatePipelineState", back_populates="activities")
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[performed_by])
 
 
 class CandidateNote(Base):
@@ -155,101 +139,67 @@ class CandidateNote(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"), nullable=False)
     
-    content = Column(Text, nullable=False)
+    note = Column(Text, nullable=False)
     is_private = Column(Boolean, default=False)
-    mentioned_users = Column(ARRAY(UUID(as_uuid=True)), default=[])
-    attachments = Column(JSON, default=[])
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    candidate = relationship("Resume")
     pipeline_state = relationship("CandidatePipelineState", back_populates="notes")
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[created_by])
 
 
 class CandidateEvaluation(Base):
     """Interview feedback and evaluations."""
     
     __tablename__ = "candidate_evaluations"
-    __table_args__ = (
-        UniqueConstraint('candidate_id', 'evaluator_id', 'stage_id', name='unique_evaluation_per_stage'),
-        CheckConstraint('rating >= 1 AND rating <= 5', name='rating_range'),
-        CheckConstraint("recommendation IN ('strong_yes', 'yes', 'neutral', 'no', 'strong_no')", name='valid_recommendation'),
-    )
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"))
-    evaluator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    interview_id = Column(UUID(as_uuid=True), ForeignKey("interview_sessions.id"))
+    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"), nullable=False)
+    interview_session_id = Column(UUID(as_uuid=True), ForeignKey("interview_sessions.id"))
+    evaluator_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
-    stage_id = Column(String(50), nullable=False)
     rating = Column(Integer)
-    strengths = Column(Text)
-    concerns = Column(Text)
-    
-    technical_assessment = Column(JSON)
-    cultural_fit_assessment = Column(JSON)
-    
+    strengths = Column(ARRAY(Text))
+    weaknesses = Column(ARRAY(Text))
     recommendation = Column(String(50))
-    would_work_with = Column(Boolean)
-    evaluation_form = Column(JSON)
+    notes = Column(Text)
     
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    candidate = relationship("Resume")
     pipeline_state = relationship("CandidatePipelineState", back_populates="evaluations")
-    evaluator = relationship("User")
-    interview = relationship("InterviewSession")
+    evaluator = relationship("User", foreign_keys=[evaluator_id])
+    interview = relationship("InterviewSession", foreign_keys=[interview_session_id])
 
 
 class CandidateCommunication(Base):
     """Email and communication tracking."""
     
     __tablename__ = "candidate_communications"
-    __table_args__ = (
-        CheckConstraint("direction IN ('inbound', 'outbound')", name='valid_direction'),
-    )
     
     id = Column(UUID(as_uuid=True), primary_key=True, server_default=func.gen_random_uuid())
     
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id", ondelete="CASCADE"), nullable=False)
-    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"))
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id", ondelete="CASCADE"), nullable=False)
     
-    direction = Column(String(10), nullable=False)
-    channel = Column(String(50), default='email')
-    
-    subject = Column(String(500))
+    communication_type = Column(String(50), nullable=False)
+    subject = Column(String(255))
     content = Column(Text)
     
-    thread_id = Column(String(255))
-    message_id = Column(String(255))
-    in_reply_to = Column(String(255))
-    
-    attachments = Column(JSON, default=[])
-    communication_metadata = Column("metadata", JSON, default={})  # Map to 'metadata' column in DB
-    
     sent_at = Column(DateTime)
-    opened_at = Column(DateTime)
-    clicked_at = Column(DateTime)
-    replied_at = Column(DateTime)
+    sent_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    metadata = Column(JSON, default={})
     
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
-    candidate = relationship("Resume")
     pipeline_state = relationship("CandidatePipelineState", back_populates="communications")
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[sent_by])
 
 
 class PipelineAutomation(Base):

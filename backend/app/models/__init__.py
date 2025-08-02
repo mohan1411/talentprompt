@@ -2,6 +2,7 @@
 
 from .user import User
 from .resume import Resume
+from .candidate import Candidate
 from .interview import InterviewSession, InterviewQuestion, InterviewFeedback, InterviewTemplate
 from .interview_pipeline import InterviewPipeline, CandidateJourney
 from .outreach import OutreachMessage, OutreachTemplate, MessageStyle, MessageStatus
@@ -16,7 +17,8 @@ from .pipeline import (
 
 __all__ = [
     "User", 
-    "Resume", 
+    "Resume",
+    "Candidate", 
     "InterviewSession", 
     "InterviewQuestion", 
     "InterviewFeedback", 
@@ -29,8 +31,6 @@ __all__ = [
     "MessageStatus",
     "AnalyticsEvent",
     "EventType",
-    "CandidateSubmission",
-    "SubmissionCampaign",
     # Pipeline models
     "Pipeline",
     "CandidatePipelineState",
