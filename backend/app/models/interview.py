@@ -43,7 +43,9 @@ class InterviewSession(Base):
     __tablename__ = "interview_sessions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
-    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=False)
+    # Temporary: support both resume_id and candidate_id during migration
+    resume_id = Column(UUID(as_uuid=True), ForeignKey("resumes.id"), nullable=True)
+    candidate_id = Column(UUID(as_uuid=True), ForeignKey("candidates.id"), nullable=True)
     job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"), nullable=True)
     interviewer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
     
@@ -88,6 +90,7 @@ class InterviewSession(Base):
     pipeline_state_id = Column(UUID(as_uuid=True), ForeignKey("candidate_pipeline_states.id"), nullable=True)
     
     # Relationships
+    resume = relationship("Resume", backref="interview_sessions")  # Temporary for migration
     candidate = relationship("Candidate", backref="interview_sessions")
     interviewer = relationship("User", back_populates="conducted_interviews")
     questions = relationship("InterviewQuestion", back_populates="session")
