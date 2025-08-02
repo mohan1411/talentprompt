@@ -147,8 +147,7 @@ class PipelineService:
             candidate_id=candidate_id,
             pipeline_id=pipeline_id,
             current_stage=stage_id,
-            assigned_to=assigned_to,
-            assigned_at=datetime.utcnow() if assigned_to else None
+            assigned_to=assigned_to
         )
         
         db.add(pipeline_state)
@@ -286,14 +285,12 @@ class PipelineService:
         
         old_assignee = pipeline_state.assigned_to
         pipeline_state.assigned_to = assignee_id
-        pipeline_state.assigned_at = datetime.utcnow() if assignee_id else None
         
         # Log the activity
         activity = PipelineActivity(
-            candidate_id=pipeline_state.candidate_id,
             pipeline_state_id=pipeline_state.id,
-            user_id=user_id,
-            activity_type=PipelineActivityType.ASSIGNED if assignee_id else PipelineActivityType.UNASSIGNED,
+            performed_by=user_id,
+            activity_type="assigned" if assignee_id else "unassigned",
             details={
                 "old_assignee": str(old_assignee) if old_assignee else None,
                 "new_assignee": str(assignee_id) if assignee_id else None
@@ -623,7 +620,6 @@ class PipelineService:
                 user_id = automation.action_config.get("user_id")
                 if user_id:
                     pipeline_state.assigned_to = UUID(user_id)
-                    pipeline_state.assigned_at = datetime.utcnow()
             elif automation.action_type == "add_tag":
                 # Add tag
                 tag = automation.action_config.get("tag")
