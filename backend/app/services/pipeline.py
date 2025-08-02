@@ -1,7 +1,7 @@
 """Pipeline service for managing candidate workflows."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any, Tuple
 from uuid import UUID
 
@@ -208,11 +208,11 @@ class PipelineService:
         logger.info(f"Current stage: {old_stage_id}, moving to: {new_stage_id}")
         
         # Calculate time in previous stage
-        time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
+        time_in_stage = int((datetime.now(timezone.utc) - pipeline_state.stage_entered_at).total_seconds())
         
         # Update to new stage
         pipeline_state.current_stage = new_stage_id
-        pipeline_state.stage_entered_at = datetime.utcnow()
+        pipeline_state.stage_entered_at = datetime.now(timezone.utc)
         
         # Store rejection/withdrawal reason in metadata if provided
         if reason and (new_stage_id == "rejected" or new_stage_id == "withdrawn"):
@@ -478,7 +478,7 @@ class PipelineService:
         candidates = []
         for pipeline_state, candidate, assignee in rows:
             # Calculate time in current stage
-            time_in_stage = int((datetime.utcnow() - pipeline_state.stage_entered_at).total_seconds())
+            time_in_stage = int((datetime.now(timezone.utc) - pipeline_state.stage_entered_at).total_seconds())
             
             candidates.append({
                 "id": str(candidate.id),
