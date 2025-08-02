@@ -139,9 +139,8 @@ async def prepare_interview(
         logger.info(f"Creating interview scheduled activity for pipeline_state_id: {request.pipeline_state_id}")
         
         activity = PipelineActivity(
-            candidate_id=request.resume_id,
             pipeline_state_id=request.pipeline_state_id,
-            user_id=current_user.id,
+            performed_by=current_user.id,
             activity_type=PipelineActivityType.noted,  # Using 'noted' for interview scheduling
             details={
                 "action": "interview_scheduled",

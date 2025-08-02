@@ -211,11 +211,11 @@ class InterviewPipelineIntegrationService:
         # Create pipeline activity
         from app.models.pipeline import PipelineActivity
         activity = PipelineActivity(
-            candidate_id=pipeline_state.candidate_id,
             pipeline_state_id=pipeline_state_id,
-            user_id=user_id,
+            performed_by=user_id,
             activity_type=PipelineActivityType.noted,  # Using 'noted' for interview scheduling
             details={
+                "action": "interview_scheduled",
                 "interview_id": str(interview.id),
                 "job_position": interview.job_position,
                 "interview_type": interview.interview_type,
