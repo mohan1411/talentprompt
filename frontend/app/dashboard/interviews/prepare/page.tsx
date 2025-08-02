@@ -154,7 +154,7 @@ export default function PrepareInterviewPage() {
       const validResumes = data.filter(resume => 
         resume && 
         typeof resume.id === 'string' && 
-        resume.id.length > 30 // UUID should be 36 chars with dashes
+        resume.id.length > 0 // Just check that ID exists
       )
       
       if (validResumes.length === 0 && data.length > 0) {
@@ -224,8 +224,8 @@ export default function PrepareInterviewPage() {
       return
     }
     
-    // Validate resume ID is a proper UUID
-    if (!selectedResume.id || selectedResume.id.length < 32) {
+    // Validate resume ID exists
+    if (!selectedResume.id) {
       console.error('Invalid resume ID:', selectedResume)
       setError('Selected candidate has an invalid ID. Please select another candidate.')
       return
@@ -320,17 +320,24 @@ export default function PrepareInterviewPage() {
                     />
                   </div>
                   {selectedResume && (
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Selected: <span className="font-medium text-foreground">{selectedResume.first_name} {selectedResume.last_name}</span>
+                    <div className="flex items-center justify-between p-2 bg-primary/10 rounded-md border border-primary/20">
+                      <span className="text-sm">
+                        <span className="text-muted-foreground">Selected: </span>
+                        <span className="font-semibold text-foreground">{selectedResume.first_name} {selectedResume.last_name}</span>
+                        {selectedResume.current_title && (
+                          <span className="text-muted-foreground ml-2">({selectedResume.current_title})</span>
+                        )}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedResume(null)}
-                        className="h-6 text-xs"
+                        onClick={() => {
+                          setSelectedResume(null)
+                          setError(null)
+                        }}
+                        className="h-7 text-xs hover:bg-destructive/10 hover:text-destructive"
                       >
-                        Clear selection
+                        Clear
                       </Button>
                     </div>
                   )}
@@ -370,10 +377,14 @@ export default function PrepareInterviewPage() {
                           key={candidate.id}
                           className={`border rounded-lg p-3 cursor-pointer transition-all ${
                             selectedResume?.id === candidate.id
-                              ? 'border-primary bg-primary/10 ring-1 ring-primary/20'
-                              : 'hover:bg-muted/50'
+                              ? 'border-primary bg-primary/10 ring-2 ring-primary shadow-sm'
+                              : 'hover:bg-muted/50 hover:border-primary/50 hover:shadow-sm'
                           }`}
-                          onClick={() => setSelectedResume(candidate)}
+                          onClick={() => {
+                            console.log('Selecting candidate:', candidate)
+                            setError(null) // Clear any previous errors
+                            setSelectedResume(candidate)
+                          }}
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
